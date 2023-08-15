@@ -1,14 +1,10 @@
 ci:
   skip:
-    - "pre-repro"
-    # - "hide-notebook-inputs"
     - "update-warning-filters"
     # - "pyright"
     - "pytest-fast-only"
     # - "pytest-slow-only"
     - "fawltydeps"
-    - "dvc-post-checkout"
-    - "dvc-pre-push"
   autoupdate_schedule: "quarterly"
 
 repos:
@@ -21,28 +17,6 @@ repos:
     hooks:
       # * -------------------------------------------------------------------------- * #
       # * Changes below should persist in significant template updates.
-
-      - id: "pre-repro"
-        name: "pre-repro"
-        language: "system"
-        entry: "pwsh -Command python -m boilercore.pre_repro"
-        files: |
-          (?x)^(
-            src/boilercore/models/.*
-            |params.yaml
-            |data/docs.dvc
-          )$
-        pass_filenames: false
-        verbose: true
-      # - id: "hide-notebook-inputs"
-      #   name: "hide-notebook-inputs"
-      #   pass_filenames: false
-      #   language: "system"
-      #   entry: "pwsh -Command python -m boilercore.docs"
-      #   files: |
-      #     (?x)^(
-      #       docs/examples/.*
-      #     )$
 
       # * -------------------------------------------------------------------------- * #
       # * Changes below may be lost in significant template updates.
@@ -112,14 +86,6 @@ repos:
   # * ------------------------------------------------------------------------------ * #
   # * Changes below should persist in significant template updates.
 
-  - repo: "https://github.com/iterative/dvc"
-    rev: "3.10.1"
-    hooks:
-      - id: "dvc-post-checkout"
-        additional_dependencies: [".[gs]"]
-      - id: "dvc-pre-push"
-        additional_dependencies: [".[gs]"]
-
   # * ------------------------------------------------------------------------------ * #
   # * Changes below may be lost in significant template updates.
 
@@ -155,19 +121,6 @@ repos:
           (?x)^(
             src/.*
             |tests/.*
-          )$
-      - id: "nb-clean"
-        name: "nb-clean (keep docs outputs)"
-        args:
-          - "--remove-empty-cells"
-          - "--preserve-cell-outputs"
-          - "--preserve-cell-metadata"
-          - "special"
-          - "tags"
-          - "--"
-        files: |
-          (?x)^(
-            docs/.*
           )$
   - repo: "https://github.com/asottile/blacken-docs"
     rev: "1.15.0"

@@ -9,7 +9,7 @@
   // * Changes below may be lost in significant template updates.
 
   // Paths
-  "include": ["src", "tests", "docs", "data/docs"],
+  "include": ["src", "tests", "docs"],
 
   // Type inference helps with untyped upstream, but can be unpredictable
   "useLibraryCodeForTypes": true,
