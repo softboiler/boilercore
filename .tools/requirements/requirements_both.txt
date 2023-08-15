@@ -1,0 +1,29 @@
+# * -------------------------------------------------------------------------------- * #
+# * Changes below should persist in significant template updates.
+
+# * -------------------------------------------------------------------------------- * #
+# * Changes below may be lost in significant template updates.
+
+# Template
+copier==8.1.0
+
+# Build
+flit==3.9.0
+
+# Type checking
+pyright==1.1.318
+
+# Pre-commit common requirements
+ruff==0.0.282
+
+# Testing
+pytest==7.4.0
+# Testing plugins
+pytest-cov==4.1.0
+pytest-custom-exit-code==0.3.0
+# Format AND test notebooks
+nb-clean==2.4.0
+nbqa==1.7.0
+
+# Document
+-r requirements_docs.txt
