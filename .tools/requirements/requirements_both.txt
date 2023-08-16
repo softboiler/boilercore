@@ -4,9 +4,9 @@
 # * -------------------------------------------------------------------------------- * #
 # * Changes below may be lost in significant template updates.
 
-# Bump
+# Template
 copier==8.1.0
-toml==0.10.2
+dulwich==0.21.5
 
 # Build
 flit==3.9.0

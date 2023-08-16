@@ -43,7 +43,12 @@ jobs:
           python-version: "3.11"
           install-project: false
       - run: "copier update --defaults --vcs-ref $(git rev-parse HEAD:template)"
-        shell: "pwsh"
+      - run: "python .tools/scripts/update_requirements.py"
+      - name: "Check whether bumped requirements install properly"
+        run: |-
+          pip install .
+          pip install --requirement .tools/requirements/requirements.txt --requirement .tools/requirements/requirements_ci.txt
+          pip install --no-deps --requirement .tools/requirements/requirements_nodeps.txt
       - uses: "stefanzweifel/git-auto-commit-action@v4.16.0"
         with:
           commit_message: "Update project from template."
