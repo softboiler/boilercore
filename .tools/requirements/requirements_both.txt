@@ -7,7 +7,7 @@
 # * Changes below may be lost in significant template updates.
 
 # Type checking
-pyright
+pyright==1.1.323
 # Pre-commit common requirements
 ruff==0.0.284
 # Testing
