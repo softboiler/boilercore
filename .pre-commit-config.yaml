@@ -1,9 +1,7 @@
 ci:
   skip:
     - "update-warning-filters"
-    # - "pyright"
     - "pytest-fast-only"
-    # - "pytest-slow-only"
     - "fawltydeps"
   autoupdate_schedule: "quarterly"
 
@@ -31,21 +29,6 @@ repos:
           (?x)^(
             warning_filters.py
           )$
-      # - id: "pyright"
-      #   name: "pyright"
-      #   pass_filenames: false
-      #   language: "system"
-      #   entry: "pwsh .tools/scripts/Invoke-Pyright.ps1"
-      #   files: |
-      #     (?x)^(
-      #       src/.*
-      #       |tests/.*
-      #       |pyproject.toml
-      #       |.tools/(
-      #         pyproject.toml
-      #         |requirements/.*
-      #       )
-      #     )$
       - id: "pytest-fast-only"
         name: "pytest-fast-only"
         verbose: true
@@ -56,33 +39,20 @@ repos:
         files: |
           (?x)^(
             pyproject.toml
-
-            # exclude these if running pytest-slow-only again below
             src/.*
             |tests/.*
-
             |.tools/(
               pyproject.toml
               |requirements/.*
             )
           )$
-      # - id: "pytest-slow-only"
-      #   name: "pytest-slow-only"
-      #   verbose: true
-      #   pass_filenames: false
-      #   language: "system"
-      #   entry: |
-      #     pwsh -Command "pytest -m 'slow' --suppress-no-test-exit-code"
-      #   files: |
-      #     (?x)^(
-      #       src/.*
-      #       |tests/.*
-      #     )$
       - id: "fawltydeps"
         name: "fawltydeps"
         pass_filenames: false
         language: "system"
         entry: "pwsh -Command fawltydeps"
+        files: |
+          .*
   # * ------------------------------------------------------------------------------ * #
   # * Changes below should persist in significant template updates.
 
@@ -94,19 +64,29 @@ repos:
     hooks:
       - id: "end-of-file-fixer"
       - id: "trailing-whitespace"
+  - repo: "https://github.com/asottile/blacken-docs"
+    rev: "1.16.0"
+    hooks:
+      - id: "blacken-docs"
+        additional_dependencies: ["black==23.7.0"]
+  - repo: "https://github.com/charliermarsh/ruff-pre-commit"
+    rev: "v0.0.284"
+    hooks:
+      - id: "ruff"
   - repo: "https://github.com/DavidAnson/markdownlint-cli2"
     rev: "v0.8.1"
     hooks:
       - id: "markdownlint-cli2-fix"
+  - repo: "https://github.com/nbQA-dev/nbQA"
+    rev: "1.7.0"
+    hooks:
+      - id: "nbqa-ruff"
+        additional_dependencies: ["ruff==0.0.284"]
   - repo: "https://github.com/psf/black"
     rev: "23.7.0"
     hooks:
       - id: "black"
       - id: "black-jupyter"
-  - repo: "https://github.com/charliermarsh/ruff-pre-commit"
-    rev: "v0.0.282"
-    hooks:
-      - id: "ruff"
   - repo: "https://github.com/srstevenson/nb-clean"
     rev: "2.4.0"
     hooks:
@@ -120,15 +100,6 @@ repos:
         files: |
           (?x)^(
             src/.*
+            |docs/.*
             |tests/.*
           )$
-  - repo: "https://github.com/asottile/blacken-docs"
-    rev: "1.15.0"
-    hooks:
-      - id: "blacken-docs"
-        additional_dependencies: ["black==23.7.0"]
-  - repo: "https://github.com/nbQA-dev/nbQA"
-    rev: "1.7.0"
-    hooks:
-      - id: "nbqa-ruff"
-        additional_dependencies: ["ruff==0.0.282"]

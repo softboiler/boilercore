@@ -1,4 +1,4 @@
-# Requirements for documentation.
+# Core requirements for template updates, bootstrapping, etc.
 
 # * -------------------------------------------------------------------------------- * #
 # * Changes below should persist in significant template updates.
@@ -6,7 +6,8 @@
 # * -------------------------------------------------------------------------------- * #
 # * Changes below may be lost in significant template updates.
 
-myst-parser==2.0.0
-sphinx-autobuild==2021.03.14
-sphinx-book-theme==1.0.1
-sphinx-design==0.5.0
+copier==8.1.0
+dulwich==0.21.5
+flit_core==3.9.0
+pip==23.2.1
+wheel==0.41.1

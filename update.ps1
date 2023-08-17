@@ -14,10 +14,9 @@ else {
     throw [System.Management.Automation.ItemNotFoundException] 'Could not find a virtual environment.'
 }
 
-# Install dev requirements
-python -m pip install --upgrade pip setuptools wheel
-pip install --no-deps --editable '.' --requirement '.tools/requirements/requirements_nodeps.txt'
-pip install --upgrade --requirement '.tools/requirements/requirements_dev.txt' --requirement '.tools/requirements/requirements.txt'
+# Install dev requirements.
+python -m pip install --upgrade --requirement '.tools/requirements/requirements_dev.txt' --requirement '.tools/requirements/requirements.txt'
+python -m pip install --no-deps --requirement '.tools/requirements/requirements_nodeps.txt' --editable '.'
 
 # Install all types of pre-commit hooks
 $h = '--hook-type'

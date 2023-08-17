@@ -38,7 +38,7 @@
     {
       "label": "setup: Setup project",
       "type": "shell",
-      "options": { "shell": { "executable": "pwsh" } },
+      "options": { "shell": { "executable": "pwsh", "args": ["-Command"] } },
       "command": "setup.ps1",
       "icon": { "id": "file-symlink-directory" },
       "problemMatcher": []
@@ -46,7 +46,7 @@
     {
       "label": "setup: Update project",
       "type": "shell",
-      "options": { "shell": { "executable": "pwsh" } },
+      "options": { "shell": { "executable": "pwsh", "args": ["-Command"] } },
       "command": "update.ps1",
       "icon": { "id": "file-symlink-directory" },
       // "runOptions": {
@@ -57,7 +57,7 @@
     {
       "label": "setup: Perform first-time setup",
       "type": "shell",
-      "options": { "shell": { "executable": "pwsh" } },
+      "options": { "shell": { "executable": "pwsh", "args": ["-Command"] } },
       "command": "first_time_setup.ps1",
       "icon": { "id": "file-symlink-directory" },
       "problemMatcher": []
@@ -185,20 +185,12 @@
     // * -------------------------------------------------------------------------- * //
     // * OTHER TASKS * //
     {
-      "label": "task: format notebook, clear outputs",
+      "label": "task: format and clear notebook",
       "dependsOrder": "sequence",
       "dependsOn": ["task: format notebook"],
       "type": "shell",
       "options": { "shell": { "executable": "pwsh", "args": ["-Command"] } },
-      "command": "nbqa black ${file}; nbqa ruff --fix-only ${file}; nb-clean clean --remove-empty-cells --preserve-cell-metadata special tags -- ${file}",
-      "icon": { "id": "notebook" },
-      "problemMatcher": []
-    },
-    {
-      "label": "task: format notebook",
-      "type": "shell",
-      "options": { "shell": { "executable": "pwsh", "args": ["-Command"] } },
-      "command": "nbqa black ${file}; nbqa ruff --fix-only ${file}; nb-clean clean --remove-empty-cells --preserve-cell-outputs --preserve-cell-metadata special tags -- ${file}",
+      "command": "nbqa ruff --fix-only ${file}; nb-clean clean --remove-empty-cells --preserve-cell-metadata special tags -- ${file}; black ${file}",
       "icon": { "id": "notebook" },
       "problemMatcher": []
     },
@@ -213,7 +205,7 @@
     {
       "label": "task: Invoke pyright",
       "type": "shell",
-      "options": { "shell": { "executable": "pwsh" } },
+      "options": { "shell": { "executable": "pwsh", "args": ["-Command"] } },
       "command": ".tools/scripts/Invoke-Pyright.ps1",
       "icon": { "id": "type-hierarchy-sub" },
       "problemMatcher": []
@@ -222,7 +214,7 @@
       "label": "task: sphinx-autobuild docs (preview)",
       "type": "shell",
       "options": { "shell": { "executable": "pwsh", "args": ["-Command"] } },
-      "command": "sphinx-build -Ean docs _site; sphinx-autobuild -n docs _site --watch README.md --watch CHANGELOG.md",
+      "command": "sphinx-build -Ean docs _site; sphinx-autobuild -n docs _site --watch **/*.md",
       "icon": { "id": "book" },
       "problemMatcher": []
     },

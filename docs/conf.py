@@ -2,7 +2,7 @@ from datetime import date
 
 project = ""
 html_title = "boilercore"
-copyright = f"{date.today().year}, Blake Naccarato"  # noqa: A001
+copyright = f"{date.today().year}, Blake Naccarato, Kwang Jin Kim"  # noqa: A001
 version = "0.0.0"
 master_doc = "index"
 language = "en"
