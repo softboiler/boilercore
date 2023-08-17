@@ -19,6 +19,12 @@
   },
   "packageRules": [
     {
+      "description": "Don't bump pydantic until we're ready for migration.",
+      "matchManagers": ["pip_requirements"],
+      "matchPaths": [".tools/requirements/*"],
+      "ignoreDeps": ["pydantic"]
+    },
+    {
       "description": "Core dependencies, unmmatched by the rules below.",
       "groupName": "core",
       "matchPackagePatterns": ["*"],
