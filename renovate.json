@@ -104,7 +104,7 @@
       "description": "Ignore requirements_core.txt deps managed by this template.",
       "matchManagers": ["pip_requirements"],
       "matchPaths": [".tools/requirements/*"],
-      "ignoreDeps": ["copier", "dulwich", "flit_core"]
+      "ignoreDeps": ["copier", "dulwich", "flit_core", "pip", "wheel"]
     },
     {
       "description": "Ignore requirements_dev.txt deps managed by this template.",
