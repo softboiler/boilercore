@@ -27,11 +27,6 @@ jobs:
       - uses: "blakeNaccarato/copier-python-workflow-setup@v0.2.0"
         with:
           python-version: "3.11"
-      - name: Install PySide6 system dependencies
-        run: |
-          # https://askubuntu.com/questions/900285/libegl-so-1-is-not-a-symbolic-link
-          sudo apt update
-          sudo apt install libegl1
       - run: "pytest --cov"
       - uses: "codecov/codecov-action@v3.1.4"
   bump_project:
@@ -42,16 +37,9 @@ jobs:
         with:
           python-version: "3.11"
           install-project: false
-      - run: "copier update --defaults --vcs-ref $(git rev-parse HEAD:template)"
-      - run: "python .tools/scripts/update_requirements.py"
-      - name: "Check whether bumped requirements install properly"
-        run: |-
-          pip install .
-          pip install --requirement .tools/requirements/requirements.txt --requirement .tools/requirements/requirements_ci.txt
-          pip install --no-deps --requirement .tools/requirements/requirements_nodeps.txt
       - uses: "stefanzweifel/git-auto-commit-action@v4.16.0"
         with:
-          commit_message: "Update project from template."
+          commit_message: "Bump project template and compose `pyproject.toml`."
 
   # * ------------------------------------------------------------------------------ * #
   # * Changes below should persist in significant template updates.
