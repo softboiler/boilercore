@@ -4,21 +4,13 @@ from contextlib import closing
 from dataclasses import dataclass
 from pathlib import Path
 from re import MULTILINE, VERBOSE, Pattern, compile
-from subprocess import run
-from sys import executable
 
-from copier.subproject import Subproject
 from dulwich.porcelain import submodule_list
 from dulwich.repo import Repo
 
 
 def main():
-    template, typings_, submodule_deps = get_submodules()
-    if not Subproject(Path().resolve()).is_dirty():
-        run(
-            f"{Path(executable).parent}/copier update"  # noqa: S603
-            f"--defaults --vcs-ref {template.commit}"
-        )
+    *_, submodule_deps = get_submodules()
     requirements_files = [
         Path("pyproject.toml"),
         *sorted(Path(".tools/requirements").glob("requirements*.txt")),
