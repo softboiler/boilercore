@@ -1,0 +1,23 @@
+name: "minimum"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 0" # Every Sunday at midnight.
+
+jobs:
+  # * ------------------------------------------------------------------------------ * #
+  # * Changes below may be lost in significant template updates.
+
+  pytest:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "blakeNaccarato/copier-python-workflow-setup@v0.2.1"
+        with:
+          python-version: "3.11"
+          latest-pins: false
+      - run: "pytest --cov"
+      - uses: "codecov/codecov-action@v3.1.4"
+
+  # * ------------------------------------------------------------------------------ * #
+  # * Changes below should persist in significant template updates.
