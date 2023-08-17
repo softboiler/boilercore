@@ -2,9 +2,6 @@
   // * ----------------------------------------------------------------------------- * #
   // * Changes below should persist in significant template updates.
 
-  // Project-specific overrides
-  "reportPrivateUsage": "none",
-
   // * ----------------------------------------------------------------------------- * #
   // * Changes below may be lost in significant template updates.
 

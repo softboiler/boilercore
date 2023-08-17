@@ -1,7 +1,1 @@
-# * -------------------------------------------------------------------------------- * #
-# * Changes below should persist in significant template updates.
-
-# * -------------------------------------------------------------------------------- * #
-# * Changes below may be lost in significant template updates.
-
 -r requirements_both.txt

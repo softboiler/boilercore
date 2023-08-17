@@ -11,7 +11,7 @@
 
   //! Pylance
   "python.languageServer": "Pylance",
-  "python.analysis.diagnosticMode": "openFilesOnly",
+  "python.analysis.diagnosticMode": "workspace",
   "python.analysis.indexing": true,
   //? These are safer defaults which are overridden in `pyrightconfig.json`.
   "python.analysis.typeCheckingMode": "off",
@@ -53,10 +53,10 @@
   "black-formatter.logLevel": "warn",
   "black-formatter.args": [],
   //* ruff
-  //? Ensure user setting args are cleared
-  "ruff.args": [],
   "ruff.importStrategy": "fromEnvironment",
-  "ruff.trace.server": "off",
+  //? Ensure user setting args are cleared
+  "ruff.logLevel": "warn",
+  "ruff.args": [],
 
   //! GitHub Actions
   "github-actions.workflows.pinned.workflows": [".github/workflows/main.yml"],

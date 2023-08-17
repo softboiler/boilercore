@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet
+- Implement models common to boiler projects
+
+## [0.0.0]
+
+- No features yet
 
 [Unreleased]: https://github.com/blakeNaccarato/boilercore/compare/0.0.0...HEAD
+[0.0.0]: https://github.com/blakeNaccarato/boilercore/releases/tag/0.0.0
