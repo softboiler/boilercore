@@ -1,5 +1,6 @@
 ci:
   skip:
+    - "local-pyproject"
     - "update-warning-filters"
     - "pytest-fast-only"
     - "fawltydeps"
@@ -16,6 +17,15 @@ repos:
       # * -------------------------------------------------------------------------- * #
       # * Changes below should persist in significant template updates.
 
+      - id: "local-pyrightconfig"
+        name: "local-pyrightconfig"
+        language: "system"
+        entry: "pwsh -Command python .tools/scripts/local_pyrightconfig.py"
+        files: |
+          (?x)^(
+            pyproject.toml
+            .tools/scripts/local_pyrightconfig.py
+          )$
       # * -------------------------------------------------------------------------- * #
       # * Changes below may be lost in significant template updates.
 
