@@ -1,6 +1,6 @@
 ci:
   skip:
-    - "local-pyproject"
+    - "local-pyrightconfig"
     - "update-warning-filters"
     - "pytest-fast-only"
     - "fawltydeps"
