@@ -16,7 +16,15 @@ readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.11"
 classifiers = ["License :: OSI Approved :: MIT License"]
-dependencies = ["pydantic>=1.10.12,<2", "ruamel.yaml>=0.17.32"]
+dependencies = [
+    "pydantic>=1.10.12,<2",
+    "ruamel.yaml>=0.17.32",
+    "scipy>=1.11.1",
+    # Numba only supports numpy<1.25 https://github.com/numba/numba/issues/8698
+    # ! Unpin numba once it supports numpy>=1.25
+    "numba>=0.57.1",
+    "numpy>=1.24.4,<1.25",
+]
 [[project.authors]]
 name = "Blake Naccarato, Kwang Jin Kim"
 email = "blake.naccarato@gmail.com"
@@ -29,7 +37,9 @@ Tracker = "https://github.com/blakeNaccarato/boilercore/issues"
 
 [tool.fawltydeps]
 ignore_undeclared = ["rich"]
-ignore_unused = []
+ignore_unused = [
+    "numba", # Pin numba until it supports numpy>=1.25
+]
 
 [tool.fawltydeps.custom_mapping]
 ipykernel = ["IPython"]

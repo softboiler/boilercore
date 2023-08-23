@@ -1,16 +1,20 @@
 {
-	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "../boilercv"
-		},
-		{
-			"path": "../boilerdaq"
-		},
-		{
-			"path": "../boilerdata"
-		}
-	]
+  "folders": [
+    {
+      "path": "."
+    },
+    {
+      "path": "../boilercv"
+    },
+    {
+      "path": "../boilerdaq"
+    },
+    {
+      "path": "../boilerdata"
+    }
+  ],
+  "settings": {
+    "powershell.cwd": "C:/Users/Blake/Code/mine/boilercore",
+    "explorer.fileNesting.expand": false
+  }
 }
