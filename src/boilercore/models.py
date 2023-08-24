@@ -26,8 +26,6 @@ class YamlModel(BaseModel):
 
     def get_params(self, data_file: Path) -> dict[str, Any]:
         """Get parameters from file."""
-        yaml = YAML()
-        yaml.indent(YAML_INDENT)
         return (
             yaml.load(data_file)
             if data_file.exists() and data_file.read_text(encoding="utf-8")
@@ -54,8 +52,6 @@ class SynchronizedPathsYamlModel(YamlModel):
 
     def get_params(self, data_file: Path) -> dict[str, Any]:
         """Get parameters from file, synchronizing paths in the file."""
-        yaml = YAML()
-        yaml.indent(YAML_INDENT)
         params = (
             yaml.load(data_file)
             if data_file.exists() and data_file.read_text(encoding="utf-8")
@@ -71,11 +67,13 @@ class SynchronizedPathsYamlModel(YamlModel):
         excludes = set(maybe_excludes.keys()) if maybe_excludes else set()
         defaults: dict[str, dict[str, str]] = {}
         for key, field in self.__fields__.items():
+            if key in excludes:
+                continue
             if generic_ := get_origin(field.type_):
                 type_ = type(generic_)
             else:
                 type_ = field.type_
-            if key not in excludes and issubclass(type_, DefaultPathsModel):
+            if issubclass(type_, DefaultPathsModel):
                 defaults[key] = type_.get_paths()
         return defaults
 
