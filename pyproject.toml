@@ -36,7 +36,10 @@ Home = "https://github.com/blakeNaccarato/boilercore"
 Tracker = "https://github.com/blakeNaccarato/boilercore/issues"
 
 [tool.fawltydeps]
-ignore_undeclared = ["rich"]
+ignore_undeclared = [
+    "copier_python", # Used by the project template
+    "rich",
+]
 ignore_unused = [
     "numba", # Pin numba until it supports numpy>=1.25
 ]
