@@ -1,6 +1,7 @@
 ci:
   skip:
     - "local-pyrightconfig"
+    - "core-update"
     - "update-warning-filters"
     - "pytest-fast-only"
     - "fawltydeps"
@@ -29,6 +30,14 @@ repos:
       # * -------------------------------------------------------------------------- * #
       # * Changes below may be lost in significant template updates.
 
+      - id: "core-update"
+        name: "core-update"
+        stages: ["post-commit"]
+        always_run: true
+        verbose: true
+        pass_filenames: false
+        language: "system"
+        entry: "pwsh -Command python .tools/scripts/core_update.py"
       - id: "update-warning-filters"
         name: "update-warning-filters"
         verbose: true
