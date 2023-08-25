@@ -1,5 +1,6 @@
-"""Parameter models for this project."""
+"""Basic models for this project."""
 
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any, get_origin
 
@@ -52,11 +53,7 @@ class SynchronizedPathsYamlModel(YamlModel):
 
     def get_params(self, data_file: Path) -> dict[str, Any]:
         """Get parameters from file, synchronizing paths in the file."""
-        params = (
-            yaml.load(data_file)
-            if data_file.exists() and data_file.read_text(encoding="utf-8")
-            else {}
-        )
+        params = super().get_params(data_file)
         params |= self.get_paths()
         yaml.dump(params, data_file)
         return params
@@ -78,6 +75,14 @@ class SynchronizedPathsYamlModel(YamlModel):
         return defaults
 
 
+def check_pathlike(model: BaseModel, field: str, type_: type):
+    """Check that the field is path-like."""
+    if not issubclass(type_, Path):
+        raise TypeError(
+            f"Field <{field}> is not Path-like in {model}, derived from {DefaultPathsModel}."
+        )
+
+
 class DefaultPathsModel(BaseModel):
     """All fields must be path-like and have defaults specified in this model."""
 
@@ -94,29 +99,18 @@ class DefaultPathsModel(BaseModel):
                 (field.type_ for field in model.__fields__.values()),
                 strict=True,
             ):
-                if not issubclass(type_, Path):
-                    raise TypeError(
-                        f"Field <{field}> is not Path-like in {model}, derived from {DefaultPathsModel}."
-                    )
                 default = prop.get("default")
-                if isinstance(default, list | tuple):
-                    default = [item.replace("\\", "/") for item in default]
-                elif isinstance(default, dict):
-                    default = {
-                        key: value.replace("\\", "/") for key, value in default.items()
-                    }
+                # If default is a container, `type_` will be the type of its elements.
+                check_pathlike(model, field, type_)
+                if isinstance(default, str):
+                    default = pathfold(default)
+                elif isinstance(default, Sequence):
+                    default = [pathfold(path) for path in default]
+                elif isinstance(default, Mapping):
+                    default = {key: pathfold(path) for key, path in default.items()}
                 else:
-                    default = default.replace("\\", "/")
+                    raise TypeError("Type not supported.")
                 prop["default"] = default
-
-    @validator("*", always=True, pre=True, each_item=True)
-    def check_pathlike(cls, value, field):
-        """Check that the value is path-like."""
-        if not issubclass(field.type_, Path):
-            raise TypeError(
-                f"Field is not Path-like in {cls}, derived from {DefaultPathsModel}."
-            )
-        return value
 
     @classmethod
     def get_paths(cls) -> dict[str, Any]:
@@ -138,3 +132,14 @@ class CreatePathsModel(DefaultPathsModel):
         directory = path.parent if path.suffix else path
         directory.mkdir(parents=True, exist_ok=True)
         return value
+
+
+def pathfold(path: str) -> str:
+    """Return the shortest possible path with forward slashes."""
+    return str(prefer_relative_path(Path(path))).replace("\\", "/")
+
+
+def prefer_relative_path(path: Path) -> Path:
+    """Return the path relative to the current working directory if possible."""
+    cwd = Path.cwd()
+    return path.relative_to(cwd) if path.is_relative_to(cwd) else path

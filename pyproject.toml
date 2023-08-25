@@ -39,6 +39,7 @@ Tracker = "https://github.com/blakeNaccarato/boilercore/issues"
 ignore_undeclared = [
     "copier_python", # Used by the project template
     "rich",
+    "pytest",
 ]
 ignore_unused = [
     "numba", # Pin numba until it supports numpy>=1.25
