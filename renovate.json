@@ -43,6 +43,12 @@
       "matchPackageNames": ["numpy", "numba", "pandas"]
     },
     {
+      "groupName": "numexpr",
+      "description": "Breaks tests due to promotion of invalid escape sequence DeprecationWarning to SyntaxError. https://github.com/pydata/numexpr/issues/442#issuecomment-1684551982",
+      "matchManagers": ["pip_requirements"],
+      "matchPackageNames": ["numexpr"]
+    },
+    {
       "description": "Ignore changerelease.yml workflow deps managed by the template.",
       "matchManagers": ["github-actions"],
       "ignoreDeps": ["dropseed/changerelease"]
