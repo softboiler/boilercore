@@ -17,6 +17,7 @@ license = { file = "LICENSE" }
 requires-python = ">=3.11"
 classifiers = ["License :: OSI Approved :: MIT License"]
 dependencies = [
+    "nbqa>=1.7.0",
     "pydantic>=1.10.12,<2",
     "ruamel.yaml>=0.17.32",
     "scipy>=1.11.1",
