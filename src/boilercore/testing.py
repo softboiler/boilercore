@@ -1,26 +1,30 @@
 """Helper functions for testing boiler code."""
 
-import sys
-from collections.abc import Callable, Iterable
+from collections.abc import Iterable
 from pathlib import Path
 from re import compile
 
+import pytest
 from nbqa.__main__ import _get_nb_to_tmp_mapping, _save_code_sources  # type: ignore
 
 
-def make_tmp_project_with_nb_stages(stages: list[Path]) -> Callable[[Path], None]:
-    """Fixture factory for temp project with notebook stages."""
+def change_workdir_and_prepend(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """Change directory and prepend test directory root to `sys.path`.
 
-    def _tmp_project_with_nb_stages(tmp_project: Path):
-        """Enable import of notebook stages like `importlib.import_module("stage")`."""
-        # For importing tmp_project stages in tests
-        sys.path.insert(0, str(tmp_project))
-        for nb in stages:
-            (tmp_project / nb.with_suffix(".py").name).write_text(
-                encoding="utf-8", data=get_nb_content(nb)
-            )
+    Returns the original working directory."""
+    orig = Path.cwd()
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.syspath_prepend(tmp_path)
+    return orig
 
-    return _tmp_project_with_nb_stages
+
+def make_tmp_nbs_content(nbs: list[Path], tmp_path: Path, orig_workdir: Path):
+    """Copy notebook contents to importable scripts in the test directory root."""
+    for path in nbs:
+        nb = path if path.is_absolute() else orig_workdir / path
+        (tmp_path / nb.with_suffix(".py").name).write_text(
+            encoding="utf-8", data=get_nb_content(nb)
+        )
 
 
 def get_nb_content(nb: Path) -> str:
