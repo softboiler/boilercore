@@ -1,8 +1,10 @@
 """Helper functions for testing boiler code."""
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
+from contextlib import contextmanager
 from pathlib import Path
 from re import compile
+from shutil import copy, copytree
 
 import pytest
 from nbqa.__main__ import _get_nb_to_tmp_mapping, _save_code_sources  # type: ignore
@@ -18,10 +20,22 @@ def change_workdir_and_prepend(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) 
     return orig
 
 
-def make_tmp_nbs_content(nbs: list[Path], tmp_path: Path, orig_workdir: Path):
+@contextmanager
+def get_tmp_project(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+    try:
+        data = Path("data")
+        test_data = Path("tests") / data
+        copytree(test_data, tmp_path / data, dirs_exist_ok=True)
+        params = "params.yaml"
+        copy(test_data / params, tmp_path / params)
+        yield test_data
+    finally:
+        change_workdir_and_prepend(tmp_path, monkeypatch)
+
+
+def make_tmp_nbs_content(nbs: list[Path], tmp_path: Path):
     """Copy notebook contents to importable scripts in the test directory root."""
-    for path in nbs:
-        nb = path if path.is_absolute() else orig_workdir / path
+    for nb in nbs:
         (tmp_path / nb.with_suffix(".py").name).write_text(
             encoding="utf-8", data=get_nb_content(nb)
         )

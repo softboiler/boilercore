@@ -19,11 +19,11 @@ class YamlModel(BaseModel):
     Updates a JSON schema next to the YAML file with each initialization.
     """
 
-    def __init__(self, data_file: Path):
+    def __init__(self, data_file: Path, **kwargs):
         """Initialize and update the schema."""
-        params = self.get_params(data_file)
         self.update_schema(data_file)
-        super().__init__(**params)
+        params = self.get_params(data_file)
+        super().__init__(**(params | kwargs))
 
     def get_params(self, data_file: Path) -> dict[str, Any]:
         """Get parameters from file."""
@@ -47,9 +47,9 @@ class SynchronizedPathsYamlModel(YamlModel):
     pipeline orchestration.
     """
 
-    def __init__(self, data_file: Path):
+    def __init__(self, data_file: Path, **kwargs):
         """Initialize, update the schema, and synchronize paths in the file."""
-        super().__init__(data_file)
+        super().__init__(data_file, **kwargs)
 
     def get_params(self, data_file: Path) -> dict[str, Any]:
         """Get parameters from file, synchronizing paths in the file."""
