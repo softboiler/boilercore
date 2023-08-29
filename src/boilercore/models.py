@@ -1,4 +1,4 @@
-"""Basic models for this project."""
+"""Basic models."""
 
 from collections.abc import Mapping, Sequence
 from pathlib import Path

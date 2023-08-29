@@ -1,4 +1,4 @@
-"""Types used throughout this package."""
+"""Types."""
 
 from typing import Literal, TypeVar
 

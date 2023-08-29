@@ -1,3 +1,5 @@
+"""Model fits."""
+
 import warnings
 from collections.abc import Mapping, Sequence
 from functools import partial
