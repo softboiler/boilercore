@@ -19,6 +19,12 @@ def map_stages(stages_dir: Path, package_dir: Path) -> dict[str, Path]:
     return stages
 
 
+def walk_modules(package: Path, top: Path, suffix: str = ".py") -> Iterable[str]:
+    """Walk modules from a given submodule path and the top level library directory."""
+    for module in walk_module_paths(package, top, suffix):
+        yield get_module(module, top)
+
+
 def walk_module_paths(
     package: Path, top: Path, suffix: str = ".py", glob: str | None = None
 ) -> Iterable[Path]:
@@ -41,12 +47,6 @@ def get_module(module: Path, package: Path) -> str:
         .replace("\\", ".")
         .replace("/", ".")
     )
-
-
-def walk_modules(package: Path, top: Path, suffix: str = ".py") -> Iterable[str]:
-    """Walk modules from a given submodule path and the top level library directory."""
-    for module in walk_module_paths(package, top, suffix):
-        yield get_module(module, top)
 
 
 def get_module_rel(module: str, relative: str) -> str:
