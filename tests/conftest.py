@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 from pydantic import DirectoryPath, Field
 
+from boilercore import catch_certain_warnings
 from boilercore.models import (
     CreatePathsModel,
     DefaultPathsModel,
@@ -10,6 +11,13 @@ from boilercore.models import (
     YamlModel,
 )
 from tests import VarietyOfPaths
+
+
+@pytest.fixture(autouse=True)
+def _catch_certain_warnings():
+    """Filter certain warnings."""
+    with catch_certain_warnings():
+        yield
 
 
 @pytest.fixture(params=[DefaultPathsModel, CreatePathsModel])
