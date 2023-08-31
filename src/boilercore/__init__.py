@@ -32,6 +32,7 @@ ENCODING_WARNINGS = [
             "fsspec.spec",
             "matplotlib.font_manager",
             "ploomber_core.config",
+            "pyvisa.util",
             "ruamel.yaml.main",
             "sqltrie.sqlite.sqlite",
             "zc.lockfile",

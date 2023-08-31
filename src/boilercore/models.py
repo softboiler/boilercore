@@ -1,8 +1,8 @@
 """Basic models."""
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
-from typing import Any, get_origin
+from typing import Any, TypeVar, get_origin
 
 from pydantic import BaseModel, validator
 from ruamel.yaml import YAML
@@ -11,6 +11,10 @@ YAML_INDENT = 2
 yaml = YAML()
 yaml.indent(mapping=YAML_INDENT, sequence=YAML_INDENT, offset=YAML_INDENT)
 yaml.preserve_quotes = True
+
+T = TypeVar("T", bound=Path | str)
+PathOrPaths = T | list[T] | dict[str, T]
+Paths = dict[str, PathOrPaths[T]]
 
 
 class YamlModel(BaseModel):
@@ -48,21 +52,24 @@ class SynchronizedPathsYamlModel(YamlModel):
     """
 
     def __init__(self, data_file: Path, **kwargs):
-        """Initialize, update the schema, and synchronize paths in the file."""
+        """Initialize and update the schema."""
         super().__init__(data_file, **kwargs)
 
-    def get_params(self, data_file: Path) -> dict[str, Any]:
+    def get_params(self, data_file: Path) -> dict[str, Paths[Path]]:
         """Get parameters from file, synchronizing paths in the file."""
         params = super().get_params(data_file)
-        params |= self.get_paths()
-        yaml.dump(params, data_file)
-        return params
+        paths = self.get_paths()
+        yaml.dump(params | paths, data_file)
+        for i, param in paths.items():
+            for j, p in param.items():
+                paths[i][j] = apply_to_path_or_paths(p, lambda p_: Path(p_).resolve())
+        return params | paths
 
-    def get_paths(self) -> dict[str, dict[str, str]]:
+    def get_paths(self) -> dict[str, Paths[str]]:
         """Get all paths specified in paths-type models."""
         maybe_excludes = self.__exclude_fields__
         excludes = set(maybe_excludes.keys()) if maybe_excludes else set()
-        defaults: dict[str, dict[str, str]] = {}
+        defaults: dict[str, Paths[str]] = {}
         for key, field in self.__fields__.items():
             if key in excludes:
                 continue
@@ -99,25 +106,30 @@ class DefaultPathsModel(BaseModel):
                 (field.type_ for field in model.__fields__.values()),
                 strict=True,
             ):
-                default = prop.get("default")
                 # If default is a container, `type_` will be the type of its elements.
                 check_pathlike(model, field, type_)
-                if isinstance(default, str):
-                    default = pathfold(default)
-                elif isinstance(default, Sequence):
-                    default = [pathfold(path) for path in default]
-                elif isinstance(default, Mapping):
-                    default = {key: pathfold(path) for key, path in default.items()}
-                else:
-                    raise TypeError("Type not supported.")
-                prop["default"] = default
+                prop["default"] = apply_to_path_or_paths(prop.get("default"), pathfold)
 
     @classmethod
-    def get_paths(cls) -> dict[str, Any]:
+    def get_paths(cls) -> Paths[str]:
         """Get the paths for this model."""
         return {
             key: value["default"] for key, value in cls.schema()["properties"].items()
         }
+
+
+def apply_to_path_or_paths(
+    path_or_paths: PathOrPaths[Any], fun: Callable[[Any], Any]
+) -> PathOrPaths[Any]:
+    """Apply a function to a path, sequence of paths, or mapping of names to paths."""
+    if isinstance(path_or_paths, str):
+        return fun(path_or_paths)
+    elif isinstance(path_or_paths, Sequence):
+        return [fun(path) for path in path_or_paths]
+    elif isinstance(path_or_paths, Mapping):
+        return {key: fun(path) for key, path in path_or_paths.items()}
+    else:
+        raise TypeError("Type not supported.")
 
 
 class CreatePathsModel(DefaultPathsModel):
