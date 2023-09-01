@@ -63,5 +63,6 @@ def catch_certain_warnings(warnings: Sequence[WarningFilter] = ALL_WARNINGS):
 
 def filter_certain_warnings(warnings: Sequence[WarningFilter] = ALL_WARNINGS):
     """Filter certain warnings."""
+    filterwarnings("error")
     for filt in warnings:
         filterwarnings(*filt)
