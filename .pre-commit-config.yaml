@@ -1,5 +1,6 @@
 ci:
   skip:
+    - "local-pyrightconfig"
     - "core-update"
     - "pytest-fast-only"
     - "fawltydeps"
