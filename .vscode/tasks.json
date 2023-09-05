@@ -15,7 +15,15 @@
       "id": "templateOptions",
       "description": "Template options.",
       "type": "pickString",
-      "options": ["", "-Defaults", "-Recopy", "-Recopy -Defaults"]
+      "options": [
+        "",
+        "-Defaults",
+        "-Recopy",
+        "-Recopy -Defaults",
+        "-Defaults -NoVerify",
+        "-Recopy -NoVerify",
+        "-Recopy -Defaults -NoVerify"
+      ]
     }
   ],
   "tasks": [
@@ -154,14 +162,6 @@
       "type": "shell",
       "options": { "shell": { "executable": "pwsh", "args": ["-Command"] } },
       "command": "python .tools/scripts/core_update.py",
-      "icon": { "id": "graph" },
-      "problemMatcher": []
-    },
-    {
-      "label": "task: update warnings",
-      "type": "shell",
-      "options": { "shell": { "executable": "pwsh", "args": ["-Command"] } },
-      "command": "python .tools/scripts/warning_filters.py",
       "icon": { "id": "graph" },
       "problemMatcher": []
     },

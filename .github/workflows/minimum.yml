@@ -12,7 +12,7 @@ jobs:
   pytest:
     runs-on: "ubuntu-latest"
     steps:
-      - uses: "blakeNaccarato/copier-python-workflow-setup@v0.2.1"
+      - uses: "blakeNaccarato/copier-python-workflow-setup@v0.2.2"
         with:
           python-version: "3.11"
           latest-pins: false

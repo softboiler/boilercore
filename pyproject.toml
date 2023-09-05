@@ -62,6 +62,8 @@ ipykernel = ["IPython"]
 
 # Paths
 include = ["src", "tests", "docs"]
+# Stubs
+stubPath = "submodules/typings"
 # Type inference helps with untyped upstream but can be unpredictable
 useLibraryCodeForTypes = true
 # Sets most checks to "error". See overrides below
@@ -105,7 +107,7 @@ fix = true
 select = ["ALL"]
 src = ["src", "tests"]
 target-version = "py311"
-extend-exclude = ["template", "typings", ".github"]
+extend-exclude = ["template", "submodules", ".github"]
 ignore = [
     # * ---------------------------------------------------------------------------- * #
     # * Changes below should persist in significant template updates.
