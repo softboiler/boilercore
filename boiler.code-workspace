@@ -14,7 +14,6 @@
     }
   ],
   "settings": {
-    "powershell.cwd": "C:/Users/Blake/Code/mine/boilercore",
     "explorer.fileNesting.expand": false
   }
 }
