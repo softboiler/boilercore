@@ -1,4 +1,5 @@
 # Latest working requirements of your package, should be ahead of pyproject.toml.
+dill==0.3.7
 IPython[notebook]==8.14.0
 pandas[hdf5,performance]==2.0.2
 pandas-stubs~=2.0.2

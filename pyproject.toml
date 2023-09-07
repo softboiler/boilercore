@@ -17,6 +17,7 @@ license = { file = "LICENSE" }
 requires-python = ">=3.11"
 classifiers = ["License :: OSI Approved :: MIT License"]
 dependencies = [
+    "dill>=0.3.7",
     "IPython[notebook]>=8.14.0",
     "pandas[hdf5,performance]>=2.0.2",
     "ploomber-engine>=0.0.30",
