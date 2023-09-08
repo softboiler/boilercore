@@ -1,9 +1,8 @@
 """Test helpers."""
 
-from contextlib import contextmanager
 from pathlib import Path
 from shutil import copy, copytree
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
 
 import pytest
 from ploomber_engine.ipython import PloomberClient
@@ -21,25 +20,13 @@ def get_session_path(
     return session_path
 
 
-def get_nb_client(request: pytest.FixtureRequest, session_path: Path):
-    """Prepare a temporary working directory and return a notebook client."""
-    nb_source = request.param
+def get_nb_namespace(nb_client: PloomberClient) -> SimpleNamespace:
+    """Copy a notebook and get its namespace."""
+    return SimpleNamespace(**nb_client.get_namespace())
+
+
+def get_nb_client(nb_source: Path, session_path: Path) -> PloomberClient:
+    """Copy a notebook and get its client."""
     nb = session_path / nb_source.name
     copy(nb_source, nb)
     return PloomberClient.from_path(nb)
-
-
-def tmp_workdir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
-    """Prepare a temporary working directory."""
-    with before_tmp_workdir(tmp_path, monkeypatch):
-        ...
-
-
-@contextmanager
-def before_tmp_workdir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
-    """Copy files over, allow changes, then change the working directory."""
-    try:
-        copytree(Path("tests") / "tmp_path", tmp_path, dirs_exist_ok=True)
-        yield
-    finally:
-        monkeypatch.chdir(tmp_path)
