@@ -10,6 +10,7 @@ from ruamel.yaml import YAML
 YAML_INDENT = 2
 yaml = YAML()
 yaml.indent(mapping=YAML_INDENT, sequence=YAML_INDENT, offset=YAML_INDENT)
+yaml.width = 1000  # Otherwise Ruamel breaks lines illegally
 yaml.preserve_quotes = True
 
 T = TypeVar("T", bound=Path | str)
