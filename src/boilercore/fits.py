@@ -3,6 +3,7 @@
 import warnings
 from collections.abc import Mapping, Sequence
 from functools import partial
+from typing import Any
 from warnings import catch_warnings
 
 import numpy as np
@@ -16,12 +17,12 @@ def fit_to_model(
     initial_values: Mapping[str, Guess],
     free_params: list[str],
     fit_method: FitMethod,
-    model,
-    confidence_interval_95,
-    x,
-    y,
-    y_errors,
-    fixed_values,
+    model: Any,
+    confidence_interval: float,
+    x: Any,
+    y: Any,
+    y_errors: Any,
+    fixed_values: Any,
 ):
     (bounds, guesses) = get_free_bounds_and_guesses(
         free_params, model_bounds, initial_values
@@ -50,7 +51,7 @@ def fit_to_model(
 
     # Compute confidence interval
     standard_errors = np.sqrt(np.diagonal(pcov))
-    errors = standard_errors * confidence_interval_95
+    errors = standard_errors * confidence_interval
 
     # Catching `OptimizeWarning` should be enough, but let's explicitly check for inf
     fitted_params = np.where(np.isinf(errors), np.nan, fitted_params)
@@ -59,10 +60,10 @@ def fit_to_model(
 
 
 def get_free_bounds_and_guesses(
-    free_params: list[str],
+    free_params: Sequence[str],
     model_bounds: Mapping[str, Bound],
     initial_values: Mapping[str, Guess],
-) -> tuple[Sequence[Bound], Sequence[Guess]]:
+) -> tuple[tuple[Bound, ...], tuple[Guess, ...]]:
     """Given model bounds and initial values, return just the free parameter values.
 
     Returns a tuple of sequences of bounds and guesses required by the interface of
