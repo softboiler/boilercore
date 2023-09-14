@@ -11,9 +11,9 @@ MEASUREMENTS_COLOR = (0.2, 0.2, 0.2)
 def plot_fit(
     ax: plt.Axes,
     run: str,
-    x: Sequence[float],
-    y: Sequence[float],
-    y_errors: Sequence[float],
+    x: Sequence[Any],
+    y: Sequence[Any],
+    y_errors: Sequence[Any],
     y_0: float,
     model: Any,
     params: Mapping[str, Any],
