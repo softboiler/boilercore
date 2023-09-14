@@ -1,9 +1,6 @@
 # * -------------------------------------------------------------------------------- * #
 # * Changes below should persist in significant template updates.
 
-# Don't sync the pin-up folder
-pinned-files.json
-
 # * -------------------------------------------------------------------------------- * #
 # * Changes below may be lost in significant template updates.
 

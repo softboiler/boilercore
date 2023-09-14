@@ -16,10 +16,6 @@ def main():
         encoding="utf-8",
         data=f"{dumps(indent=2, obj=pyright)}\n",
     )
-    (Path(".vscode") / "pinned-files.json").write_text(
-        encoding="utf-8",
-        data='{"version":"2","pinnedList":["C:/Users/Blake/Code/mine/boilercore/src/boilercore","C:/Users/Blake/Code/mine/boilercv/src/boilercv","C:/Users/Blake/Code/mine/boilerdaq/src/boilerdaq","C:/Users/Blake/Code/mine/boilerdata/src/boilerdata"],"aliasMap":{}}',
-    )
 
 
 if __name__ == "__main__":
