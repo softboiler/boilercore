@@ -1,0 +1,7 @@
+stages:
+  modelfun:
+    cmd: "ploomber-engine ${paths.stages.modelfun} NUL"
+    deps:
+      - "${paths.stages.modelfun}"
+    outs:
+      - "${paths.model}"

@@ -8,6 +8,14 @@
     // * -------------------------------------------------------------------------- * //
     // * Changes below should persist in significant template updates.
 
+    {
+      "id": "stage",
+      "type": "pickString",
+      "description": "stage",
+      "default": "",
+      "options": ["", "modelfun"]
+    },
+
     // * -------------------------------------------------------------------------- * //
     // * Changes below may be lost in significant template updates.
 
@@ -32,9 +40,61 @@
 
     {
       "label": "proj: local pyrightconfig",
+      "type": "shell",
+      "options": { "shell": { "executable": "pwsh", "args": ["-Command"] } },
+      "command": "python .tools/scripts/local_pyrightconfig.py",
+      "icon": { "id": "graph" },
+      "problemMatcher": []
+    },
+    {
+      "label": "dvc: repro",
+      "dependsOrder": "sequence",
+      "dependsOn": ["dvc: synchronize params"],
       "type": "process",
       "command": "pwsh",
-      "args": ["-Command", "python .tools/scripts/local_pyrightconfig.py"],
+      "args": ["-Command", "dvc repro ${input:stage}"],
+      "icon": { "id": "graph" },
+      "problemMatcher": []
+    },
+    {
+      "label": "dvc: repro force downstream",
+      "dependsOrder": "sequence",
+      "dependsOn": ["dvc: synchronize params"],
+      "type": "process",
+      "command": "pwsh",
+      "args": ["-Command", "dvc repro --force-downstream ${input:stage}"],
+      "icon": { "id": "graph" },
+      "problemMatcher": []
+    },
+    {
+      "label": "dvc: repro force",
+      "dependsOrder": "sequence",
+      "dependsOn": ["dvc: synchronize params"],
+      "type": "process",
+      "command": "pwsh",
+      "args": ["-Command", "dvc repro --force ${input:stage}"],
+      "icon": { "id": "graph" },
+      "problemMatcher": []
+    },
+
+    {
+      "label": "dvc: dag",
+      "dependsOrder": "sequence",
+      "dependsOn": ["dvc: synchronize params"],
+      "type": "process",
+      "command": "pwsh",
+      "args": [
+        "-Command",
+        "(dvc dag --md) -Replace 'mermaid', '{mermaid}' > docs/dag.md && . '~/.local/nodeenvs/markdownlint/Scripts/Activate.ps1' && markdownlint --fix docs/dag.md"
+      ],
+      "icon": { "id": "graph" },
+      "problemMatcher": []
+    },
+    {
+      "label": "dvc: synchronize params",
+      "type": "process",
+      "command": "pwsh",
+      "args": ["-Command", "python -m boilercore.models.params"],
       "icon": { "id": "graph" },
       "problemMatcher": []
     },

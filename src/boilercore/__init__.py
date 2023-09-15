@@ -2,8 +2,15 @@
 
 from collections.abc import Sequence
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Literal, NamedTuple
 from warnings import catch_warnings, filterwarnings
+
+PROJECT_PATH = Path()
+
+
+def get_params_file():
+    return PROJECT_PATH / "params.yaml"
 
 
 class WarningFilter(NamedTuple):

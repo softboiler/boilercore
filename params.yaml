@@ -1,0 +1,8 @@
+paths:
+  project: .
+  package: src/boilercore
+  data: data
+  stages:
+    modelfun: src/boilercore/stages/modelfun.ipynb
+  fit: src/boilercore/models/fit.py
+  model: data/model.dillpickle

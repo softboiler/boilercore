@@ -1,6 +1,12 @@
 # * -------------------------------------------------------------------------------- * #
 # * Changes below should persist in significant template updates.
 
+# Ignore test plots
+tests/plots
+
+# Ignore schema, which has absolute paths that will vary by system
+params_schema.json
+
 # * -------------------------------------------------------------------------------- * #
 # * Changes below may be lost in significant template updates.
 
