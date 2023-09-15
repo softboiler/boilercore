@@ -5,11 +5,9 @@ from typing import Literal, TypeAlias
 import numpy as np
 from pydantic import BaseModel, Field, validator
 
-EPS = float(np.finfo(float).eps)
-MIN_NZ = EPS
-LB_MIN = EPS
-H_MIN = LB_MIN  # (W/m^2-K)
 FIT_METHOD = "trf"
+MIN_NONZERO = 1e-3
+INIT_H = 1.0
 MODEL_PARAMS = ["T_s", "q_s", "k", "h_a", "h_w"]
 FIXED_PARAMS = ["k", "h_w"]
 
@@ -54,9 +52,9 @@ class Fit(BaseModel):
         default=dict(
             T_s=(-273.0, "inf"),  # (C) T_s
             q_s=("-inf", "inf"),  # (W/m^2) q_s
-            k=(LB_MIN, "inf"),  # (W/m-K) k
-            h_a=(LB_MIN, "inf"),  # (W/m^2-K) h_a
-            h_w=(LB_MIN, "inf"),  # (W/m^2-K) h_w
+            k=(MIN_NONZERO, "inf"),  # (W/m-K) k
+            h_a=(MIN_NONZERO, "inf"),  # (W/m^2-K) h_a
+            h_w=(MIN_NONZERO, "inf"),  # (W/m^2-K) h_w
         ),
         description="Bounds for the model parameters. Not used if parameter is fixed.",
     )
@@ -68,7 +66,7 @@ class Fit(BaseModel):
             if isinstance(b[0], str) and "-inf" in b[0]:
                 b0 = -np.inf
             elif b[0] == 0.0:
-                b0 = MIN_NZ
+                b0 = MIN_NONZERO
             else:
                 b0 = b[0]
             b1 = np.inf if isinstance(b[0], str) and "inf" in b[1] else b[1]
@@ -82,8 +80,8 @@ class Fit(BaseModel):
             T_s=100.0,  # (C)
             q_s=10.0,  # (W/cm^2)
             k=400.0,  # (W/m-K)
-            h_a=H_MIN,  # (W/m^2-K)
-            h_w=H_MIN,  # (W/m^2-K)
+            h_a=INIT_H,  # (W/m^2-K)
+            h_w=INIT_H,  # (W/m^2-K)
         ),
         description="Initial guess for free parameters, constant value otherwise.",
     )
@@ -91,7 +89,9 @@ class Fit(BaseModel):
     @validator("initial_values", always=True)
     def validate_initial_values(cls, model_inputs) -> dict[str, float]:
         """Avoid exact zero guesses."""
-        return {param: MIN_NZ if v == 0.0 else v for param, v in model_inputs.items()}
+        return {
+            param: MIN_NONZERO if v == 0.0 else v for param, v in model_inputs.items()
+        }
 
     @property
     def fixed_values(self) -> dict[str, float]:

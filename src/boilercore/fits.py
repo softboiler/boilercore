@@ -3,7 +3,7 @@
 import warnings
 from collections.abc import Mapping, Sequence
 from functools import partial
-from typing import Any
+from typing import Any, Literal
 from warnings import catch_warnings
 
 import numpy as np
@@ -13,40 +13,67 @@ from scipy.optimize import OptimizeWarning, curve_fit
 from scipy.stats import t
 from uncertainties import ufloat
 
+from boilercore.models.fit import Fit
 from boilercore.types import Bound, Guess
 
-MEASUREMENTS_COLOR = (0.2, 0.2, 0.2)
+XY_COLOR = (0.2, 0.2, 0.2)
+CONFIDENCE_INTERVAL_95 = t.interval(0.95, 1)[1]
 
 
-def fit_to_model(
-    initial_values: Mapping[str, Guess],
-    free_params: list[str],
+def fit_from_params(
     model: Any,
-    confidence_interval: float,
+    params: Fit,
     x: Any,
     y: Any,
-    fixed_values: Any,
-    model_bounds: Mapping[str, Bound] | None = None,
-    fit_method: str = "trz",
     y_errors: Any = None,
-):
+    confidence_interval: float = CONFIDENCE_INTERVAL_95,
+) -> tuple[dict[str, float], dict[str, float]]:
+    """Get fits and errors for project model."""
+    fits, errors = fit(
+        model=model,
+        model_bounds=params.model_bounds,
+        fixed_values=params.fixed_values,
+        free_params=params.free_params,
+        initial_values=params.initial_values,
+        confidence_interval=confidence_interval,
+        x=x,
+        y=y,
+        y_errors=y_errors,
+    )
+    return (
+        dict(zip(params.free_params, fits, strict=True)),
+        dict(zip(params.free_errors, errors, strict=True)),
+    )
+
+
+def fit(
+    model: Any,
+    fixed_values: Any,
+    free_params: list[str],
+    initial_values: Mapping[str, Guess],
+    model_bounds: Mapping[str, Bound],
+    x: Any,
+    y: Any,
+    y_errors: Any = None,
+    confidence_interval: float = CONFIDENCE_INTERVAL_95,
+    method: Literal["trf", "dogbox"] = "trf",
+) -> tuple[Any, Any]:
+    """Get fits and errors."""
+
     # Perform fit, filling "nan" on failure or when covariance computation fails
     with catch_warnings():
         warnings.simplefilter("error", category=OptimizeWarning)
         try:
             fitted_params, pcov = curve_fit(
-                partial(model, **fixed_values),
-                x,
-                y,
-                method=fit_method,
+                f=partial(model, **fixed_values),
                 p0=get_guesses(free_params, initial_values),
-                bounds=(  # Expects ([L1, L2, L3], [H1, H2, H3])
-                    tuple(zip(*get_bounds(free_params, model_bounds), strict=True))
-                    if model_bounds
-                    else (-np.inf, np.inf)
-                ),
+                # Expects e.g. ([L1, L2, L3], [H1, H2, H3])
+                bounds=tuple(zip(*get_bounds(free_params, model_bounds), strict=True)),
+                xdata=x,
+                ydata=y,
                 sigma=None if y_errors is None else y_errors,
                 absolute_sigma=y_errors is not None,
+                method=method,
             )
         except (RuntimeError, OptimizeWarning):
             dim = len(free_params)
@@ -76,92 +103,80 @@ def get_bounds(params: Sequence[str], bounds: Mapping[str, Bound]) -> tuple[Boun
 
 
 def fit_and_plot(
-    params: Any,
     model: Any,
+    params: Fit,
+    x: Any,
     y: Any,
-    run: str | None = None,
     y_errors: Any = None,
+    confidence_interval=CONFIDENCE_INTERVAL_95,
     ax: Axes | None = None,
-) -> dict[str, float]:
-    """Fit the model to the data and plot the results."""
+    run: str | None = None,
+) -> tuple[dict[str, float], dict[str, float]]:
+    """Get fits and errors for project model and plot the results."""
     if not ax:
         _fig, ax = plt.subplots()
-    x = params.geometry.rods["R"]
-    fixed_values = params.fit.fixed_values
-    model_fit, model_error = fit_to_model(
-        model_bounds=params.fit.model_bounds,
-        initial_values=params.fit.initial_values,
-        free_params=params.fit.free_params,
-        fit_method=params.fit.fit_method,
+    fits, errors = fit_from_params(
         model=model,
-        confidence_interval=t.interval(0.95, 1)[1],
+        params=params,
         x=x,
         y=y,
-        fixed_values=fixed_values,
         y_errors=y_errors,
+        confidence_interval=confidence_interval,
     )
-    fit = dict(zip(params.fit.free_params, model_fit, strict=True))
-    error = dict(zip(params.fit.free_errors, model_error, strict=True))
     plot_fit(
+        model=model,
+        x=x,
+        y=y,
+        y_0=fits["T_s"],
+        params=fits | params.fixed_values,
+        errors=errors | {k: 0 for k in params.fixed_errors},
+        y_errors=y_errors if y_errors is not None else None,
         ax=ax,
         run=run or "run",
-        x=x,
-        y=y,
-        y_0=fit["T_s"],
-        model=model,
-        params=fit | fixed_values,
-        **(  # type: ignore
-            dict(
-                y_errors=y_errors,
-                errors=error | {k: 0 for k in params.fit.fixed_errors},
-            )
-            if y_errors is not None
-            else {}
-        ),
     )
-    return {k: v for k, v in fit.items() if k in ["T_s", "q_s"]}
+    return fits, errors
 
 
 def plot_fit(
-    run: str,
     model: Any,
-    x: Sequence[Any],
-    y: Sequence[Any],
+    x: Any,
+    y: Any,
     y_0: float,
     params: Mapping[str, Any],
+    errors: Mapping[str, Any],
     y_errors: Sequence[Any] | None = None,
-    errors: Mapping[str, Any] | None = None,
     ax: plt.Axes | None = None,
+    run: str | None = None,
 ):
-    """Plot the model fit for a run."""
-
-    # Setup
+    """Plot a model fit."""
     if not ax:
         _fig, ax = plt.subplots()
     ax.margins(0, 0)
-    ax.set_title(f"{run = }")
+    ax.set_title(f"{run = }" if run else "run")
     ax.set_xlabel("x (m)")
     ax.set_ylabel("T (C)")
 
     # Plot measurements
-    ax.plot(x, y, ".", label="Measurements", color=MEASUREMENTS_COLOR, markersize=10)
+    ax.plot(x, y, ".", label="Measurements", color=XY_COLOR, markersize=10)
     (xlim_min, xlim_max) = (0, max(x))
     pad = 0.025 * (xlim_max - xlim_min)
     x_smooth = np.linspace(xlim_min - pad, xlim_max + pad, 200)
-    y_smooth = model(x_smooth, **params)
+    y_smooth, y_min, y_max = get_model_with_error(model, x_smooth, params, errors)
     ax.plot(x_smooth, y_smooth, "--", label="Model Fit")
 
-    if y_errors is not None and errors is not None:
-        _y_smooth, y_min, y_max = get_model_with_error(model, x_smooth, params, errors)
-        ax.errorbar(x=x, y=y, yerr=y_errors, fmt="none", color=MEASUREMENTS_COLOR)  # type: ignore
-        ax.fill_between(
-            x=x_smooth,
-            y1=y_min,  # type: ignore
-            y2=y_max,  # type: ignore
-            color=[0.8, 0.8, 0.8],
-            edgecolor=[1, 1, 1],
-            label="95% CI",
-        )
+    # Plot measurement errors
+    if y_errors is not None:
+        ax.errorbar(x=x, y=y, yerr=y_errors, fmt="none", color=XY_COLOR)
+
+    # Plot confidence band
+    ax.fill_between(
+        x=x_smooth,
+        y1=y_min,  # type: ignore
+        y2=y_max,  # type: ignore
+        color=[0.8, 0.8, 0.8],
+        edgecolor=[1, 1, 1],
+        label="95% CI",
+    )
 
     # Extrapolate
     ax.plot(0, y_0, "x", label="Extrapolation", color=[1, 0, 0])
