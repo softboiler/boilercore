@@ -3,9 +3,9 @@
     {
       "path": "."
     },
-    // {
-    //   "path": "../boilercv"
-    // },
+    {
+      "path": "../boilercv"
+    },
     {
       "path": "../boilerdaq"
     },
