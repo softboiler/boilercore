@@ -19,7 +19,7 @@ if ( $Recopy ) {
 else {
     git submodule update --init --remote --merge submodules/template
     git add --all
-    git commit $(if ($NoVerify) { '--no-verify' }) -m "Update template digest to $(git rev-parse --short HEAD:template)"
+    git commit $(if ($NoVerify) { '--no-verify' }) -m "Update template digest to $(git rev-parse --short HEAD:submodules/template)"
     git submodule deinit --force submodules/template
     copier update --vcs-ref $(git rev-parse HEAD:submodules/template) $(if ($Defaults) { '--defaults' })
 }
