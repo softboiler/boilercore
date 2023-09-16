@@ -65,6 +65,9 @@ ipykernel = ["IPython"]
 # * -------------------------------------------------------------------------------- * #
 # * Changes below should persist in significant template updates.
 
+# Used in examples
+reportPrivateUsage = "none"
+
 # * -------------------------------------------------------------------------------- * #
 # * Changes below may be lost in significant template updates.
 

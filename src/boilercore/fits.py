@@ -145,12 +145,13 @@ def plot_fit(
     params: Mapping[str, Any],
     errors: Mapping[str, Any],
     y_errors: Sequence[Any] | None = None,
-    ax: plt.Axes | None = None,
+    ax: Axes | None = None,  # type: ignore
     run: str | None = None,
 ):
     """Plot a model fit."""
     if not ax:
         _fig, ax = plt.subplots()
+        ax: Axes
     ax.margins(0, 0)
     ax.set_title(f"{run = }" if run else "run")
     ax.set_xlabel("x (m)")
