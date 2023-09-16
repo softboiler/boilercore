@@ -20,6 +20,41 @@ XY_COLOR = (0.2, 0.2, 0.2)
 CONFIDENCE_INTERVAL_95 = t.interval(0.95, 1)[1]
 
 
+def fit_and_plot(
+    model: Any,
+    params: Fit,
+    x: Any,
+    y: Any,
+    y_errors: Any = None,
+    confidence_interval=CONFIDENCE_INTERVAL_95,
+    ax: Axes | None = None,
+    run: str | None = None,
+) -> tuple[dict[str, float], dict[str, float]]:
+    """Get fits and errors for project model and plot the results."""
+    if not ax:
+        _fig, ax = plt.subplots()
+    fits, errors = fit_from_params(
+        model=model,
+        params=params,
+        x=x,
+        y=y,
+        y_errors=y_errors,
+        confidence_interval=confidence_interval,
+    )
+    plot_fit(
+        model=model,
+        x=x,
+        y=y,
+        y_0=fits["T_s"],
+        params=fits | params.fixed_values,
+        errors=errors | {k: 0 for k in params.fixed_errors},
+        y_errors=y_errors if y_errors is not None else None,
+        ax=ax,
+        run=run or "run",
+    )
+    return fits, errors
+
+
 def fit_from_params(
     model: Any,
     params: Fit,
@@ -100,41 +135,6 @@ def get_guesses(
 def get_bounds(params: Sequence[str], bounds: Mapping[str, Bound]) -> tuple[Bound, ...]:
     """Compose bounds."""
     return tuple(bound for param, bound in bounds.items() if param in params)
-
-
-def fit_and_plot(
-    model: Any,
-    params: Fit,
-    x: Any,
-    y: Any,
-    y_errors: Any = None,
-    confidence_interval=CONFIDENCE_INTERVAL_95,
-    ax: Axes | None = None,
-    run: str | None = None,
-) -> tuple[dict[str, float], dict[str, float]]:
-    """Get fits and errors for project model and plot the results."""
-    if not ax:
-        _fig, ax = plt.subplots()
-    fits, errors = fit_from_params(
-        model=model,
-        params=params,
-        x=x,
-        y=y,
-        y_errors=y_errors,
-        confidence_interval=confidence_interval,
-    )
-    plot_fit(
-        model=model,
-        x=x,
-        y=y,
-        y_0=fits["T_s"],
-        params=fits | params.fixed_values,
-        errors=errors | {k: 0 for k in params.fixed_errors},
-        y_errors=y_errors if y_errors is not None else None,
-        ax=ax,
-        run=run or "run",
-    )
-    return fits, errors
 
 
 def plot_fit(

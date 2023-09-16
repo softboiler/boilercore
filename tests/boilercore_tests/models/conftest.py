@@ -1,3 +1,5 @@
+"""Test configuration."""
+
 from pathlib import Path
 
 import pytest
@@ -10,7 +12,7 @@ from boilercore.models import (
     SynchronizedPathsYamlModel,
     YamlModel,
 )
-from tests import VarietyOfPaths
+from boilercore_tests.models import VarietyOfPaths
 
 
 @pytest.fixture(autouse=True)

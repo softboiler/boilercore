@@ -1,4 +1,4 @@
-"""Tests."""
+"""Test basic parameter models."""
 
 from pathlib import Path
 
@@ -6,7 +6,7 @@ import pytest
 from pydantic import DirectoryPath, Field
 
 from boilercore.models import DefaultPathsModel, SynchronizedPathsYamlModel, YamlModel
-from tests import VarietyOfPaths
+from boilercore_tests.models import VarietyOfPaths
 
 
 @pytest.mark.parametrize(

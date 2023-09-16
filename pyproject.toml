@@ -27,6 +27,7 @@ dependencies = [
     "pydantic>=1.10.12,<2",
     "ruamel.yaml>=0.17.32",
     "scipy>=1.11.1",
+    "seaborn>=0.12.2",
     "sympy>=1.12",
     "uncertainties>=3.1.7",
     # Numba only supports numpy<1.25 https://github.com/numba/numba/issues/8698

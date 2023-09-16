@@ -2,9 +2,9 @@
 
 from sympy import Function, symbols
 
-from boilercore.models.params import PARAMS
+from boilercore.models.fit import FIT
 
-params = symbols(["x", *PARAMS.fit.free_params, *PARAMS.fit.fixed_params])
+params = symbols(["x", *FIT.free_params, *FIT.fixed_params])
 (
     x,
     T_s,
@@ -14,7 +14,7 @@ params = symbols(["x", *PARAMS.fit.free_params, *PARAMS.fit.fixed_params])
     h_w,
 ) = params
 
-inputs = symbols(list(PARAMS.fit.model_inputs.keys()))
+inputs = symbols(list(FIT.model_inputs.keys()))
 (
     r,
     T_infa,
