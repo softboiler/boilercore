@@ -4,7 +4,7 @@
 # * Changes below should persist in significant template updates.
 
 # ? https://github.com/pydata/numexpr/issues/442#issuecomment-1684551982
-numexpr==2.8.4
+numexpr==2.8.6
 
 # Additional testing plugins
 pytest-plt==1.1.0
