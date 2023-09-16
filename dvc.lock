@@ -10,5 +10,5 @@ stages:
     outs:
     - path: data/model.dillpickle
       hash: md5
-      md5: 15375ce70d64f4560404c4e948884b35
-      size: 62955
+      md5: 0fdcae7915278b14ad06d458bdf4cd1e
+      size: 63076
