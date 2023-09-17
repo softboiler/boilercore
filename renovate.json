@@ -37,12 +37,6 @@
       "matchPackageNames": ["numpy", "numba", "pandas"]
     },
     {
-      "groupName": "numexpr",
-      "description": "Breaks tests due to promotion of invalid escape sequence DeprecationWarning to SyntaxError. https://github.com/pydata/numexpr/issues/442#issuecomment-1684551982",
-      "matchManagers": ["pip_requirements"],
-      "matchPackageNames": ["numexpr"]
-    },
-    {
       "description": "Don't bump pydantic until we're ready for migration.",
       "matchManagers": ["pip_requirements"],
       "matchPaths": [".tools/requirements/*"],
