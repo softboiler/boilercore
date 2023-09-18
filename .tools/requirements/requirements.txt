@@ -1,6 +1,5 @@
 # Latest working requirements of your package, should be ahead of pyproject.toml.
 dill==0.3.7
-dvc[gs]==3.21.1
 gmpy2==2.1.5
 IPython[notebook]==8.15.0
 matplotlib==3.8.0

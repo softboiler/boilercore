@@ -2,14 +2,15 @@
 
 # * -------------------------------------------------------------------------------- * #
 # * Changes below should persist in significant template updates.
-
+# ? Decouple package install from DVC, an external tool used in this repo
+dvc[gs]==3.21.1
 # ? These should not be imported anywhere in this package. Installed for refactoring.
 -e ../boilercv
 -e ../boilerdaq
 -e ../boilerdata
 # ? Install tests package so modules can be run in debugging
--e tests/.
 -e ../boilercv/tests/.
+-e ../boilercore/tests/.
 -e ../boilerdaq/tests/.
 -e ../boilerdata/tests/.
 
