@@ -65,3 +65,6 @@ class Geometry(BaseModel):
     def validate_coupons(cls, coupons):
         """Convert from inches to meters."""
         return {coupon: value / cls._in_p_m for coupon, value in coupons.items()}
+
+
+GEOMETRY = Geometry()

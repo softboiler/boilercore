@@ -17,7 +17,10 @@ from boilercore.models.fit import Fit
 from boilercore.types import Bound, Guess
 
 XY_COLOR = (0.2, 0.2, 0.2)
+"""Default color for measurement points."""
+
 CONFIDENCE_INTERVAL_95 = t.interval(0.95, 1)[1]
+"""Confidence interval for a single sample from a student's t-distribution."""
 
 
 def fit_and_plot(
@@ -66,14 +69,14 @@ def fit_from_params(
     """Get fits and errors for project model."""
     fits, errors = fit(
         model=model,
-        model_bounds=params.model_bounds,
         fixed_values=params.fixed_values,
         free_params=params.free_params,
         initial_values=params.initial_values,
-        confidence_interval=confidence_interval,
+        model_bounds=params.model_bounds,
         x=x,
         y=y,
         y_errors=y_errors,
+        confidence_interval=confidence_interval,
     )
     return (
         dict(zip(params.free_params, fits, strict=True)),
@@ -99,7 +102,7 @@ def fit(
     with catch_warnings():
         warnings.simplefilter("error", category=OptimizeWarning)
         try:
-            fitted_params, pcov = curve_fit(
+            fits, pcov = curve_fit(
                 f=partial(model, **fixed_values),
                 p0=get_guesses(free_params, initial_values),
                 # Expects e.g. ([L1, L2, L3], [H1, H2, H3])
@@ -112,7 +115,7 @@ def fit(
             )
         except (RuntimeError, OptimizeWarning):
             dim = len(free_params)
-            fitted_params = np.full(dim, np.nan)
+            fits = np.full(dim, np.nan)
             pcov = np.full((dim, dim), np.nan)
 
     # Compute confidence interval
@@ -120,9 +123,9 @@ def fit(
     errors = standard_errors * confidence_interval
 
     # Catching `OptimizeWarning` should be enough, but let's explicitly check for inf
-    fitted_params = np.where(np.isinf(errors), np.nan, fitted_params)
+    fits = np.where(np.isinf(errors), np.nan, fits)
     errors = np.where(np.isinf(errors), np.nan, errors)
-    return fitted_params, errors
+    return fits, errors
 
 
 def get_guesses(

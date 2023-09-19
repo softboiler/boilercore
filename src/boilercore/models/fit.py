@@ -6,10 +6,19 @@ import numpy as np
 from pydantic import BaseModel, Field, validator
 
 FIT_METHOD = "trf"
+"""Default curve fitting method. Supports bounded curve fits."""
+
 MIN_NONZERO = 1e-3
+"""Smallest nonzero boundary or initial guess to substitute for zero."""
+
 INIT_H = 1.0
+"""Initial heat transfer coefficient. The model is sensitive to very low h."""
+
 MODEL_PARAMS = ["T_s", "q_s", "k", "h_a", "h_w"]
+"""Model parameters."""
+
 FIXED_PARAMS = ["k", "h_w"]
+"""Fixed parameters in the model."""
 
 
 def get_model_errors(params: list[str]) -> list[str]:
