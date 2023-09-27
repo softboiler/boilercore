@@ -2,6 +2,7 @@
 
 from collections.abc import Sequence
 from contextlib import contextmanager
+from itertools import chain
 from pathlib import Path
 from typing import Literal, NamedTuple
 from warnings import catch_warnings, filterwarnings
@@ -24,52 +25,56 @@ class WarningFilter(NamedTuple):
     append: bool = False
 
 
-ENCODING_WARNINGS = [
-    *(
-        WarningFilter(
-            message=r"'encoding' argument not specified",
-            category=(category := EncodingWarning),
-            module=module,
-        )
-        for module in (
-            "cv2.load_config_py3",
-            "dask.config",
-            "dill._dill",
-            "dvc_objects.fs.local",
-            "fsspec.spec",
-            "matplotlib.font_manager",
-            "ploomber_core.config",
-            "pyvisa.util",
-            "ruamel.yaml.main",
-            "sqltrie.sqlite.sqlite",
-            "zc.lockfile",
-        )
-    ),
-    *(
-        WarningFilter(
-            message=r"UTF-8 Mode affects locale\.getpreferredencoding\(\)\. Consider locale\.getencoding\(\) instead\.",
-            category=category,
-            module=module,
-        )
-        for module in ("dill.logger", "scmrepo.git.backend.pygit2")
-    ),
-]
-"""Encoding warnings."""
-
-ALL_WARNINGS = ENCODING_WARNINGS
-"""Warning filters common to boiler repositories."""
+NO_WARNINGS = []
 
 
 @contextmanager
-def catch_certain_warnings(warnings: Sequence[WarningFilter] = ALL_WARNINGS):
-    """Catch certain warnings."""
+def catch_certain_warnings(
+    package: str, warnings: Sequence[WarningFilter] = NO_WARNINGS
+):
+    """Catch certain warnings for a package."""
     with catch_warnings() as context:
-        filter_certain_warnings(warnings)
+        filter_certain_warnings(package, warnings)
         yield context
 
 
-def filter_certain_warnings(warnings: Sequence[WarningFilter] = ALL_WARNINGS):
-    """Filter certain warnings."""
+def filter_certain_warnings(
+    package: str, warnings: Sequence[WarningFilter] = NO_WARNINGS
+):
+    """Filter certain warnings for a package."""
     filterwarnings("error")
-    for filt in warnings:
+    for filt in [*get_other_encoding_warnings(package), *warnings]:
         filterwarnings(*filt)
+
+
+def get_other_encoding_warnings(package: str) -> list[WarningFilter]:
+    """Get list of encoding warning filters, keeping those from the package enabled."""
+    return list(
+        chain.from_iterable(
+            get_other_encoding_warning(
+                package=package,
+                message=message,
+                category=EncodingWarning,
+            )
+            for message in [
+                r"'encoding' argument not specified",
+                r"UTF-8 Mode affects locale\.getpreferredencoding\(\)\. Consider locale\.getencoding\(\) instead\.",
+            ]
+        )
+    )
+
+
+def get_other_encoding_warning(
+    package: str, message: str, category: type[Warning]
+) -> list[WarningFilter]:
+    """Get a filter which will only enable warnings emitted by the package."""
+    all_package_modules = rf"{package}\..*"
+    return [
+        WarningFilter(action="ignore", message=message, category=category),
+        WarningFilter(
+            action="error",
+            message=message,
+            category=category,
+            module=all_package_modules,
+        ),
+    ]
