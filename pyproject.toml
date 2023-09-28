@@ -113,6 +113,7 @@ reportUnusedCallResult = "none"
 
 [tool.ruff]
 fix = true
+cache-dir = ".cache/.ruff_cache"
 select = ["ALL"]
 src = ["src", "tests"]
 target-version = "py311"
