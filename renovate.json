@@ -32,7 +32,7 @@
     },
     {
       "groupName": "numpy",
-      "description": "Numba needs numpy<1.25. Pandas needs numpy>1.25 via stubs. https://github.com/numba/numba/issues/8698",
+      "description": "Joint conflict between numpy, numba, pandas, and pandas-stubs as recently as 23-09-28.",
       "matchManagers": ["pip_requirements"],
       "matchPackageNames": ["numpy", "numba", "pandas"]
     },

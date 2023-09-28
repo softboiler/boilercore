@@ -3,8 +3,6 @@
 # * -------------------------------------------------------------------------------- * #
 # * Changes below should persist in significant template updates.
 
-# ? Plotting in data experiments
-seaborn==0.12.2
 # ? Decouple package install from DVC, an external tool used in this repo
 dvc[gs]==3.21.1
 # ? These should not be imported anywhere in this package. Installed for refactoring.
