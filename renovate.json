@@ -37,6 +37,12 @@
       "matchPackageNames": ["numpy", "numba", "pandas"]
     },
     {
+      "description": "Stubs are managed by `.tools/scripts/core_update.py`.",
+      "matchManagers": ["pip_requirements"],
+      "matchPaths": [".tools/requirements/*"],
+      "ignoreDeps": ["pandas-stubs"]
+    },
+    {
       "description": "Don't bump pydantic until we're ready for migration.",
       "matchManagers": ["pip_requirements"],
       "matchPaths": [".tools/requirements/*"],
