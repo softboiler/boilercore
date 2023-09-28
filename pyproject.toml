@@ -24,9 +24,9 @@ dependencies = [
     "pandas[hdf5,performance]>=2.0.2",
     "ploomber-engine>=0.0.30",
     "pydantic>=1.10.12,<2",
+    "pytest>=7.4.0",
     "ruamel.yaml>=0.17.32",
     "scipy>=1.11.1",
-    "seaborn>=0.12.2",
     "sympy>=1.12",
     "uncertainties>=3.1.7",
     # Numba only supports numpy<1.25 https://github.com/numba/numba/issues/8698
@@ -45,17 +45,18 @@ Home = "https://github.com/blakeNaccarato/boilercore"
 Tracker = "https://github.com/blakeNaccarato/boilercore/issues"
 
 [tool.fawltydeps]
-ignore_undeclared = [
-    "copier_python", # Used by the project template
-    "rich",
-    "pytest",
-]
+output_format = "human_detailed"
+code = ["src"]
+deps = ["pyproject.toml"]
 ignore_unused = [
-    "gmpy2", # For faster math with sympy
-    "numba", # Pin numba until it supports numpy>=1.25
+    "gmpy2",     # for faster sympy computations
+    "nbconvert", # boilercv.pre_repro.export_notebook
+    "nbqa",      # boilercv.pre_repro.clean_notebook
+    "numba",     # Pin numba until it supports numpy>=1.25
+    "pyarrow",   # boilercv.init: pd.set_option("mode.string_storage", "pyarrow")
 ]
-
 [tool.fawltydeps.custom_mapping]
+boilercore = ["boilercore"]
 ipykernel = ["IPython"]
 
 [tool.pyright]
