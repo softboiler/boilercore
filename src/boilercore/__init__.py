@@ -30,17 +30,18 @@ class WarningFilter(NamedTuple):
 NO_WARNINGS = []
 
 
-def filter_certain_warnings(warnings: Sequence[WarningFilter] = NO_WARNINGS):
+def filter_certain_warnings(
+    warnings: Sequence[WarningFilter] = NO_WARNINGS, root_action: Action = "error"
+):
     """Filter certain warnings for a package."""
-    filterwarnings("default")
+    filterwarnings(root_action)
     for filt in [
         *chain.from_iterable(
             get_warnings_as_errors_for_src(category)
             for category in [
                 DeprecationWarning,
-                EncodingWarning,
                 PendingDeprecationWarning,
-                ResourceWarning,
+                EncodingWarning,
             ]
         ),
         *warnings,
@@ -50,11 +51,13 @@ def filter_certain_warnings(warnings: Sequence[WarningFilter] = NO_WARNINGS):
 
 def get_warnings_as_errors_for_src(
     category: type[Warning],
+    action: Action = "error",
+    third_party_action: Action = "default",
 ) -> tuple[WarningFilter, WarningFilter]:
     """Get filter which sets warnings as errors only for the package in `src`."""
     package = next(path for path in Path("src").iterdir() if path.is_dir()).name
     all_package_modules = rf"{package}\..*"
     return (
-        WarningFilter(action="ignore", category=category),
-        WarningFilter(action="error", category=category, module=all_package_modules),
+        WarningFilter(action=third_party_action, category=category),
+        WarningFilter(action=action, category=category, module=all_package_modules),
     )
