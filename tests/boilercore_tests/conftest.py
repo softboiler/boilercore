@@ -13,7 +13,7 @@ from boilercore.testing import get_session_path
 @pytest.fixture(autouse=True)
 def _filter_certain_warnings():
     """Filter certain warnings."""
-    filter_certain_warnings(package=boilercore.__name__)
+    filter_certain_warnings()
 
 
 @pytest.fixture(autouse=True, scope="session")

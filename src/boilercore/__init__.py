@@ -1,11 +1,10 @@
 """Common functionality of boiler repositories."""
 
 from collections.abc import Sequence
-from contextlib import contextmanager
 from itertools import chain
 from pathlib import Path
-from typing import Literal, NamedTuple
-from warnings import catch_warnings, filterwarnings
+from typing import Literal, NamedTuple, TypeAlias
+from warnings import filterwarnings
 
 PROJECT_PATH = Path()
 
@@ -14,10 +13,13 @@ def get_params_file():
     return PROJECT_PATH / "params.yaml"
 
 
+Action: TypeAlias = Literal["default", "error", "ignore", "always", "module", "once"]
+
+
 class WarningFilter(NamedTuple):
     """A warning filter, e.g. to be unpacked into `warnings.filterwarnings`."""
 
-    action: Literal["default", "error", "ignore", "always", "module", "once"] = "ignore"
+    action: Action = "ignore"
     message: str = ""
     category: type[Warning] = Warning
     module: str = ""
@@ -28,53 +30,31 @@ class WarningFilter(NamedTuple):
 NO_WARNINGS = []
 
 
-@contextmanager
-def catch_certain_warnings(
-    package: str, warnings: Sequence[WarningFilter] = NO_WARNINGS
-):
-    """Catch certain warnings for a package."""
-    with catch_warnings() as context:
-        filter_certain_warnings(package, warnings)
-        yield context
-
-
-def filter_certain_warnings(
-    package: str, warnings: Sequence[WarningFilter] = NO_WARNINGS
-):
+def filter_certain_warnings(warnings: Sequence[WarningFilter] = NO_WARNINGS):
     """Filter certain warnings for a package."""
-    filterwarnings("error")
-    for filt in [*get_other_encoding_warnings(package), *warnings]:
+    filterwarnings("default")
+    for filt in [
+        *chain.from_iterable(
+            get_warnings_as_errors_for_src(category)
+            for category in [
+                DeprecationWarning,
+                EncodingWarning,
+                PendingDeprecationWarning,
+                ResourceWarning,
+            ]
+        ),
+        *warnings,
+    ]:
         filterwarnings(*filt)
 
 
-def get_other_encoding_warnings(package: str) -> list[WarningFilter]:
-    """Get list of encoding warning filters, keeping those from the package enabled."""
-    return list(
-        chain.from_iterable(
-            get_other_encoding_warning(
-                package=package,
-                message=message,
-                category=EncodingWarning,
-            )
-            for message in [
-                r"'encoding' argument not specified",
-                r"UTF-8 Mode affects locale\.getpreferredencoding\(\)\. Consider locale\.getencoding\(\) instead\.",
-            ]
-        )
-    )
-
-
-def get_other_encoding_warning(
-    package: str, message: str, category: type[Warning]
-) -> list[WarningFilter]:
-    """Get a filter which will only enable warnings emitted by the package."""
+def get_warnings_as_errors_for_src(
+    category: type[Warning],
+) -> tuple[WarningFilter, WarningFilter]:
+    """Get filter which sets warnings as errors only for the package in `src`."""
+    package = next(path for path in Path("src").iterdir() if path.is_dir()).name
     all_package_modules = rf"{package}\..*"
-    return [
-        WarningFilter(action="ignore", message=message, category=category),
-        WarningFilter(
-            action="error",
-            message=message,
-            category=category,
-            module=all_package_modules,
-        ),
-    ]
+    return (
+        WarningFilter(action="ignore", category=category),
+        WarningFilter(action="error", category=category, module=all_package_modules),
+    )
