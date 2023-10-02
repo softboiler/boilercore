@@ -49,14 +49,10 @@ output_format = "human_detailed"
 code = ["src"]
 deps = ["pyproject.toml"]
 ignore_unused = [
-    "gmpy2",     # for faster sympy computations
-    "nbconvert", # boilercv.pre_repro.export_notebook
-    "nbqa",      # boilercv.pre_repro.clean_notebook
-    "numba",     # Pin numba until it supports numpy>=1.25
-    "pyarrow",   # boilercv.init: pd.set_option("mode.string_storage", "pyarrow")
+    "gmpy2", # for faster sympy computations
+    "numba", # Pin numba until it supports numpy>=1.25
 ]
 [tool.fawltydeps.custom_mapping]
-boilercore = ["boilercore"]
 ipykernel = ["IPython"]
 
 [tool.pyright]
