@@ -39,13 +39,13 @@
     {
       "description": "Stubs are managed by `.tools/scripts/core_update.py`.",
       "matchManagers": ["pip_requirements"],
-      "matchFilenames": [".tools/requirements/*"],
+      "matchFileNames": [".tools/requirements/*"],
       "ignoreDeps": ["pandas-stubs"]
     },
     {
       "description": "Don't bump pydantic until we're ready for migration.",
       "matchManagers": ["pip_requirements"],
-      "matchFilenames": [".tools/requirements/*"],
+      "matchFileNames": [".tools/requirements/*"],
       "ignoreDeps": ["pydantic"]
     },
     {
