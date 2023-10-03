@@ -52,8 +52,6 @@ ignore_unused = [
     "gmpy2", # for faster sympy computations
     "numba", # Pin numba until it supports numpy>=1.25
 ]
-[tool.fawltydeps.custom_mapping]
-ipykernel = ["IPython"]
 
 [tool.pyright]
 

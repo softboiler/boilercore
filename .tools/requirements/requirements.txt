@@ -7,7 +7,8 @@ pandas[hdf5,performance]==2.0.2
 pandas-stubs~=2.0.2
 ploomber-engine==0.0.31
 pydantic==1.10.12
-pytest==7.4.0
+# ? Already specified in `requirements_both.txt`
+# pytest
 ruamel.yaml==0.17.32
 scipy==1.11.2
 sympy==1.12
