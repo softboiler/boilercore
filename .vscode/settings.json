@@ -22,8 +22,12 @@
     "source.unusedImports"
   ],
   "editor.codeActionsOnSave": {
-    "source.fixAll": false,
-    "source.organizeImports": false
+    "source.organizeImports": "always",
+    "source.fixAll": "always"
+  },
+  "notebook.codeActionsOnSave": {
+    "source.organizeImports": "explicit",
+    "source.fixAll": "explicit"
   },
   "python.analysis.completeFunctionParens": false, // Buggy
   //? Auto imports
@@ -180,7 +184,7 @@
   },
   //* IPYNB
   "[ipynb]": {
-    "editor.defaultFormatter": "charliermarsh.ruff"
+    "editor.defaultFormatter": "ms-python.black-formatter"
   },
   //* TXT
   "[plaintext]": {
