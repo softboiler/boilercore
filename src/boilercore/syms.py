@@ -5,23 +5,10 @@ from sympy import Function, symbols
 from boilercore.models.fit import FIT
 
 params = symbols(["x", *FIT.free_params, *FIT.fixed_params])
-(
-    x,
-    T_s,
-    q_s,
-    h_a,
-    k,
-    h_w,
-) = params
+(x, T_s, q_s, h_a, k, h_w) = params
 
 inputs = symbols(list(FIT.model_inputs.keys()))
-(
-    r,
-    T_infa,
-    T_infw,
-    x_s,
-    x_wa,
-) = inputs
+(r, T_infa, T_infw, x_s, x_wa) = inputs
 
 intermediate_vars = symbols(
     """

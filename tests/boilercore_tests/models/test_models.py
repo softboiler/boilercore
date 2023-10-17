@@ -10,11 +10,7 @@ from boilercore_tests.models import VarietyOfPaths
 
 
 @pytest.mark.parametrize(
-    "chdir",
-    [
-        pytest.param(True, id="chdir"),
-        pytest.param(False, id="nochdir"),
-    ],
+    "chdir", [pytest.param(True, id="chdir"), pytest.param(False, id="nochdir")]
 )
 @pytest.mark.parametrize("yamlmodel", [YamlModel, SynchronizedPathsYamlModel])
 def test_model_combinations(

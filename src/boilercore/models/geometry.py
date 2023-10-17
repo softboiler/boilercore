@@ -15,8 +15,7 @@ class Geometry(BaseModel):
     # ! DIAMETER
 
     diameter: float = Field(
-        default=0.375,
-        description="The common diameter of all rods.",
+        default=0.375, description="The common diameter of all rods."
     )
 
     @validator("diameter", always=True)

@@ -15,13 +15,7 @@ def approx(*args):
 
 
 @pytest.mark.parametrize(
-    "group_name",
-    [
-        "params",
-        "inputs",
-        "intermediate_vars",
-        "functions",
-    ],
+    "group_name", ["params", "inputs", "intermediate_vars", "functions"]
 )
 def test_syms(group_name: str):
     """Test that declared symbolic variables are assigned to the correct symbols."""
@@ -40,6 +34,7 @@ def test_syms(group_name: str):
 @pytest.mark.slow()
 def test_forward_model(nb_model):
     """Test that the model evaluates to the expected output for known input."""
+    # fmt: off
     assert np.allclose(
         nb_model(
             x=np.linspace(0, 0.10),
@@ -51,7 +46,6 @@ def test_forward_model(nb_model):
         ),
         np.array(
             [
-                # fmt: off
                 105.        , 106.02040672, 107.04081917, 108.06122589,
                 109.08163071, 110.10204124, 111.12244987, 112.14286041,
                 113.16326523, 114.18367195, 115.2040844 , 116.22449112,
@@ -65,7 +59,6 @@ def test_forward_model(nb_model):
                 156.56325353, 158.67058905, 160.83637592, 163.06156119,
                 165.3471179 , 167.69404545, 170.10337013, 172.57614547,
                 175.11345277, 177.71640154
-                # fmt: on
             ]
         ),
     )

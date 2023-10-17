@@ -13,8 +13,7 @@ def main():
         for path in pyright["include"]
     ]
     Path("pyrightconfig.json").write_text(
-        encoding="utf-8",
-        data=f"{dumps(indent=2, obj=pyright)}\n",
+        encoding="utf-8", data=f"{dumps(indent=2, obj=pyright)}\n"
     )
 
 

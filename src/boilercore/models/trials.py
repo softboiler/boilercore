@@ -21,9 +21,7 @@ class Trial(BaseModel):
     # !! DATE
 
     date: datetime.date = Field(
-        default=...,
-        description="The date of the trial.",
-        exclude=True,
+        default=..., description="The date of the trial.", exclude=True
     )
 
     @validator("date", pre=True)
@@ -35,13 +33,9 @@ class Trial(BaseModel):
     coupon: Coupon
     sample: Sample | None
     joint: Joint
-    good: bool = Field(
-        default=True,
-        description="Whether the boiling curve is good.",
-    )
+    good: bool = Field(default=True, description="Whether the boiling curve is good.")
     plot: bool = Field(
-        default=False,
-        description="Whether this trial should be plotted.",
+        default=False, description="Whether this trial should be plotted."
     )
 
     # ! FIELDS TO EXCLUDE FROM DATAFRAME
@@ -53,30 +47,17 @@ class Trial(BaseModel):
     # Loaded from config, but not propagated to dataframes. Not readable in a table
     # anyways, and NA-handling results in additional ~40s to pipeline due to the need to
     # use slow "fillna".
-    comment: str = Field(
-        default="",
-        exclude=True,
-    )
+    comment: str = Field(default="", exclude=True)
 
     # ! PROJECT-DEPENDENT SETUP
 
     # Can't be None. Set in Project.__init__()
-    path: DirectoryPath = Field(
-        default=None,
-        exclude=True,
-    )
-    run_files: list[FilePath] = Field(
-        default=None,
-        exclude=True,
-    )
+    path: DirectoryPath = Field(default=None, exclude=True)
+    run_files: list[FilePath] = Field(default=None, exclude=True)
     run_index: list[tuple[pd.Timestamp, pd.Timestamp]] = Field(
-        default=None,
-        exclude=True,
+        default=None, exclude=True
     )
-    thermocouple_pos: dict[str, float] = Field(
-        default=None,
-        exclude=True,
-    )
+    thermocouple_pos: dict[str, float] = Field(default=None, exclude=True)
 
     def setup(self, paths, geometry: Geometry, copper_temps: list[str]):
         self.set_paths(paths)
