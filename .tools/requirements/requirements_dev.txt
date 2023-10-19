@@ -4,7 +4,7 @@
 # * Changes below should persist in significant template updates.
 
 # ? Decouple package install from DVC, an external tool used in this repo
-dvc[gs]==3.21.1
+dvc[gs]==3.27.0
 # ? These should not be imported anywhere in this package. Installed for refactoring.
 -e ../boilercv
 -e ../boilerdaq

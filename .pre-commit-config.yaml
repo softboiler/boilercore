@@ -71,7 +71,7 @@ repos:
   # * Changes below should persist in significant template updates.
 
   - repo: "https://github.com/iterative/dvc"
-    rev: "3.21.1"
+    rev: "3.27.0"
     hooks:
       - id: "dvc-post-checkout"
         additional_dependencies: ["dvc[gs]"]
