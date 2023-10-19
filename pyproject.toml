@@ -32,7 +32,7 @@ dependencies = [
     # Numba only supports numpy<1.25 https://github.com/numba/numba/issues/8698
     # ! Unpin numba once it supports numpy>=1.25
     "numba>=0.57.1",
-    "numpy>=1.24.4,<1.25",
+    "numpy>=1.24.4",
 ]
 [[project.authors]]
 name = "Blake Naccarato, Kwang Jin Kim"
