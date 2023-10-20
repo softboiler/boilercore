@@ -5,13 +5,13 @@
     },
     {
       "path": "../boilercv"
-    },
-    {
-      "path": "../boilerdaq"
-    },
-    {
-      "path": "../boilerdata"
     }
+    // {
+    //   "path": "../boilerdaq"
+    // },
+    // {
+    //   "path": "../boilerdata"
+    // }
   ],
   "settings": {
     "explorer.fileNesting.expand": false
