@@ -21,6 +21,7 @@ dependencies = [
     "gmpy2>=2.1.5",
     "IPython[notebook]>=8.14.0",
     "matplotlib>=3.7.2",
+    "numpy>=1.24.4",
     "pandas[hdf5,performance]>=2.0.2",
     "ploomber-engine>=0.0.30",
     "pydantic>=1.10.12,<2",
@@ -29,10 +30,6 @@ dependencies = [
     "scipy>=1.11.1",
     "sympy>=1.12",
     "uncertainties>=3.1.7",
-    # Numba only supports numpy<1.25 https://github.com/numba/numba/issues/8698
-    # ! Unpin numba once it supports numpy>=1.25
-    "numba>=0.57.1",
-    "numpy>=1.24.4",
 ]
 [[project.authors]]
 name = "Blake Naccarato, Kwang Jin Kim"
@@ -50,7 +47,6 @@ code = ["src"]
 deps = ["pyproject.toml"]
 ignore_unused = [
     "gmpy2", # for faster sympy computations
-    "numba", # Pin numba until it supports numpy>=1.25
 ]
 
 [tool.pyright]

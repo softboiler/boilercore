@@ -31,12 +31,6 @@
       "matchPackageNames": ["pyright", "submodules/typings"]
     },
     {
-      "groupName": "numpy",
-      "description": "Joint conflict between numpy, numba, pandas, and pandas-stubs as recently as 23-09-28.",
-      "matchManagers": ["pip_requirements"],
-      "matchPackageNames": ["numpy", "numba", "pandas"]
-    },
-    {
       "description": "Stubs are managed by `.tools/scripts/core_update.py`.",
       "matchManagers": ["pip_requirements"],
       "matchFileNames": [".tools/requirements/*"],
