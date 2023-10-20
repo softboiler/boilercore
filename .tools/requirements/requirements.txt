@@ -5,7 +5,7 @@ IPython[notebook]==8.16.1
 matplotlib==3.8.0
 numpy==1.26.1
 pandas[hdf5,performance]==2.1.1
-pandas-stubs~=2.0.2
+pandas-stubs~=2.1.1
 ploomber-engine==0.0.31
 pydantic==1.10.12
 # ? Already specified in `requirements_both.txt`
