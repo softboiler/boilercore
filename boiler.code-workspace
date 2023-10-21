@@ -5,15 +5,26 @@
     },
     {
       "path": "../boilercv"
+    },
+    {
+      "path": "../boilerdaq"
+    },
+    {
+      "path": "../boilerdata"
     }
-    // {
-    //   "path": "../boilerdaq"
-    // },
-    // {
-    //   "path": "../boilerdata"
-    // }
   ],
   "settings": {
-    "explorer.fileNesting.expand": false
+    "terminal.integrated.defaultProfile.linux": "pwsh",
+    "python.languageServer": "Pylance",
+    "explorer.fileNesting.expand": false,
+    "notebook.codeActionsOnSave": {
+      "source.organizeImports": "explicit",
+      "source.fixAll": "explicit"
+    },
+    "ruff.importStrategy": "fromEnvironment",
+    "ruff.enableExperimentalFormatter": true,
+    "git.inputValidationSubjectLength": 88,
+    "git.inputValidationLength": 1e100,
+    "yaml.format.printWidth": 88
   }
 }

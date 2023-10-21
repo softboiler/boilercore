@@ -184,7 +184,7 @@
   },
   //* IPYNB
   "[ipynb]": {
-    "editor.defaultFormatter": "ms-python.black-formatter"
+    "editor.defaultFormatter": "charliermarsh.ruff"
   },
   //* TXT
   "[plaintext]": {

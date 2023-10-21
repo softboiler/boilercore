@@ -49,6 +49,10 @@ ignore_unused = [
     "gmpy2", # for faster sympy computations
 ]
 
+# Use ruff for sorting, but configure this in case isort is being used in IDE tooling
+[tool.isort]
+profile = "black"
+
 [tool.pyright]
 
 # * -------------------------------------------------------------------------------- * #
