@@ -26,5 +26,17 @@
     "git.inputValidationSubjectLength": 88,
     "git.inputValidationLength": 1e100,
     "yaml.format.printWidth": 88
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Python: Current file",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${file}",
+        "console": "internalConsole"
+      }
+    ]
   }
 }
