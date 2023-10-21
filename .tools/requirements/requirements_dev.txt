@@ -7,13 +7,13 @@
 dvc[gs]==3.27.0
 # ? These should not be imported anywhere in this package. Installed for refactoring.
 -e ../boilercv
-# -e ../boilerdaq
-# -e ../boilerdata
+-e ../boilerdaq
+-e ../boilerdata
 # ? Install tests package so modules can be run in debugging
 -e ../boilercv/tests/.
 -e ../boilercore/tests/.
-# -e ../boilerdaq/tests/.
-# -e ../boilerdata/tests/.
+-e ../boilerdaq/tests/.
+-e ../boilerdata/tests/.
 
 # * -------------------------------------------------------------------------------- * #
 # * Changes below may be lost in significant template updates.
