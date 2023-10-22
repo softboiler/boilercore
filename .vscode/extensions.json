@@ -19,7 +19,6 @@
     "github.codespaces",
     "github.vscode-github-actions",
     "github.vscode-pull-request-github",
-    "ms-python.black-formatter",
     "redhat.vscode-yaml",
     "reverbc.vscode-pytest",
     "ryanluker.vscode-coverage-gutters",
