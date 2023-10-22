@@ -5,10 +5,10 @@ stages:
     deps:
     - path: src/boilercore/stages/modelfun.ipynb
       hash: md5
-      md5: ca649c5dd848d4461f963011b1f7bf94
-      size: 8239
+      md5: f0d3b1ab2a68d6aefbc183bf125103f6
+      size: 7678
     outs:
     - path: data/model.dillpickle
       hash: md5
-      md5: 0fdcae7915278b14ad06d458bdf4cd1e
-      size: 63076
+      md5: a03d48bf50f950d16a324ad3089ee2df
+      size: 63277
