@@ -22,11 +22,11 @@
     "source.unusedImports"
   ],
   "editor.codeActionsOnSave": {
-    "source.organizeImports": "always",
+    "source.organizeImports.ruff": "always",
     "source.fixAll": "always"
   },
   "notebook.codeActionsOnSave": {
-    "source.organizeImports": "explicit",
+    "source.organizeImports.isort": "explicit",
     "source.fixAll": "explicit"
   },
   "python.analysis.completeFunctionParens": false, // Buggy

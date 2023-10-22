@@ -18,7 +18,7 @@
     "python.languageServer": "Pylance",
     "explorer.fileNesting.expand": false,
     "notebook.codeActionsOnSave": {
-      "source.organizeImports": "explicit",
+      "source.organizeImports.isort": "explicit",
       "source.fixAll": "explicit"
     },
     "ruff.importStrategy": "fromEnvironment",
