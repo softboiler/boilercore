@@ -5,10 +5,6 @@
 
 # ? Decouple package install from DVC, an external tool used in this repo
 dvc[gs]==3.27.0
-# ? These should not be imported anywhere in this package. Installed for refactoring.
--e ../boilercv
--e ../boilerdaq
--e ../boilerdata
 # ? Install tests package so modules can be run in debugging
 -e ../boilercv/tests/.
 -e ../boilercore/tests/.

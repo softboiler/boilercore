@@ -3,5 +3,10 @@
 # * -------------------------------------------------------------------------------- * #
 # * Changes below should persist in significant template updates.
 
+# ? These should not be imported anywhere in this package. Installed for refactoring.
+-e ../boilercv
+-e ../boilerdaq
+-e ../boilerdata
+
 # * -------------------------------------------------------------------------------- * #
 # * Changes below may be lost in significant template updates.
