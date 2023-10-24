@@ -1,14 +1,11 @@
 """Paths and modules."""
 
-from asyncio import create_subprocess_exec
-from asyncio.subprocess import PIPE
 from collections.abc import Iterable
 from contextlib import closing
 from dataclasses import dataclass
 from pathlib import Path
 from re import compile
-from shlex import quote, split
-from subprocess import CalledProcessError
+from shlex import quote
 from types import ModuleType
 
 from dulwich.porcelain import status, submodule_list
@@ -116,25 +113,3 @@ def get_submodules() -> list[Submodule]:
     """Get the special template and typings submodules, as well as the rest."""
     with closing(repo := Repo(str(Path.cwd()))):
         return [Submodule(*item) for item in list(submodule_list(repo))]
-
-
-async def run_process(command: str, venv: bool = True) -> str:
-    """Run a process asynchronously."""
-    command, *args = split(command)
-    process = await create_subprocess_exec(
-        f"{'.venv/scripts/' if venv else ''}{command}", *args, stdout=PIPE, stderr=PIPE
-    )
-    stdout, stderr = (msg.decode("utf-8") for msg in await process.communicate())
-    message = (
-        (f"{stdout}\n{stderr}" if stdout and stderr else stdout or stderr)
-        .replace("\r\n", "\n")
-        .strip()
-    )
-    if process.returncode:
-        exception = CalledProcessError(
-            returncode=process.returncode, cmd=command, output=stdout, stderr=stderr
-        )
-        exception.add_note(message)
-        exception.add_note("Arguments:\n" + "    \n".join(args))
-        raise exception
-    return message

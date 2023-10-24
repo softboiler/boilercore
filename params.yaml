@@ -4,5 +4,10 @@ paths:
   data: data
   stages:
     modelfun: src/boilercore/stages/modelfun.ipynb
+  scripts: data/scripts
+  zotero: data/scripts/zotero.lua
+  filt: data/scripts/filt.py
+  csl: data/scripts/international-journal-of-heat-and-mass-transfer.csl
+  template: data/scripts/template.dotx
   fit: src/boilercore/models/fit.py
   model: data/model.dillpickle

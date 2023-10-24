@@ -2,8 +2,11 @@
 dill==0.3.7
 # ? Already specified in `requirements_core.txt`
 # dulwich
+# ? Optional dependency for `boilercore.notebooks.report`
+dvc[gs]==3.27.0
 gmpy2==2.1.5
 IPython[notebook]==8.16.1
+loguru==0.7.2
 matplotlib==3.8.0
 numpy==1.26.1
 pandas[hdf5,performance]==2.1.1

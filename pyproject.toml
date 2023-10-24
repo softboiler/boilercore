@@ -21,6 +21,7 @@ dependencies = [
     "dulwich>=0.21.5",
     "gmpy2>=2.1.5",
     "IPython[notebook]>=8.14.0",
+    "loguru>=0.7.0",
     "matplotlib>=3.7.2",
     "numpy>=1.24.4",
     "pandas[hdf5,performance]>=2.0.2",
@@ -46,6 +47,7 @@ Tracker = "https://github.com/blakeNaccarato/boilercore/issues"
 output_format = "human_detailed"
 code = ["src"]
 deps = ["pyproject.toml"]
+ignore_undeclared = ["dvc"] # Optional dependency for `boilercore.notebooks.report`
 ignore_unused = [
     "gmpy2", # for faster sympy computations
 ]

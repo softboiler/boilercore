@@ -3,11 +3,8 @@
 # * -------------------------------------------------------------------------------- * #
 # * Changes below should persist in significant template updates.
 
-# ? Decouple package install from DVC, an external tool used in this repo
-dvc[gs]==3.27.0
 # ? Install tests package so modules can be run in debugging
 -e tests/.
-
 
 # * -------------------------------------------------------------------------------- * #
 # * Changes below may be lost in significant template updates.
