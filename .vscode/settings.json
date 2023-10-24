@@ -49,7 +49,6 @@
   "python.testing.pytestEnabled": true,
   //* ruff
   "ruff.importStrategy": "fromEnvironment",
-  "ruff.enableExperimentalFormatter": true,
   "ruff.format.args": [],
   "ruff.lint.args": [],
 
