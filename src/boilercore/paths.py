@@ -1,9 +1,18 @@
 """Paths and modules."""
 
+from asyncio import create_subprocess_exec
+from asyncio.subprocess import PIPE
 from collections.abc import Iterable
+from contextlib import closing
+from dataclasses import dataclass
 from pathlib import Path
 from re import compile
+from shlex import quote, split
+from subprocess import CalledProcessError
 from types import ModuleType
+
+from dulwich.porcelain import status, submodule_list
+from dulwich.repo import Repo
 
 
 def get_package_dir(package: ModuleType) -> Path:
@@ -52,3 +61,80 @@ def get_module(module: Path, package: Path) -> str:
 def get_module_rel(module: str, relative: str) -> str:
     """Get module name relative to another module."""
     return compile(rf".*{relative}\.").sub(repl="", string=module)
+
+
+def fold(path: Path) -> str:
+    """Resolve and normalize a path to a POSIX string path with forward slashes."""
+    return quote(str(path.resolve()).replace("\\", "/"))
+
+
+def modified(nb: str) -> bool:
+    """Check whether notebook is modified."""
+    return Path(nb) in (change.resolve() for change in get_changes())
+
+
+def get_changes() -> list[Path]:
+    """Get pending changes."""
+    staged, unstaged, _ = status(untracked_files="no")
+    changes = {
+        # Many dulwich functions return bytes for legacy reasons
+        Path(path.decode("utf-8")) if isinstance(path, bytes) else path
+        for change in (*staged.values(), unstaged)
+        for path in change
+    }
+    # Exclude submodules from the changeset (submodules are considered always changed)
+    return sorted(
+        change
+        for change in changes
+        if change not in {submodule.path for submodule in get_submodules()}
+    )
+
+
+@dataclass
+class Submodule:
+    """Represents a git submodule."""
+
+    _path: str | bytes
+    """Submodule path as reported by the submodule source."""
+    commit: str
+    """Commit hash currently tracked by the submodule."""
+    path: Path = Path()
+    """Submodule path."""
+    name: str = ""
+    """Submodule name."""
+
+    def __post_init__(self):
+        """Handle byte strings reported by some submodule sources, like dulwich."""
+        # Many dulwich functions return bytes for legacy reasons
+        self.path = Path(
+            self._path.decode("utf-8") if isinstance(self._path, bytes) else self._path
+        )
+        self.name = self.path.name
+
+
+def get_submodules() -> list[Submodule]:
+    """Get the special template and typings submodules, as well as the rest."""
+    with closing(repo := Repo(str(Path.cwd()))):
+        return [Submodule(*item) for item in list(submodule_list(repo))]
+
+
+async def run_process(command: str, venv: bool = True) -> str:
+    """Run a process asynchronously."""
+    command, *args = split(command)
+    process = await create_subprocess_exec(
+        f"{'.venv/scripts/' if venv else ''}{command}", *args, stdout=PIPE, stderr=PIPE
+    )
+    stdout, stderr = (msg.decode("utf-8") for msg in await process.communicate())
+    message = (
+        (f"{stdout}\n{stderr}" if stdout and stderr else stdout or stderr)
+        .replace("\r\n", "\n")
+        .strip()
+    )
+    if process.returncode:
+        exception = CalledProcessError(
+            returncode=process.returncode, cmd=command, output=stdout, stderr=stderr
+        )
+        exception.add_note(message)
+        exception.add_note("Arguments:\n" + "    \n".join(args))
+        raise exception
+    return message

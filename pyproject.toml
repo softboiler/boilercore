@@ -18,6 +18,7 @@ requires-python = ">=3.11"
 classifiers = ["License :: OSI Approved :: MIT License"]
 dependencies = [
     "dill>=0.3.7",
+    "dulwich>=0.21.5",
     "gmpy2>=2.1.5",
     "IPython[notebook]>=8.14.0",
     "matplotlib>=3.7.2",

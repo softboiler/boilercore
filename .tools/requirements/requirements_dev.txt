@@ -6,10 +6,8 @@
 # ? Decouple package install from DVC, an external tool used in this repo
 dvc[gs]==3.27.0
 # ? Install tests package so modules can be run in debugging
-# -e ../boilercv/tests/.
-# -e ../boilercore/tests/.
-# -e ../boilerdaq/tests/.
-# -e ../boilerdata/tests/.
+-e tests/.
+
 
 # * -------------------------------------------------------------------------------- * #
 # * Changes below may be lost in significant template updates.
