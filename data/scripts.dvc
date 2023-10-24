@@ -1,0 +1,6 @@
+outs:
+- md5: 5b3dbe4155382967562c92dbcc415dad.dir
+  size: 99592
+  nfiles: 5
+  hash: md5
+  path: scripts
