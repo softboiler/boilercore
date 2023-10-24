@@ -17,10 +17,8 @@ from loguru import logger  # type: ignore  # pyright: 1.1.311
 from ploomber_engine import execute_notebook  # type: ignore  # pyright: 1.1.311
 
 from boilercore import notebooks
-from boilercore.models.params import PARAMS
 from boilercore.paths import fold
 
-PATHS = PARAMS.paths
 logger.remove()
 logger.add(
     sink=stdout, enqueue=True, format=("<green>{time:mm:ss}</green> | {message}")
@@ -28,7 +26,7 @@ logger.add(
 logger = logger.opt(colors=True)
 
 
-async def main(paths, repo: Repo | None = None):
+async def generate(paths, repo: Repo | None = None):
     nbs = get_nbs(repo, paths)
     if not nbs:
         return
@@ -102,10 +100,10 @@ async def report(nbs: list[str], paths):
                         kwarg: fold(path)
                         for kwarg, path in dict(
                             workdir=paths.md,
-                            template=PATHS.template,
-                            filt=PATHS.filt,
-                            zotero=PATHS.zotero,
-                            csl=PATHS.csl,
+                            template=paths.template,
+                            filt=paths.filt,
+                            zotero=paths.zotero,
+                            csl=paths.csl,
                             docx=paths.docx / Path(nb).with_suffix(".docx").name,
                             md=paths.md / Path(nb).with_suffix(".md").name,
                         ).items()

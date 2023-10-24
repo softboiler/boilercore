@@ -39,14 +39,6 @@
     // * Changes below should persist in significant template updates.
 
     {
-      "label": "proj: local pyrightconfig",
-      "type": "shell",
-      "options": { "shell": { "executable": "pwsh", "args": ["-Command"] } },
-      "command": "python .tools/scripts/local_pyrightconfig.py",
-      "icon": { "id": "graph" },
-      "problemMatcher": []
-    },
-    {
       "label": "dvc: repro",
       "dependsOrder": "sequence",
       "dependsOn": ["dvc: synchronize params"],
