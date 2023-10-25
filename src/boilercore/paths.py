@@ -3,8 +3,9 @@
 from collections.abc import Iterable
 from contextlib import closing
 from dataclasses import dataclass
+from os import walk
 from pathlib import Path
-from re import compile
+from re import NOFLAG, VERBOSE, compile
 from shlex import quote
 from types import ModuleType
 
@@ -16,38 +17,42 @@ def get_package_dir(package: ModuleType) -> Path:
     return Path(next(iter(package.__path__)))
 
 
-def map_stages(stages_dir: Path, package_dir: Path) -> dict[str, Path]:
+DEFAULT_SUFFIXES = [".py"]
+
+
+def map_stages(package: Path, suffixes=DEFAULT_SUFFIXES) -> dict[str, Path]:
     """Map stage module names to their paths."""
-    stages: dict[str, Path] = {}
-    for path in walk_module_paths(stages_dir, package_dir, glob="[!__]*.[py ipynb]*"):
-        module = get_module_rel(get_module(path, package_dir), stages_dir.name)
-        stages[module.replace(".", "_")] = path
-    return stages
+    modules: dict[str, Path] = {}
+    for path in walk_module_paths(package, suffixes):
+        module = get_module_rel(get_module(path, package), package.name)
+        if module == ".":
+            continue
+        modules[module.replace(".", "_")] = path
+    return modules
 
 
-def walk_modules(package: Path, top: Path, suffix: str = ".py") -> Iterable[str]:
+def get_module_rel(module: str, relative: str) -> str:
+    """Get module name relative to another module."""
+    if relative not in module:
+        raise ValueError(f"{module} not relative to {relative}.")
+    return (
+        "."
+        if module == relative
+        else compile(rf"^.*{relative}\.").sub(repl="", string=module)
+    )
+
+
+def walk_modules(
+    package: Path, suffixes: list[str] = DEFAULT_SUFFIXES
+) -> Iterable[str]:
     """Walk modules from a given submodule path and the top level library directory."""
-    for module in walk_module_paths(package, top, suffix):
-        yield get_module(module, top)
-
-
-def walk_module_paths(
-    package: Path, top: Path, suffix: str = ".py", glob: str | None = None
-) -> Iterable[Path]:
-    """Walk modules from a given submodule path and the top level library directory."""
-    for directory in (
-        package,
-        *[
-            path
-            for path in package.iterdir()
-            if path.is_dir() and "__" not in str(path.relative_to(top.parent))
-        ],
-    ):
-        yield from sorted(directory.glob(glob or f"[!__]*{suffix}"))
+    for module in walk_module_paths(package, suffixes=suffixes):
+        yield get_module(module, package)
 
 
 def get_module(module: Path, package: Path) -> str:
     """Get module name given the submodule path and the top level library directory."""
+    module = module.parent if module.stem == "__main__" else module
     return (
         str(module.relative_to(package.parent).with_suffix(""))
         .replace("\\", ".")
@@ -55,9 +60,60 @@ def get_module(module: Path, package: Path) -> str:
     )
 
 
-def get_module_rel(module: str, relative: str) -> str:
-    """Get module name relative to another module."""
-    return compile(rf".*{relative}\.").sub(repl="", string=module)
+def walk_module_paths(
+    package: Path, suffixes: list[str] = DEFAULT_SUFFIXES
+) -> Iterable[Path]:
+    """Walk the paths of a Python package."""
+    yield from (
+        match
+        for match in walk_matches(
+            package,
+            regex=rf"""^
+                 [^\.]*  # Match file stem
+                 {get_suffixes_re(suffixes)}  # Match suffixes
+                 $""",
+            root_regex=r"^(?!__).*$",  # Exclude dunder folders
+            flags=VERBOSE,
+        )
+        if match.stem != "__init__"
+    )
+
+
+def get_suffixes_re(suffixes: list[str]) -> str:
+    """Get the regex pattern string for file suffixes."""
+    suffixes_re = f"({get_suffix_re(suffixes[0])}"
+    for suffix in suffixes[1:]:
+        suffixes_re += f"|{get_suffix_re(suffix)}"
+    suffixes_re += ")"
+    return suffixes_re
+
+
+def get_suffix_re(suffix: str) -> str:
+    """Get the regex pattern string for a file suffix."""
+    suffix = suffix.replace(r"\.", ".")
+    if not suffix.startswith("."):
+        suffix = f".{suffix}"
+    return suffix.replace(".", r"\.")
+
+
+def walk_matches(
+    path: Path,
+    glob: str | None = None,
+    regex: str | None = None,
+    root_regex: str | None = None,
+    flags=NOFLAG,
+) -> Iterable[Path]:
+    """Walk a directory returning regex or glob matches."""
+    glob = glob or "*"
+    path_re = compile(regex or "^.*$", flags=flags)
+    root_re = compile(root_regex or "^.*$", flags=flags)
+    for root, _dirs, files in walk(path):
+        if not root_re.match(Path(root).name):
+            continue
+        files = [Path(root) / file for file in files]
+        for path in Path(root).glob(glob):
+            if path in files and path_re.match(path.name):
+                yield path
 
 
 def fold(path: Path) -> str:

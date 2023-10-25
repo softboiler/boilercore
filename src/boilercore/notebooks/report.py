@@ -54,9 +54,9 @@ async def log(coroutine):
 def get_nbs(repo: Repo | None, paths) -> list[str]:
     """Get all notebooks or just the modified ones."""
     return (
-        fold_modified_nbs(repo, paths.docs)
+        fold_modified_nbs(repo, paths.notebooks)
         if repo
-        else fold_docs_nbs(list(paths.docs.glob("**/*.ipynb")), paths.docs)
+        else fold_docs_nbs(list(paths.notebooks.glob("**/*.ipynb")), paths.notebooks)
     )
 
 
@@ -114,7 +114,7 @@ async def report(nbs: list[str], paths):
 
 def commit(repo, paths):
     """Commit changes."""
-    docs_dvc_file = fold(paths.docs.with_suffix(".dvc"))
+    docs_dvc_file = fold(paths.notebooks.with_suffix(".dvc"))
     repo.commit(docs_dvc_file, force=True)
     add(repo, docs_dvc_file)
 
