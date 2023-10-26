@@ -3,9 +3,6 @@
 # * -------------------------------------------------------------------------------- * #
 # * Changes below should persist in significant template updates.
 
-# ? Install tests package so modules can be run in debugging
--e tests/.
-
 # * -------------------------------------------------------------------------------- * #
 # * Changes below may be lost in significant template updates.
 
