@@ -17,7 +17,9 @@ class Paths(CreatePathsModel):
     project: DirectoryPath = PROJECT_PATH
     package: DirectoryPath = get_package_dir(boilercore)
     data: DirectoryPath = project / "data"
-    stages: dict[str, FilePath] = map_stages(package / "stages")
+    stages: dict[str, FilePath] = map_stages(
+        package / "stages", suffixes=[".py", ".ipynb"]
+    )
 
     # * DVC-tracked inputs
     fit: FilePath = package / "models/fit.py"
