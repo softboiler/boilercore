@@ -30,7 +30,6 @@
     "version": "0.2.0"
   },
   "settings": {
-    "explorer.fileNesting.expand": false,
     "files.associations": {
       "*requirements*.txt": "pip-requirements",
       ".coveragerc": "ini",
@@ -41,15 +40,24 @@
       ".sourcery.yaml": "yaml",
       "pyrightconfig.json": "jsonc"
     },
-    "git.inputValidationLength": 1e100,
-    "git.inputValidationSubjectLength": 88,
     "notebook.codeActionsOnSave": {
       "source.fixAll": "explicit",
       "source.organizeImports.isort": "explicit"
     },
+    "explorer.fileNesting.expand": false,
+    "explorer.sortOrder": "foldersNestsFiles",
+    "files.refactoring.autoSave": true,
+    "git.inputValidationLength": 1e100,
+    "git.inputValidationSubjectLength": 88,
+    "github-actions.workflows.pinned.workflows": [".github/workflows/main.yml"],
+    "notebook.formatOnCellExecution": false,
+    "notebook.formatOnSave.enabled": false,
     "python.languageServer": "Pylance",
     "ruff.importStrategy": "fromEnvironment",
     "terminal.integrated.defaultProfile.linux": "pwsh",
+    "vsicons.dontShowNewVersionMessage": false,
+    "vsicons.presets.hideExplorerArrows": true,
+    "workbench.iconTheme": "vscode-icons",
     "yaml.format.printWidth": 88
   }
 }
