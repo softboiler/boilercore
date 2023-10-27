@@ -175,8 +175,8 @@ def plot_fit(
     # Plot confidence band
     ax.fill_between(
         x=x_smooth,
-        y1=y_min,  # type: ignore
-        y2=y_max,  # type: ignore
+        y1=y_min,  # type: ignore  # pyright 1.1.333
+        y2=y_max,  # type: ignore  # pyright 1.1.333
         color=[0.8, 0.8, 0.8],
         edgecolor=[1, 1, 1],
         label="95% CI",

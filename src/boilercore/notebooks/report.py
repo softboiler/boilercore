@@ -11,10 +11,10 @@ from shlex import split
 from sys import stdout
 from typing import Any
 
-from dulwich.porcelain import add  # type: ignore  # pyright: 1.1.311
-from dvc.repo import Repo  # type: ignore  # pyright: 1.1.311
-from loguru import logger  # type: ignore  # pyright: 1.1.311
-from ploomber_engine import execute_notebook  # type: ignore  # pyright: 1.1.311
+from dulwich.porcelain import add
+from dvc.repo import Repo
+from loguru import logger
+from ploomber_engine import execute_notebook
 
 from boilercore import notebooks
 from boilercore.paths import fold
@@ -299,7 +299,7 @@ class CoroWrapper:
         while True:
             # communicate with the target coroutine
             try:
-                with self.context:  # type: ignore  # pyright: 1.1.311
+                with self.context:
                     signal = send(message)  # type: ignore  # pyright: 1.1.311
             except StopIteration as err:
                 return err.value

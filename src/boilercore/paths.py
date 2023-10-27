@@ -19,7 +19,7 @@ def get_package_dir(package: ModuleType) -> Path:
     return Path(package.__spec__.submodule_search_locations[0])  # type: ignore
 
 
-def get_module_name(module: ModuleType | ModuleSpec | Path | str) -> str:  # type: ignore
+def get_module_name(module: ModuleType | ModuleSpec | Path | str) -> str:
     """Get an unqualified module name.
 
     Example: `get_module_name(__spec__ or __file__)`.
