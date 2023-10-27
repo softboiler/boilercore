@@ -96,6 +96,7 @@
 
     // * -------------------------------------------------------------------------- * //
     // * PROJECT SETUP * //
+
     {
       "label": "setup: Copy template",
       "type": "shell",
@@ -142,6 +143,7 @@
 
     // * -------------------------------------------------------------------------- * //
     // * PRE-COMMIT * //
+
     {
       "label": "pre-commit",
       "type": "shell",
@@ -161,6 +163,7 @@
 
     // * -------------------------------------------------------------------------- * //
     // * GIT * //
+
     {
       "label": "git: Rebase back to fork",
       "type": "shell",
@@ -171,33 +174,13 @@
     },
 
     // * -------------------------------------------------------------------------- * //
-    // * BLACK * //
-    {
-      "label": "black: Ignore magic comma in this file",
-      "type": "shell",
-      "options": { "shell": { "executable": "pwsh", "args": ["-Command"] } },
-      "command": "black -C ${file}",
-      "icon": { "id": "code" },
-      "problemMatcher": []
-    },
-    {
-      "label": "black: Ignore magic comma in all project files",
-      "type": "shell",
-      "options": { "shell": { "executable": "pwsh", "args": ["-Command"] } },
-      "command": "black -C src tests",
-      "icon": { "id": "code" },
-      "problemMatcher": []
-    },
-
-    // * -------------------------------------------------------------------------- * //
     // * OTHER TASKS * //
+
     {
-      "label": "task: format and clear notebook",
-      "dependsOrder": "sequence",
-      "dependsOn": ["task: format notebook"],
+      "label": "task: format notebook",
       "type": "shell",
       "options": { "shell": { "executable": "pwsh", "args": ["-Command"] } },
-      "command": "nbqa ruff --fix-only ${file}; nb-clean clean --remove-empty-cells --preserve-cell-metadata special tags -- ${file}; black ${file}",
+      "command": "nb-clean clean --remove-empty-cells --preserve-cell-outputs --preserve-cell-metadata special tags -- ${file}; ruff --fix-only ${file}; ruff format ${file}",
       "icon": { "id": "notebook" },
       "problemMatcher": []
     },

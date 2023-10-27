@@ -42,7 +42,7 @@
     },
     "notebook.codeActionsOnSave": {
       "source.fixAll": "explicit",
-      "source.organizeImports.isort": "explicit"
+      "source.organizeImports": "explicit"
     },
     "explorer.fileNesting.expand": false,
     "explorer.sortOrder": "foldersNestsFiles",
