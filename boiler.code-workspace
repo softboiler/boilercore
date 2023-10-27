@@ -53,6 +53,7 @@
     "notebook.formatOnCellExecution": false,
     "notebook.formatOnSave.enabled": false,
     "python.languageServer": "Pylance",
+    "python.analysis.typeCheckingMode": "strict",
     "ruff.importStrategy": "fromEnvironment",
     "terminal.integrated.defaultProfile.linux": "pwsh",
     "vsicons.dontShowNewVersionMessage": false,
