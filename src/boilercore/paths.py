@@ -3,6 +3,7 @@
 from collections.abc import Iterable
 from contextlib import closing
 from dataclasses import dataclass
+from importlib.machinery import ModuleSpec
 from os import walk
 from pathlib import Path
 from re import NOFLAG, VERBOSE, compile
@@ -14,7 +15,29 @@ from dulwich.repo import Repo
 
 
 def get_package_dir(package: ModuleType) -> Path:
-    return Path(next(iter(package.__path__)))
+    """Get the directory of a package given the top-level module."""
+    return Path(package.__spec__.submodule_search_locations[0])  # type: ignore
+
+
+def get_module_name(module: ModuleType | ModuleSpec | Path | str) -> str:  # type: ignore
+    """Get an unqualified module name.
+
+    Example: `get_module_name(__spec__ or __file__)`.
+    """
+    if isinstance(module, ModuleType | ModuleSpec):
+        return get_qualified_module_name(module).split(".")[-1]
+    path = Path(module)
+    return path.parent.name if path.stem in ("__init__", "__main__") else path.stem
+
+
+def get_qualified_module_name(module: ModuleType | ModuleSpec) -> str:  # type: ignore
+    """Get a fully-qualified module name.
+
+    Example: `get_module_name(__spec__ or __file__)`.
+    """
+    if isinstance(module, ModuleType):
+        module: ModuleSpec = module.__spec__  # type: ignore
+    return module.name
 
 
 DEFAULT_SUFFIXES = [".py"]
@@ -24,7 +47,9 @@ def map_stages(package: Path, suffixes=DEFAULT_SUFFIXES) -> dict[str, Path]:
     """Map stage module names to their paths."""
     modules: dict[str, Path] = {}
     for path in walk_module_paths(package, suffixes):
-        module = get_module_rel(get_module(path, package), package.name)
+        module = get_module_rel(
+            get_qualified_module_name_from_paths(path, package), package.name
+        )
         if module == ".":
             continue
         modules[module.replace(".", "_")] = path
@@ -47,12 +72,12 @@ def walk_modules(
 ) -> Iterable[str]:
     """Walk modules from a given submodule path and the top level library directory."""
     for module in walk_module_paths(package, suffixes=suffixes):
-        yield get_module(module, package)
+        yield get_qualified_module_name_from_paths(module, package)
 
 
-def get_module(module: Path, package: Path) -> str:
-    """Get module name given the submodule path and the top level library directory."""
-    module = module.parent if module.stem == "__main__" else module
+def get_qualified_module_name_from_paths(module: Path, package: Path) -> str:
+    """Get the qualified name of a module file relative to a package file."""
+    module = module.parent if module.stem in ("__init__", "__main__") else module
     return (
         str(module.relative_to(package.parent).with_suffix(""))
         .replace("\\", ".")
