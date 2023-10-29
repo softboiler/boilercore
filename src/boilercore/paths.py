@@ -43,10 +43,20 @@ def get_qualified_module_name(module: ModuleType | ModuleSpec) -> str:  # type: 
     return module.name
 
 
-ISOLIKE = compile(
-    flags=VERBOSE,
-    pattern=Template(
-        r"""
+def dt_fromisolike(match: Match[str], century: int | str = 20) -> datetime:
+    """Get datetime like ISO 8601 but with flexible delimeters and missing century."""
+    m: dict[str, str] = {grp: val or "00" for grp, val in match.groupdict().items()}
+    year = f"{m['century'] or str(century)}{m['decade']}"
+    delta = match.group("delta") or ""
+    if delta and delta.casefold() != "z":
+        delta = f"+{m['dh']}:{m['dm']}:{m['ds']}.{m['df']}"
+    return datetime.fromisoformat(
+        f"{year}-{m['month']}-{m['d']}T{m['h']}:{m['minute']}:{m['s']}.{m['f']}{delta}"
+    )
+
+
+ISOLIKE_PATTERN = Template(
+    r"""
             (?P<century>$N)?(?P<decade>$N)
             $D(?P<month>$N)
             $D(?P<d>$N)
@@ -67,24 +77,12 @@ ISOLIKE = compile(
                 )?
             )?
         """
-    ).substitute(
-        N=r"\d{2}",  # Any two *N*umbers
-        D=r"[^TtZz+\d]",  # Valid *D*elimiter between digits
-    ),
+).substitute(
+    N=r"\d{2}",  # Any two *N*umbers
+    D=r"[^TtZz+\d]",  # Valid *D*elimiter between digits
 )
 
-
-def dt_fromisolike(match: Match[str], century: int | str = 20) -> datetime:
-    """Get datetime like ISO 8601 but with flexible delimeters and missing century."""
-    m: dict[str, str] = {grp: val or "00" for grp, val in match.groupdict().items()}
-    year = f"{m['century'] or str(century)}{m['decade']}"
-    delta = match.group("delta") or ""
-    if delta and delta.casefold() != "z":
-        delta = f"+{m['dh']}:{m['dm']}:{m['ds']}.{m['df']}"
-    return datetime.fromisoformat(
-        f"{year}-{m['month']}-{m['d']}T{m['h']}:{m['minute']}:{m['s']}.{m['f']}{delta}"
-    )
-
+ISOLIKE = compile(flags=VERBOSE, pattern=ISOLIKE_PATTERN)
 
 DEFAULT_SUFFIXES = [".py"]
 
