@@ -1,13 +1,16 @@
 """Paths and modules."""
 
+
 from collections.abc import Iterable
 from contextlib import closing
 from dataclasses import dataclass
+from datetime import datetime
 from importlib.machinery import ModuleSpec
 from os import walk
 from pathlib import Path
-from re import NOFLAG, VERBOSE, compile
+from re import NOFLAG, VERBOSE, Match, compile
 from shlex import quote
+from string import Template
 from types import ModuleType
 
 from dulwich.porcelain import status, submodule_list
@@ -38,6 +41,56 @@ def get_qualified_module_name(module: ModuleType | ModuleSpec) -> str:  # type: 
     if isinstance(module, ModuleType):
         module: ModuleSpec = module.__spec__  # type: ignore
     return module.name
+
+
+ISOLIKE = compile(
+    flags=VERBOSE,
+    pattern=Template(
+        r"""
+            (?P<century>$N)?(?P<decade>$N)
+            $D(?P<month>$N)
+            $D(?P<day>$N)
+            (?:
+                [Tt]
+                (?P<hour>$N)
+                (?:$D(?P<minute>$N))?
+                (?:$D(?P<second>$N))?
+                (?:$D(?P<fraction>\d+))?
+                (?P<delta>
+                    \+(?P<deltahour>$N)
+                    (?:$D(?P<deltaminute>$N))?
+                    (?:$D(?P<deltasecond>$N))?
+                    (?:$D(?P<deltafraction>\d+))?
+                )?
+            )?
+        """
+    ).substitute(
+        N=r"\d{2}",  # Any two *N*umbers
+        D=r"[^Tt+\d]",  # Valid *D*elimiter between digits
+    ),
+)
+
+
+def dt_fromisolike(match: Match[str], century: int | str = 20) -> datetime:
+    """ISO 8601-like datetime with missing parts and flexible delimiters."""
+    year = f"{match.group('century') or str(century)}{match['decade']}"
+    month = match["month"]
+    day = match["day"]
+    hour = match.group("hour") or "00"
+    minute = match.group("minute") or "00"
+    second = match.group("second") or "00"
+    fraction = match.group("fraction") or "0"
+    if match.group("delta"):
+        deltahour = match.group("deltahour") or "00"
+        deltaminute = match.group("deltaminute") or "00"
+        deltasecond = match.group("deltasecond") or "00"
+        deltafraction = match.group("deltafraction") or "0"
+        delta = f"+{deltahour}:{deltaminute}:{deltasecond}.{deltafraction}"
+    else:
+        delta = ""
+    return datetime.fromisoformat(
+        f"{year}-{month}-{day}T{hour}:{minute}:{second}.{fraction}{delta}"
+    )
 
 
 DEFAULT_SUFFIXES = [".py"]
