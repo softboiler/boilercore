@@ -57,10 +57,10 @@ ISOLIKE = compile(
                 (?:$D(?P<second>$N))?
                 (?:$D(?P<fraction>\d+))?
                 (?P<delta>
-                    \+(?P<deltahour>$N)
-                    (?:$D(?P<deltaminute>$N))?
-                    (?:$D(?P<deltasecond>$N))?
-                    (?:$D(?P<deltafraction>\d+))?
+                    \+(?P<delta_hour>$N)
+                    (?:$D(?P<delta_minute>$N))?
+                    (?:$D(?P<delta_second>$N))?
+                    (?:$D(?P<delta_fraction>\d+))?
                 )?
             )?
         """
@@ -72,7 +72,7 @@ ISOLIKE = compile(
 
 
 def dt_fromisolike(match: Match[str], century: int | str = 20) -> datetime:
-    """ISO 8601-like datetime with missing parts and flexible delimiters."""
+    """Get datetime like ISO 8601 but with flexible delimeters and missing century."""
     year = f"{match.group('century') or str(century)}{match['decade']}"
     month = match["month"]
     day = match["day"]
@@ -81,11 +81,11 @@ def dt_fromisolike(match: Match[str], century: int | str = 20) -> datetime:
     second = match.group("second") or "00"
     fraction = match.group("fraction") or "0"
     if match.group("delta"):
-        deltahour = match.group("deltahour") or "00"
-        deltaminute = match.group("deltaminute") or "00"
-        deltasecond = match.group("deltasecond") or "00"
-        deltafraction = match.group("deltafraction") or "0"
-        delta = f"+{deltahour}:{deltaminute}:{deltasecond}.{deltafraction}"
+        delta_hour = match.group("delta_hour") or "00"
+        delta_minute = match.group("delta_minute") or "00"
+        delta_second = match.group("delta_second") or "00"
+        delta_fraction = match.group("delta_fraction") or "0"
+        delta = f"+{delta_hour}:{delta_minute}:{delta_second}.{delta_fraction}"
     else:
         delta = ""
     return datetime.fromisoformat(
