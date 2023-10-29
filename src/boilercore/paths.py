@@ -49,47 +49,40 @@ ISOLIKE = compile(
         r"""
             (?P<century>$N)?(?P<decade>$N)
             $D(?P<month>$N)
-            $D(?P<day>$N)
+            $D(?P<d>$N)
             (?:
                 [Tt]
-                (?P<hour>$N)
+                (?P<h>$N)
                 (?:$D(?P<minute>$N))?
-                (?:$D(?P<second>$N))?
-                (?:$D(?P<fraction>\d+))?
+                (?:$D(?P<s>$N))?
+                (?:$D(?P<f>\d+))?
                 (?P<delta>
-                    \+(?P<delta_hour>$N)
-                    (?:$D(?P<delta_minute>$N))?
-                    (?:$D(?P<delta_second>$N))?
-                    (?:$D(?P<delta_fraction>\d+))?
+                    [Zz]
+                    |(?:
+                        \+(?P<dh>$N)
+                        (?:$D(?P<dm>$N))?
+                        (?:$D(?P<ds>$N))?
+                        (?:$D(?P<df>\d+))?
+                    )
                 )?
             )?
         """
     ).substitute(
         N=r"\d{2}",  # Any two *N*umbers
-        D=r"[^Tt+\d]",  # Valid *D*elimiter between digits
+        D=r"[^TtZz+\d]",  # Valid *D*elimiter between digits
     ),
 )
 
 
 def dt_fromisolike(match: Match[str], century: int | str = 20) -> datetime:
     """Get datetime like ISO 8601 but with flexible delimeters and missing century."""
-    year = f"{match.group('century') or str(century)}{match['decade']}"
-    month = match["month"]
-    day = match["day"]
-    hour = match.group("hour") or "00"
-    minute = match.group("minute") or "00"
-    second = match.group("second") or "00"
-    fraction = match.group("fraction") or "0"
-    if match.group("delta"):
-        delta_hour = match.group("delta_hour") or "00"
-        delta_minute = match.group("delta_minute") or "00"
-        delta_second = match.group("delta_second") or "00"
-        delta_fraction = match.group("delta_fraction") or "0"
-        delta = f"+{delta_hour}:{delta_minute}:{delta_second}.{delta_fraction}"
-    else:
-        delta = ""
+    m: dict[str, str] = {grp: val or "00" for grp, val in match.groupdict().items()}
+    year = f"{m['century'] or str(century)}{m['decade']}"
+    delta = match.group("delta") or ""
+    if delta and delta.casefold() != "z":
+        delta = f"+{m['dh']}:{m['dm']}:{m['ds']}.{m['df']}"
     return datetime.fromisoformat(
-        f"{year}-{month}-{day}T{hour}:{minute}:{second}.{fraction}{delta}"
+        f"{year}-{m['month']}-{m['d']}T{m['h']}:{m['minute']}:{m['s']}.{m['f']}{delta}"
     )
 
 
