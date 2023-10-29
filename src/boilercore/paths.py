@@ -47,41 +47,69 @@ def dt_fromisolike(match: Match[str], century: int | str = 20) -> datetime:
     """Get datetime like ISO 8601 but with flexible delimeters and missing century."""
     m: dict[str, str] = {grp: val or "00" for grp, val in match.groupdict().items()}
     year = f"{m['century'] or str(century)}{m['decade']}"
-    delta = match.group("delta") or ""
-    if delta and delta.casefold() != "z":
-        delta = f"+{m['dh']}:{m['dm']}:{m['ds']}.{m['df']}"
+    tz = match.group("tz") or ""
+    if tz and tz.casefold() != "z":
+        tz = f"+{m['tz_hour']}:{m['tz_minute']}:{m['tz_second']}.{m['tz_fraction']}"
     return datetime.fromisoformat(
-        f"{year}-{m['month']}-{m['d']}T{m['h']}:{m['minute']}:{m['s']}.{m['f']}{delta}"
+        Template("$year-$month-${day}T$hour:$minute:$second.$fraction$tz").substitute(
+            year=year,
+            tz=tz,
+            **{
+                name: m[name]
+                for name in ["month", "day", "hour", "minute", "second", "fraction"]
+            },
+        )
     )
 
 
+GROUP = Template(r"(?P<$name>\d{$n})")
+SUBSTITUTIONS = {
+    "D": r"[^TtZz+\d]",  # A valid digit delimeter is not T, Z, +, or a digit
+    **{
+        # Fractional seconds have at least one digit
+        name: GROUP.substitute(name=name, n="1,")
+        for name in ["fraction", "tz_fraction"]
+    },
+    **{
+        # All other groups have exactly two digits
+        name: GROUP.substitute(name=name, n="2")
+        for name in [
+            "century",
+            "decade",
+            "month",
+            "day",
+            "hour",
+            "minute",
+            "second",
+            "tz_hour",
+            "tz_minute",
+            "tz_second",
+        ]
+    },
+}
 ISOLIKE_PATTERN = Template(
     r"""
-            (?P<century>$N)?(?P<decade>$N)
-            $D(?P<month>$N)
-            $D(?P<d>$N)
-            (?:
-                [Tt]
-                (?P<h>$N)
-                (?:$D(?P<minute>$N))?
-                (?:$D(?P<s>$N))?
-                (?:$D(?P<f>\d+))?
-                (?P<delta>
-                    [Zz]
-                    |(?:
-                        \+(?P<dh>$N)
-                        (?:$D(?P<dm>$N))?
-                        (?:$D(?P<ds>$N))?
-                        (?:$D(?P<df>\d+))?
-                    )
-                )?
+        $century?$decade  # Century is optional
+        $D$month
+        $D$day
+        (?:  # Time is optional
+            [Tt]
+            $hour  # Only the hour is required
+            (?:$D$minute)?
+            (?:$D$second)?
+            (?:$D$fraction)?
+            (?P<tz>  # Timezone information is optional
+                [Zz]  # It can be Z or z
+                |(?:  # Or it can be a delta
+                    \+$tz_hour  # Only the delta hour is required
+                    (?:$D$tz_minute)?
+                    (?:$D$tz_second)?
+                    (?:$D$tz_fraction)?
+                )
             )?
-        """
-).substitute(
-    N=r"\d{2}",  # Any two *N*umbers
-    D=r"[^TtZz+\d]",  # Valid *D*elimiter between digits
-)
-
+        )?
+    """
+).substitute(SUBSTITUTIONS)
 ISOLIKE = compile(flags=VERBOSE, pattern=ISOLIKE_PATTERN)
 
 DEFAULT_SUFFIXES = [".py"]
