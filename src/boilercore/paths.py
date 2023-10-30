@@ -45,14 +45,19 @@ def get_qualified_module_name(module: ModuleType | ModuleSpec) -> str:  # type: 
 
 def dt_fromisolike(match: Match[str], century: int | str = 20) -> datetime:
     """Get datetime like ISO 8601 but with flexible delimeters and missing century."""
-    m: dict[str, str] = {grp: val or "00" for grp, val in match.groupdict().items()}
-    year = f"{m['century'] or str(century)}{m['decade']}"
-    tz = match.group("tz") or ""
+    m: dict[str, str] = {
+        **{grp: val or "00" for grp, val in match.groupdict().items()},
+        **{grp: match.group(grp) for grp in ("century", "tz", "sym")},
+    }
+    tz = m["tz"] or ""
     if tz and tz.casefold() != "z":
-        tz = f"+{m['tz_hour']}:{m['tz_minute']}:{m['tz_second']}.{m['tz_fraction']}"
+        tz = (
+            f"{m['sym']}{m['tz_hour']}:{m['tz_minute']}:{m['tz_second']}"
+            f".{m['tz_fraction']}"
+        )
     return datetime.fromisoformat(
         Template("$year-$month-${day}T$hour:$minute:$second.$fraction$tz").substitute(
-            year=year,
+            year=f"{m['century'] or str(century)}{m['decade']}",
             tz=tz,
             **{
                 name: m[name]
@@ -101,7 +106,7 @@ ISOLIKE_PATTERN = Template(
             (?P<tz>  # Timezone information is optional
                 [Zz]  # It can be Z or z
                 |(?:  # Or it can be a delta
-                    \+$tz_hour  # Only the delta hour is required
+                    (?P<sym>[\+-])$tz_hour  # Only the delta hour is required
                     (?:$D$tz_minute)?
                     (?:$D$tz_second)?
                     (?:$D$tz_fraction)?
