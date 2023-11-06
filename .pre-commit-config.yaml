@@ -15,12 +15,16 @@ repos:
       - id: "check-useless-excludes"
   - repo: "local"
     hooks:
+      - id: "synchronize-params"
+        name: "synchronize-params"
+        language: "system"
+        entry: "pwsh -Command python -m boilercore.models.params"
+        files: |
+          (?x)^(
+            src/boilercore/models/.*
+            |params.yaml
+          )$
       # * -------------------------------------------------------------------------- * #
-      # * Changes below should persist in significant template updates.
-
-      # * -------------------------------------------------------------------------- * #
-      # * Changes below may be lost in significant template updates.
-
       - id: "core-update"
         name: "core-update"
         stages: ["post-commit"]
@@ -56,10 +60,6 @@ repos:
             |requirements\.txt
             |\.tools/requirements/.*
           )$
-
-  # * ------------------------------------------------------------------------------ * #
-  # * Changes below should persist in significant template updates.
-
   - repo: "https://github.com/iterative/dvc"
     rev: "3.27.0"
     hooks:
@@ -67,10 +67,6 @@ repos:
         additional_dependencies: ["dvc[gs]"]
       - id: "dvc-pre-push"
         additional_dependencies: ["dvc[gs]"]
-
-  # * ------------------------------------------------------------------------------ * #
-  # * Changes below may be lost in significant template updates.
-
   - repo: "https://github.com/pre-commit/pre-commit-hooks"
     rev: "v4.5.0"
     hooks:
@@ -97,7 +93,7 @@ repos:
     hooks:
       - id: "markdownlint-cli2-fix"
   - repo: "https://github.com/charliermarsh/ruff-pre-commit"
-    rev: "v0.1.3"
+    rev: "v0.1.4"
     hooks:
       - id: "ruff"
         types_or: ["python", "pyi", "jupyter"]

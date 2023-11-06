@@ -1,15 +1,9 @@
 # Requirements for both CI and dev environments.
-
-# * -------------------------------------------------------------------------------- * #
-# * Changes below should persist in significant template updates.
-
 # ? Plots in tests
 seaborn==0.13.0
 # ? Additional testing plugin
 pytest-plt==1.1.0
-
 # * -------------------------------------------------------------------------------- * #
-# * Changes below may be lost in significant template updates.
 
 # Type checking
 pyright==1.1.333
