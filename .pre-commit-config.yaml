@@ -1,10 +1,13 @@
 ci:
   skip:
+    # * ---------------------------------------------------------------------------- * #
+    - "synchronize-params"
+    - "dvc-post-checkout"
+    - "dvc-pre-push"
+    # * ---------------------------------------------------------------------------- * #
     - "core-update"
     - "pytest-fast-only"
     - "fawltydeps"
-    - "dvc-post-checkout"
-    - "dvc-pre-push"
   autoupdate_schedule: "quarterly"
 
 repos:
@@ -15,6 +18,7 @@ repos:
       - id: "check-useless-excludes"
   - repo: "local"
     hooks:
+      # * -------------------------------------------------------------------------- * #
       - id: "synchronize-params"
         name: "synchronize-params"
         language: "system"
@@ -60,6 +64,7 @@ repos:
             |requirements\.txt
             |\.tools/requirements/.*
           )$
+  # * ------------------------------------------------------------------------------ * #
   - repo: "https://github.com/iterative/dvc"
     rev: "3.27.0"
     hooks:
@@ -67,6 +72,7 @@ repos:
         additional_dependencies: ["dvc[gs]"]
       - id: "dvc-pre-push"
         additional_dependencies: ["dvc[gs]"]
+  # * ------------------------------------------------------------------------------ * #
   - repo: "https://github.com/pre-commit/pre-commit-hooks"
     rev: "v4.5.0"
     hooks:
