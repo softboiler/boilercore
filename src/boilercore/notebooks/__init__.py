@@ -37,7 +37,7 @@ def disp_free(title, eqn, **kwargs):
 
 
 def disp(title, *exprs, **kwargs):
-    print(f"{title}:")
+    print(f"{title}:")  # noqa: T201
     display(*(math_mod(expr, **kwargs) for expr in exprs))
 
 
