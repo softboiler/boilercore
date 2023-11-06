@@ -1,6 +1,5 @@
 """Paths and modules."""
 
-
 from collections.abc import Iterable
 from contextlib import closing
 from dataclasses import dataclass
