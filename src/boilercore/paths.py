@@ -147,8 +147,16 @@ def walk_modules(
     package: Path, suffixes: list[str] = DEFAULT_SUFFIXES
 ) -> Iterable[str]:
     """Walk modules from a given submodule path and the top level library directory."""
+    for module, _ in walk_module_map(package, suffixes=suffixes):
+        yield module
+
+
+def walk_module_map(
+    package: Path, suffixes: list[str] = DEFAULT_SUFFIXES
+) -> Iterable[tuple[str, Path]]:
+    """Walk the map of modules to their paths."""
     for module in walk_module_paths(package, suffixes=suffixes):
-        yield get_qualified_module_name_from_paths(module, package)
+        yield get_qualified_module_name_from_paths(module, package), module
 
 
 def get_qualified_module_name_from_paths(module: Path, package: Path) -> str:
@@ -217,9 +225,9 @@ def walk_matches(
                 yield path
 
 
-def fold(path: Path) -> str:
+def fold(path: Path, resolve: bool = True) -> str:
     """Resolve and normalize a path to a POSIX string path with forward slashes."""
-    return quote(str(path.resolve()).replace("\\", "/"))
+    return quote(str(path.resolve() if resolve else path).replace("\\", "/"))
 
 
 def modified(nb: str) -> bool:
