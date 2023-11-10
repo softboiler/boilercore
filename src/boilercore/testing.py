@@ -1,14 +1,13 @@
 """Test helpers."""
 
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from inspect import getmembers, isclass, isfunction
 from pathlib import Path
 from shutil import copytree
-from types import FunctionType, ModuleType, SimpleNamespace
-from typing import Any, NamedTuple
+from types import ModuleType, SimpleNamespace
+from typing import Any, NamedTuple, TypeAlias
 
 import pytest
-from _pytest.mark.structures import ParameterSet
 from numpy.typing import ArrayLike
 from ploomber_engine._util import parametrize_notebook
 from ploomber_engine.ipython import PloomberClient
@@ -49,22 +48,21 @@ class MFParam(NamedTuple):
     expected: dict[str, float]
 
 
-def get_ns_cases(notebook: Path, cases: ModuleType) -> list[ParameterSet]:
-    """Get cases of a notebook namespace."""
-    return [
-        pytest.param(NotebookParams(notebook, parameters), fun, id=id)
-        for fun, parameters, id in walk_module_cases(cases)  # noqa: A001
-    ]
+NotebookCase: TypeAlias = tuple[Path, dict[str, Any], Callable[[SimpleNamespace], Any]]
 
 
-class NotebookParams(NamedTuple):
-    notebook: Path
-    parameters: dict[str, Any]
+def get_notebook_cases(notebook: Path, cases: ModuleType) -> Iterator[NotebookCase]:
+    """Get cases."""
+    yield from (  # type: ignore
+        pytest.param((notebook, parameters, fun), marks=marks, id=id)
+        for fun, parameters, marks, id in walk_module_cases(cases)  # noqa: A001
+    )
 
 
 class Case(NamedTuple):
-    fun: FunctionType
+    fun: Callable[[SimpleNamespace], Any]
     parameters: dict[str, Any]
+    marks: list[pytest.Mark]
     id: str  # noqa: A003
 
 
@@ -74,33 +72,44 @@ CASE = f"{CASE_PREFIX}_"
 
 def walk_module_cases(cases: ModuleType) -> Iterator[Case]:
     """Walk a case module."""
-    for case in [c.removeprefix(CASE) for c in dir(cases) if c.startswith(CASE)]:
+    for case in (c.removeprefix(CASE) for c in dir(cases) if c.startswith(CASE)):
         if isclass(cls := getattr(cases, f"{CASE}{case}")):
             yield from walk_class_cases(cls)
         else:
-            yield Case(fun=cls, parameters={}, id=case)
-    for casemap in [
+            yield Case(fun=cls, parameters={}, marks=[], id=case)
+    for casemap in (
         attr
         for name, attr in getmembers(cases)
         if isinstance(attr, dict) and name == f"{CASE_PREFIX}s"
-    ]:
+    ):
         for fun, all_parameters in casemap.items():
             name = fun.__name__
             for i, parameters in enumerate(all_parameters):
-                yield Case(fun=fun, parameters=parameters, id=f"{name}_{i}")
+                yield Case(fun=fun, parameters=parameters, marks=[], id=f"{name}_{i}")
 
 
 def walk_class_cases(cls: type) -> Iterator[Case]:
     """Walk a case class."""
     case = cls.__name__.removeprefix(CASE)
+    first_case = getmembers(cls, isfunction)[0][0]
     parameters = cls.parameters  # type: ignore
+    marks = getattr(cls, "marks", [])
     all_parameters = (
         parameters
         # Basic check for dict of parameters rather than bare parameters dict
         if all(isinstance(p, dict) for p in parameters.values())
-        else {getmembers(cls, isfunction)[0][0]: parameters}
+        else {first_case: parameters}
+    )
+    all_marks = (
+        marks
+        # Basic check for dict of markers rather than markers list
+        if isinstance(marks, dict)
+        else {first_case: marks}
     )
     for subcase, fun in getmembers(cls, isfunction):
         parameters = all_parameters[subcase]
+        marks = all_marks[subcase]
         subcase = subcase.strip("_")
-        yield Case(fun, parameters, id="_".join([case, subcase]) if subcase else case)
+        yield Case(
+            fun, parameters, marks, id="_".join([case, subcase]) if subcase else case
+        )
