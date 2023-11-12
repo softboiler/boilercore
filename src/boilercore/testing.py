@@ -72,7 +72,9 @@ def hash_get_nb_namespace_args(args, _kwds) -> str:
     parameters: Parameters = NO_PARAMS
     results: Results = NO_RESULTS
     nb, parameters, results = args
-    return _default_hash_func((nb, frozenset(parameters.items()), tuple(results)), {})
+    return _default_hash_func(
+        (nb, frozenset(parameters.items()), frozenset(results)), {}
+    )
 
 
 @cachier(hash_func=hash_get_nb_namespace_args)
@@ -84,7 +86,7 @@ def get_cached_nb_namespace(
     return SimpleNamespace(**{result: ns_map[result] for result in results})
 
 
-def get_notebook_cases(
+def walk_notebook_cases(
     notebook: Path,
     cases: ModuleType,
     parameters: Parameters = NO_PARAMS,
@@ -123,7 +125,7 @@ def walk_module_cases(
     for name, attr in members.items():
         match name:
             case ["cases"]:
-                yield from walk_casemap(attr, parameters, results, marks)
+                yield from walk_mapping_cases(attr, parameters, results, marks)
             case ["case", *case] if isclass(attr):
                 yield from walk_class_cases(attr, parameters, results, marks)
             case ["case", *case] if not isclass(attr):
@@ -132,12 +134,13 @@ def walk_module_cases(
                 pass
 
 
-def walk_casemap(
+def walk_mapping_cases(
     casemap: dict[Fun, list[dict[Literal["parameters", "results", "marks"], Any]]],
     parameters: Parameters = NO_PARAMS,
     results: Results = NO_RESULTS,
     marks: Marks = NO_MARKS,
 ) -> Iterator[Case]:
+    """Walk a mapping."""
     yield from (
         Case(
             fun,
