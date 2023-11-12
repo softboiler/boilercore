@@ -126,7 +126,7 @@ def walk_module_cases(
         match name:
             case ["cases"]:
                 yield from walk_mapping_cases(attr, parameters, results, marks)
-            case ["case", *case] if isclass(attr):
+            case ["case", *_] if isclass(attr):
                 yield from walk_class_cases(attr, parameters, results, marks)
             case ["case", *case] if not isclass(attr):
                 yield Case(attr, parameters, results, marks, id="_".join(case))
