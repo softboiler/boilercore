@@ -1,9 +1,11 @@
 # Requirements for both CI and dev environments.
+
+# ? For caching with dill, unlike the stock PyPI version
+cachier@git+https://github.com/blakeNaccarato/cachier@0892f53dc8fd9fb8a7f959305a1a9ec692876dc0
 # ? Plots in tests
 seaborn==0.13.0
 # ? Additional testing plugin
 pytest-plt==1.1.0
-# * -------------------------------------------------------------------------------- * #
 
 # Type checking
 pyright==1.1.333
