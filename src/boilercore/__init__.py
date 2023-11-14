@@ -36,6 +36,7 @@ def filter_certain_warnings(
     """Filter certain warnings for a package."""
     filterwarnings(root_action)
     for filt in [
+        # Set these warnings as errors only for the package in `src`
         *chain.from_iterable(
             get_warnings_as_errors_for_src(category)
             for category in [
@@ -44,6 +45,12 @@ def filter_certain_warnings(
                 EncodingWarning,
             ]
         ),
+        # Ignore this as it crops up only during test time under some configurations
+        WarningFilter(
+            message=r"ImportDenier\.find_spec\(\) not found; falling back to find_module\(\)",
+            category=ImportWarning,
+        ),
+        # Additionally filter the warnings passed in
         *warnings,
     ]:
         filterwarnings(*filt)

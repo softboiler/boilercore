@@ -1,11 +1,14 @@
 """Test helpers."""
 
+import ast
+from ast import NodeVisitor
+from collections import defaultdict
 from collections.abc import Callable, Iterator
-from inspect import getmembers, isclass, isfunction
+from inspect import getmembers, getsource, isclass, isfunction
 from pathlib import Path
 from shutil import copytree
 from types import ModuleType, SimpleNamespace
-from typing import Any, Literal, NamedTuple, TypeAlias
+from typing import Any, Literal, NamedTuple, TypeAlias, TypedDict
 
 import pytest
 from cachier import cachier
@@ -34,87 +37,159 @@ def get_session_path(
     return session_path
 
 
-Fun: TypeAlias = Callable[[SimpleNamespace], Any]
-Parameters: TypeAlias = dict[str, Any]
+Params: TypeAlias = dict[str, Any]
 Results: TypeAlias = list[str]
-Marks: TypeAlias = list[pytest.Mark]
-NotebookCase: TypeAlias = tuple[Path, dict[str, Any], Fun]
 
 NO_PARAMS = {}
 NO_RESULTS = []
-NO_MARKS = []
 
 
-class Case(NamedTuple):
-    fun: Fun
-    parameters: Parameters
-    results: Results
-    marks: Marks
-    id: str  # noqa: A003
-
-
-def get_nb_namespace(
-    nb: str, parameters: Parameters = NO_PARAMS, results: Results = NO_RESULTS
-) -> dict[str, Any]:
-    """Get notebook namespace, optionally parametrizing it."""
-    nb_client = PloomberClient(reads(nb, as_version=NO_CONVERT))
-    # We can't just `nb_client.execute(parameters=...)` since`nb_client.get_namespace()`
-    # would execute all over again
-    if parameters:
-        parametrize_notebook(nb_client._nb, parameters=parameters)  # noqa: SLF001
-    namespace = nb_client.get_namespace()
-    return {result: namespace[result] for result in results} if results else namespace
-
-
-def hash_get_nb_namespace_args(args, _kwds) -> str:
-    """Hash function for cachier that freezes mappings."""
+class GetNbNsArgs(NamedTuple):
     nb: str
-    parameters: Parameters = NO_PARAMS
-    results: Results = NO_RESULTS
-    nb, parameters, results = args
+    params: Params
+    all_results: bool
+    results: Results
+
+
+class GetNbNsKwds(TypedDict):
+    nb: str | None
+    params: Params | None
+    all_results: bool | None
+    results: Results | None
+
+
+def hash_get_nb_namespace_args(args: GetNbNsArgs, kwds: GetNbNsKwds) -> str:
+    """Hash function for cachier that freezes mappings."""
+    params = kwds.get("params")
+    results = kwds.get("results")
+    all_results = kwds.get("all_results")
     return _default_hash_func(
-        (nb, frozenset(parameters.items()), frozenset(results)), {}
+        args=FrozenGetNbNsArgs(
+            kwds.get("nb") or args.nb,
+            frozenset((params if params is not None else args.params).items()),
+            (
+                all_results
+                if all_results is not None
+                else getattr(args, "all_results", False)
+            ),
+            frozenset(results if results is not None else args.results),
+        ),
+        kwds={},
     )
+
+
+class FrozenGetNbNsArgs(NamedTuple):
+    nb: str
+    params: frozenset[tuple[str, Any]]
+    all_results: bool
+    results: frozenset[str]
 
 
 @cachier(hash_func=hash_get_nb_namespace_args)
 def get_cached_nb_namespace(
-    nb: str, parameters: Parameters = NO_PARAMS, results: Results = NO_RESULTS
+    nb: str,
+    params: Params = NO_PARAMS,
+    all_results: bool = False,
+    results: Results = NO_RESULTS,
 ) -> SimpleNamespace:
-    """Get parametrized namespace."""
-    ns_map = get_nb_namespace(nb, parameters=parameters)
-    return SimpleNamespace(**{result: ns_map[result] for result in results})
+    """Get notebook namespace, optionally parametrizing it, with caching."""
+    return get_nb_namespace(nb, params, all_results, results)
+
+
+def get_nb_namespace(
+    nb: str,
+    params: Params = NO_PARAMS,
+    all_results: bool = False,
+    results: Results = NO_RESULTS,
+) -> SimpleNamespace:
+    """Get notebook namespace, optionally parametrizing it."""
+    nb_client = get_nb_client(nb)
+    # We can't just `nb_client.execute(params=...)` since`nb_client.get_namespace()`
+    # would execute all over again
+    if params:
+        parametrize_notebook(nb_client._nb, parameters=params)  # noqa: SLF001
+    namespace = nb_client.get_namespace()
+    return SimpleNamespace(
+        **(
+            namespace
+            if all_results
+            else {result: namespace[result] for result in results}
+        )
+    )
+
+
+def get_nb_client(nb: str):
+    """Get notebook client."""
+    return PloomberClient(reads(nb, as_version=NO_CONVERT))
+
+
+def get_accessed_attributes(source: str, namespace: str) -> list[str]:
+    """Get attributes accessed in a particular namespace in source code."""
+    accessed_attributes = AccessedAttributesVisitor()
+    accessed_attributes.visit(ast.parse(source))
+    return list(accessed_attributes.names[namespace])
+
+
+class AccessedAttributesVisitor(NodeVisitor):
+    def __init__(self):
+        """Maps accessed attributes to their namespaces."""
+        self.names: dict[str, set[str]] = defaultdict(set)
+
+    def visit_Attribute(self, node: ast.Attribute):  # noqa: N802
+        if isinstance(node.value, ast.Name):
+            self.names[node.value.id].add(node.attr)
+        self.generic_visit(node)
+
+
+def get_source(node) -> str:
+    """Get the source code of a pytest node."""
+    return getsource(getattr(node.module, node.originalname))
+
+
+Fun: TypeAlias = Callable[[SimpleNamespace], Any]
+NotebookCase: TypeAlias = tuple[Path, dict[str, Any], Fun]
+Marks: TypeAlias = list[pytest.Mark]
+
+NO_MARKS = []
 
 
 def walk_notebook_cases(
     notebook: Path,
     cases: ModuleType,
-    parameters: Parameters = NO_PARAMS,
+    params: Params = NO_PARAMS,
     results: Results = NO_RESULTS,
     marks: Marks = NO_MARKS,
 ) -> Iterator[NotebookCase]:
     """Get cases."""
     yield from (  # type: ignore
-        pytest.param((notebook, fun, parameters, results), marks=marks, id=id)
-        for fun, parameters, results, marks, id in walk_module_cases(  # noqa: A001
-            cases, parameters, results, marks
+        pytest.param((notebook, fun, params, results), marks=marks, id=id)
+        for fun, params, results, marks, id in walk_module_cases(  # noqa: A001
+            cases, params, results, marks
         )
     )
 
 
+class Case(NamedTuple):
+    fun: Fun
+    params: Params
+    results: Results
+    marks: Marks
+    id: str  # noqa: A003
+
+
 def walk_module_cases(
     cases: ModuleType,
-    parameters: Parameters = NO_PARAMS,
+    params: Params = NO_PARAMS,
     results: Results = NO_RESULTS,
     marks: Marks = NO_MARKS,
 ) -> Iterator[Case]:
     """Walk a case module."""
     members = {tuple(name.split("_")): attr for name, attr in getmembers(cases)}
-    # First, bind module-level parameters, results, and marks
+    # First, bind module-level params, results, and marks
     for name, attr in members.items():
         match name:
-            case ["parameters"]:
-                parameters = attr
+            case ["params"]:
+                params = attr
             case ["results"]:
                 results = attr
             case ["marks"]:
@@ -125,18 +200,18 @@ def walk_module_cases(
     for name, attr in members.items():
         match name:
             case ["cases"]:
-                yield from walk_mapping_cases(attr, parameters, results, marks)
+                yield from walk_mapping_cases(attr, params, results, marks)
             case ["case", *_] if isclass(attr):
-                yield from walk_class_cases(attr, parameters, results, marks)
+                yield from walk_class_cases(attr, params, results, marks)
             case ["case", *case] if not isclass(attr):
-                yield Case(attr, parameters, results, marks, id="_".join(case))
+                yield Case(attr, params, results, marks, id="_".join(case))
             case _:
                 pass
 
 
 def walk_mapping_cases(
-    casemap: dict[Fun, list[dict[Literal["parameters", "results", "marks"], Any]]],
-    parameters: Parameters = NO_PARAMS,
+    casemap: dict[Fun, list[dict[Literal["params", "results", "marks"], Any]]],
+    params: Params = NO_PARAMS,
     results: Results = NO_RESULTS,
     marks: Marks = NO_MARKS,
 ) -> Iterator[Case]:
@@ -144,7 +219,7 @@ def walk_mapping_cases(
     yield from (
         Case(
             fun,
-            cases.get("parameters", parameters),
+            cases.get("params", params),
             cases.get("results", results),
             cases.get("marks", marks),
             id=f"{fun.__name__}_{i}",
@@ -156,7 +231,7 @@ def walk_mapping_cases(
 
 def walk_class_cases(
     cls: type,
-    parameters: Parameters = NO_PARAMS,
+    params: Params = NO_PARAMS,
     results: Results = NO_RESULTS,
     marks: Marks = NO_MARKS,
 ) -> Iterator[Case]:
@@ -166,7 +241,7 @@ def walk_class_cases(
         subcase = subcase.strip("_")
         yield Case(
             fun,
-            getattr(cls, "parameters", parameters),
+            getattr(cls, "params", params),
             getattr(cls, "results", results),
             getattr(cls, "marks", marks),
             id="_".join([case, subcase]) if subcase else case,

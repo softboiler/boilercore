@@ -7,18 +7,18 @@ import pytest
 import seaborn as sns
 
 from boilercore.modelfun import fix_model, get_model
-from boilercore.testing import get_nb_client, get_nb_namespace
+from boilercore.testing import get_nb_namespace
 
 MODELFUN = Path("src/boilercore/stages/modelfun.ipynb")
 
 
-@pytest.fixture(scope="module")
-def ns() -> SimpleNamespace:
+@pytest.fixture()
+def ns(request) -> SimpleNamespace:
     """Namespace for the model function notebook."""
-    return get_nb_namespace(get_nb_client(MODELFUN))
+    return get_nb_namespace(MODELFUN.read_text(encoding="utf-8"), all_results=True)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def nb_model(ns):
     """Notebook model."""
     return fix_model(ns.models.for_ufloat)
