@@ -8,7 +8,7 @@ from inspect import getmembers, getsource, isclass, isfunction
 from pathlib import Path
 from shutil import copytree
 from types import ModuleType, SimpleNamespace
-from typing import Any, Literal, NamedTuple, TypeAlias, TypedDict
+from typing import Any, Literal, NamedTuple, TypeAlias
 
 import pytest
 from cachier import cachier
@@ -41,59 +41,8 @@ Params: TypeAlias = dict[str, Any]
 Results: TypeAlias = list[str]
 
 NO_PARAMS = {}
+ALL_RESULTS_DEFAULT = False
 NO_RESULTS = []
-
-
-class GetNbNsArgs(NamedTuple):
-    nb: str
-    params: Params
-    all_results: bool
-    results: Results
-
-
-class GetNbNsKwds(TypedDict):
-    nb: str | None
-    params: Params | None
-    all_results: bool | None
-    results: Results | None
-
-
-def hash_get_nb_namespace_args(args: GetNbNsArgs, kwds: GetNbNsKwds) -> str:
-    """Hash function for cachier that freezes mappings."""
-    params = kwds.get("params")
-    results = kwds.get("results")
-    all_results = kwds.get("all_results")
-    return _default_hash_func(
-        args=FrozenGetNbNsArgs(
-            kwds.get("nb") or args.nb,
-            frozenset((params if params is not None else args.params).items()),
-            (
-                all_results
-                if all_results is not None
-                else getattr(args, "all_results", False)
-            ),
-            frozenset(results if results is not None else args.results),
-        ),
-        kwds={},
-    )
-
-
-class FrozenGetNbNsArgs(NamedTuple):
-    nb: str
-    params: frozenset[tuple[str, Any]]
-    all_results: bool
-    results: frozenset[str]
-
-
-@cachier(hash_func=hash_get_nb_namespace_args)
-def get_cached_nb_namespace(
-    nb: str,
-    params: Params = NO_PARAMS,
-    all_results: bool = False,
-    results: Results = NO_RESULTS,
-) -> SimpleNamespace:
-    """Get notebook namespace, optionally parametrizing it, with caching."""
-    return get_nb_namespace(nb, params, all_results, results)
 
 
 def get_nb_namespace(
@@ -116,6 +65,30 @@ def get_nb_namespace(
             else {result: namespace[result] for result in results}
         )
     )
+
+
+def hash_get_nb_namespace_args(args, kwds) -> str:
+    """Freeze arguments to make them hashable."""
+    keys = ["nb", "params", "all_results", "results"]
+    nb, params, all_results, results = (
+        dict(zip(keys, [None, NO_PARAMS, ALL_RESULTS_DEFAULT, NO_RESULTS], strict=True))
+        | kwds
+        | dict(zip(keys, args, strict=False))
+    ).values()
+    return _default_hash_func(
+        args=(nb, frozenset(params.items()), all_results, frozenset(results)), kwds={}
+    )
+
+
+@cachier(hash_func=hash_get_nb_namespace_args)
+def get_cached_nb_namespace(
+    nb: str,
+    params: Params = NO_PARAMS,
+    all_results: bool = ALL_RESULTS_DEFAULT,
+    results: Results = NO_RESULTS,
+) -> SimpleNamespace:
+    """Get notebook namespace with caching."""
+    return get_nb_namespace(nb, params, all_results, results)
 
 
 def get_nb_client(nb: str):
