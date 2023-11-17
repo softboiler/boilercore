@@ -25,13 +25,6 @@ class SimpleNamespaceReceiver(Protocol):
     def __call__(self, ns: SimpleNamespace, *args, **kwds): ...
 
 
-def get_ns_attrs(receiver: SimpleNamespaceReceiver) -> list[str]:
-    """Get the list of attribute accesses in the `ns` namespace in the receiver."""
-    attributes = AccessedAttributesVisitor()
-    attributes.visit(ast.parse(getsource(receiver)))
-    return list(attributes.names["ns"])
-
-
 NO_ATTRS = []
 NO_PARAMS = {}
 
@@ -51,6 +44,14 @@ def get_cached_minimal_nb_ns(
     return get_minimal_nb_ns(nb, receiver, params)
 
 
+def get_ns_attrs(receiver: SimpleNamespaceReceiver) -> list[str]:
+    """Get the list of attribute accesses in the `ns` namespace in the receiver."""
+    attributes = AccessedAttributesVisitor()
+    attributes.visit(ast.parse(getsource(receiver)))
+    return list(attributes.names["ns"])
+
+
+
 def get_nb_ns(
     nb: str, params: Params = NO_PARAMS, attributes: Attributes = NO_ATTRS
 ) -> SimpleNamespace:
@@ -63,7 +64,7 @@ def get_nb_ns(
     namespace = nb_client.get_namespace()
     return SimpleNamespace(
         **(
-            {result: namespace[result] for result in attributes}
+            {attr: namespace[attr] for attr in attributes}
             if attributes
             else namespace
         )
