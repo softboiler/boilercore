@@ -51,7 +51,6 @@ def get_ns_attrs(receiver: SimpleNamespaceReceiver) -> list[str]:
     return list(attributes.names["ns"])
 
 
-
 def get_nb_ns(
     nb: str, params: Params = NO_PARAMS, attributes: Attributes = NO_ATTRS
 ) -> SimpleNamespace:
