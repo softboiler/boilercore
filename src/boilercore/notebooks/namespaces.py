@@ -3,10 +3,12 @@
 import ast
 from ast import NodeVisitor
 from collections import defaultdict
+from collections.abc import Callable
 from functools import partial
 from inspect import getsource
+from textwrap import dedent
 from types import SimpleNamespace
-from typing import Any, Protocol, TypeAlias
+from typing import Any, TypeAlias
 
 from cachier import cachier
 from nbformat import NO_CONVERT, reads
@@ -17,13 +19,8 @@ from boilercore.hashes import hash_args
 
 Params: TypeAlias = dict[str, Any]
 Attributes: TypeAlias = list[str]
-
-
-class SimpleNamespaceReceiver(Protocol):
-    """`Callable` with `SimpleNamespace` as its first parameter, named `ns`."""
-
-    def __call__(self, ns: SimpleNamespace, *args, **kwds): ...
-
+SimpleNamespaceReceiver: TypeAlias = Callable[..., Any]
+"""Should be a `Callable` with an `ns` parameter expecting a `SimpleNamespace`."""
 
 NO_ATTRS = []
 NO_PARAMS = {}
@@ -47,7 +44,7 @@ def get_cached_minimal_nb_ns(
 def get_ns_attrs(receiver: SimpleNamespaceReceiver) -> list[str]:
     """Get the list of attribute accesses in the `ns` namespace in the receiver."""
     attributes = AccessedAttributesVisitor()
-    attributes.visit(ast.parse(getsource(receiver)))
+    attributes.visit(ast.parse(dedent(getsource(receiver))))
     return list(attributes.names["ns"])
 
 
@@ -77,6 +74,6 @@ class AccessedAttributesVisitor(NodeVisitor):
         self.names: dict[str, set[str]] = defaultdict(set)
 
     def visit_Attribute(self, node: ast.Attribute):  # noqa: N802
-        if isinstance(node.value, ast.Name):
+        if isinstance(node.value, ast.Name) and not node.attr.startswith("__"):
             self.names[node.value.id].add(node.attr)
         self.generic_visit(node)
