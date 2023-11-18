@@ -31,7 +31,13 @@
       "matchPackageNames": ["pyright", "submodules/typings"]
     },
     {
-      "description": "Stubs are managed by `.tools/scripts/core_update.py`.",
+      "description": "Stubs for pandas sometimes lag.",
+      "groupName": "pandas",
+      "matchManagers": ["pip_requirements"],
+      "matchPackagePatterns": ["pandas"]
+    },
+    {
+      "description": "Pandas stubs are managed by `.tools/scripts/core_update.py`.",
       "matchManagers": ["pip_requirements"],
       "matchFileNames": [".tools/requirements/*"],
       "ignoreDeps": ["pandas-stubs"]
