@@ -3,8 +3,6 @@
   // See: https://github.com/microsoft/vscode-python/issues/944#issuecomment-808516207
   "terminal.integrated.defaultProfile.linux": "pwsh",
 
-  // * ---------------------------------------------------------------------------- * //
-
   //! Pylance
   "python.languageServer": "Pylance",
   "python.analysis.typeCheckingMode": "strict",
@@ -92,10 +90,11 @@
     ".dvcignore": "ignore",
     ".env": "dotenv",
     ".pylintrc": "ini",
-    "pyrightconfig.json": "jsonc",
-    "*requirements*.txt": "pip-requirements",
     ".root": "plaintext",
-    ".sourcery.yaml": "yaml"
+    ".sourcery.yaml": "yaml",
+    "*requirements*.txt": "pip-requirements",
+    "*ipython-input*": "python",
+    "pyrightconfig.json": "jsonc"
   },
   //* File icon associations
   "workbench.iconTheme": "vscode-icons",

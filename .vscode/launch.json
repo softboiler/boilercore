@@ -1,14 +1,26 @@
 {
   "version": "0.2.0",
+  "inputs": [
+    {
+      "id": "input",
+      "type": "promptString",
+      "description": "Input arguments."
+    }
+  ],
   "configurations": [
     {
       "name": "Python: Current file",
       "type": "debugpy",
       "request": "launch",
       "program": "${file}",
-      "console": "internalConsole",
-      "purpose": ["debug-test"],
-      "justMyCode": false
+      "console": "internalConsole"
+    },
+    {
+      "name": "Python: Current file with args",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file} ${input:input}",
+      "console": "internalConsole"
     },
     {
       //? Needs to be "pytest" adapter for now.
