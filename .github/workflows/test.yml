@@ -1,0 +1,81 @@
+name: "test"
+
+on: ["workflow_dispatch"]
+
+jobs:
+  exp_neap_stop:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/setup-python@v4.7.1"
+      - run: "pip install ruff"
+      - run: |
+          Enable-ExperimentalFeature PSNativeCommandErrorActionPreference
+          $ErrorActionPreference = 'Stop'
+          ruff --foo
+        shell: "pwsh"
+  exp_neap_nstop:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/setup-python@v4.7.1"
+      - run: "pip install ruff"
+      - run: |
+          Enable-ExperimentalFeature PSNativeCommandErrorActionPreference
+          ruff --foo
+        shell: "pwsh"
+  exp_eap_stop:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/setup-python@v4.7.1"
+      - run: "pip install ruff"
+      - run: |
+          Enable-ExperimentalFeature PSNativeCommandErrorActionPreference
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          ruff --foo
+        shell: "pwsh"
+  exp_eap_nstop:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/setup-python@v4.7.1"
+      - run: "pip install ruff"
+      - run: |
+          Enable-ExperimentalFeature PSNativeCommandErrorActionPreference
+          $PSNativeCommandUseErrorActionPreference = $true
+          ruff --foo
+        shell: "pwsh"
+  eap_stop:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/setup-python@v4.7.1"
+      - run: "pip install ruff"
+      - run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          ruff --foo
+        shell: "pwsh"
+  eap_nstop:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/setup-python@v4.7.1"
+      - run: "pip install ruff"
+      - run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          ruff --foo
+        shell: "pwsh"
+  neap_stop:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/setup-python@v4.7.1"
+      - run: "pip install ruff"
+      - run: |
+          $ErrorActionPreference = 'Stop'
+          ruff --foo
+        shell: "pwsh"
+  neap_nstop:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/setup-python@v4.7.1"
+      - run: "pip install ruff"
+      - run: |
+          ruff --foo
+        shell: "pwsh"
