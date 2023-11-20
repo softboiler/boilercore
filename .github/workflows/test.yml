@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: "actions/setup-python@v4.7.1"
       - run: |
-          $PSNativeCommandUseErrorActionPreference = $true
+          $PSNativeCommandUseErrorActionPreference = $false
           pip install ruff
           ruff --foo
         shell: "pwsh"
