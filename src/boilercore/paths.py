@@ -230,7 +230,7 @@ def fold(path: Path, resolve: bool = True) -> str:
     return quote(str(path.resolve() if resolve else path).replace("\\", "/"))
 
 
-def modified(nb: str) -> bool:
+def modified(nb: Path | str) -> bool:
     """Check whether notebook is modified."""
     return Path(nb) in (change.resolve() for change in get_changes())
 
