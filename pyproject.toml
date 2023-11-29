@@ -18,6 +18,7 @@ dependencies = [
     "loguru>=0.7.0",
     "matplotlib>=3.7.2",
     "nbformat>=5.9.2",
+    "nbconvert>=7.7.3",
     "numpy>=1.24.4",
     "pandas[hdf5,performance]>=2.0.2",
     "ploomber-engine>=0.0.30",
@@ -46,7 +47,9 @@ code = ["src"]
 deps = ["pyproject.toml"]
 ignore_undeclared = ["dvc"] # Optional dependency for `boilercore.notebooks.report`
 ignore_unused = [
-    "gmpy2", # for faster sympy computations
+    "gmpy2",     # for faster sympy computations
+    "nbconvert", # boilercv.pre_repro.export_notebook
+    "pyarrow",   # boilercv.init: pd.set_option("mode.string_storage", "pyarrow")
 ]
 
 [tool.pyright]
