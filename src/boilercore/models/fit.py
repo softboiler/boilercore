@@ -3,7 +3,7 @@
 from typing import Literal, TypeAlias
 
 import numpy as np
-from pydantic import BaseModel, Field, validator
+from pydantic.v1 import BaseModel, Field, validator
 
 FIT_METHOD = "trf"
 """Default curve fitting method. Supports bounded curve fits."""

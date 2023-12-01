@@ -3,7 +3,7 @@
 from pathlib import Path
 
 import pytest
-from pydantic import DirectoryPath, Field
+from pydantic.v1 import DirectoryPath, Field
 
 from boilercore.models import (
     CreatePathsModel,

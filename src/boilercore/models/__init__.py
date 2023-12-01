@@ -4,7 +4,7 @@ from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 from typing import Any, TypeVar, get_origin
 
-from pydantic import BaseModel, validator
+from pydantic.v1 import BaseModel, validator
 from ruamel.yaml import YAML
 
 YAML_INDENT = 2

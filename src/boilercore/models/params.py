@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from pydantic import Field
+from pydantic.v1 import Field
 
 from boilercore import get_params_file
 from boilercore.models import SynchronizedPathsYamlModel

@@ -22,7 +22,7 @@ dependencies = [
     "numpy>=1.24.4",
     "pandas[hdf5,performance]>=2.0.2",
     "ploomber-engine>=0.0.30",
-    "pydantic>=1.10.12,<2",
+    "pydantic>=2",
     "pytest>=7.4.0",
     "ruamel.yaml>=0.17.32",
     "scipy>=1.11.1",
@@ -162,6 +162,9 @@ convention = "google"
 "docs/**" = [
     "E402", # Need to allow imports below patches in docs notebooks
 ]
+"src/*/models/**" = [
+    "RUF012", # False positives for Pydantic v2 when importing via `pydantic.v1`
+]
 "tests/**" = [
     "ARG001", # Allow unused arguments in tests
     "S101",   # Allow assert in tests
@@ -171,4 +174,4 @@ convention = "google"
 extend-immutable-calls = ["typer.Argument", "typer.Option"]
 
 [tool.ruff.pep8-naming]
-classmethod-decorators = ["pydantic.validator"]
+classmethod-decorators = ["pydantic.validator", "pydantic.v1.validator"]

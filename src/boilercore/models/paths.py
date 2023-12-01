@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from pydantic import DirectoryPath, FilePath
+from pydantic.v1 import DirectoryPath, FilePath
 
 import boilercore
 from boilercore import PROJECT_PATH

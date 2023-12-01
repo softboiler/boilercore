@@ -1,7 +1,7 @@
 """Geometry."""
 
 import numpy as np
-from pydantic import BaseModel, Field, validator
+from pydantic.v1 import BaseModel, Field, validator
 
 from boilercore.types import Coupon, Rod
 

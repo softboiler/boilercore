@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel, DirectoryPath, Field, FilePath, validator
+from pydantic.v1 import BaseModel, DirectoryPath, Field, FilePath, validator
 
 from boilercore.models import YamlModel
 from boilercore.models.geometry import Geometry
