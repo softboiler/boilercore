@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet
 
+## [0.0.2]
+
+- Add placeholder citation file
+
 ## [0.0.1]
 
 - Pydantic models for boiler projects
@@ -22,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - No features yet
 
-[Unreleased]: https://github.com/blakeNaccarato/boilercore/compare/0.0.1...HEAD
+[Unreleased]: https://github.com/blakeNaccarato/boilercore/compare/0.0.2...HEAD
+[0.0.2]: https://github.com/blakeNaccarato/boilercore/releases/tag/0.0.2
 [0.0.1]: https://github.com/blakeNaccarato/boilercore/releases/tag/0.0.1
 [0.0.0]: https://github.com/blakeNaccarato/boilercore/releases/tag/0.0.0
