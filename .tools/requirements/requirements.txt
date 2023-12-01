@@ -6,7 +6,10 @@ dill==0.3.7
 # ? Optional dependency for `boilercore.notebooks.report`
 dvc[gs]==3.30.1
 gmpy2==2.1.5
-IPython[notebook]==8.17.2
+# ? Migrated to `requirements_both.txt` since it's part of package deps
+# ipykernel
+# ? https://github.com/ipython/ipython/issues/14255
+# ipython
 loguru==0.7.2
 matplotlib==3.8.2
 nbconvert==7.7.3

@@ -1,5 +1,9 @@
 # Requirements for both CI and dev environments.
 
+# ? IPython is used
+ipykernel==6.27.1
+# ? https://github.com/ipython/ipython/issues/14255
+ipython==8.17.2
 # ? Plots in tests
 seaborn==0.13.0
 # ? Additional testing plugin

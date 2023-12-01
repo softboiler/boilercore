@@ -14,7 +14,7 @@ dependencies = [
     "dill>=0.3.7",
     "dulwich>=0.21.5",
     "gmpy2>=2.1.5",
-    "IPython[notebook]>=8.14.0",
+    "ipykernel>=6.27.1",
     "loguru>=0.7.0",
     "matplotlib>=3.7.2",
     "nbformat>=5.9.2",
@@ -28,6 +28,8 @@ dependencies = [
     "scipy>=1.11.1",
     "sympy>=1.12",
     "uncertainties>=3.1.7",
+    # ! https://github.com/ipython/ipython/issues/14255
+    "ipython<8.18",
 ]
 [[project.authors]]
 name = "Blake Naccarato, Kwang Jin Kim"
@@ -52,6 +54,8 @@ ignore_unused = [
     "nbconvert", # boilercv.pre_repro.export_notebook
     "pyarrow",   # boilercv.init: pd.set_option("mode.string_storage", "pyarrow")
 ]
+[tool.fawltydeps.custom_mapping]
+ipykernel = ["IPython"]
 
 [tool.pyright]
 # Used in examples
