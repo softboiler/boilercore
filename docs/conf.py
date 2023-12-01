@@ -3,7 +3,7 @@ from datetime import date
 project = ""
 html_title = "boilercore"
 copyright = f"{date.today().year}, Blake Naccarato, Kwang Jin Kim"  # noqa: A001
-version = "0.0.2"
+version = "0.0.3"
 master_doc = "index"
 language = "en"
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
