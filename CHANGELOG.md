@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pydantic models for boiler projects
 - Jupyter notebook namespace helpers for module code and tests
 - Common thermal data model fit for boiler projects
-- General caching helpers and notebook namespace caching, useful in tests
+- General caching helpers and notebook namespace caching, useful in tests (needs extra `pip install cachier@git+https://github.com/blakeNaccarato/cachier@0892f53dc8fd9fb8a7f959305a1a9ec692876dc0`)
 - Common paths and helpers for walking project modules, useful in tests
 - Useful constructs for warning filtering, especially in tests
 

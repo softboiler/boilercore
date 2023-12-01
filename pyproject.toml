@@ -28,8 +28,6 @@ dependencies = [
     "scipy>=1.11.1",
     "sympy>=1.12",
     "uncertainties>=3.1.7",
-    # ? For caching with dill, unlike the stock PyPI version
-    "cachier@git+https://github.com/blakeNaccarato/cachier@0892f53dc8fd9fb8a7f959305a1a9ec692876dc0",
 ]
 [[project.authors]]
 name = "Blake Naccarato, Kwang Jin Kim"
@@ -45,7 +43,10 @@ Tracker = "https://github.com/blakeNaccarato/boilercore/issues"
 output_format = "human_detailed"
 code = ["src"]
 deps = ["pyproject.toml"]
-ignore_undeclared = ["dvc"] # Optional dependency for `boilercore.notebooks.report`
+ignore_undeclared = [
+    "cachier", # Can't specify my fork here for now. Used only in tests
+    "dvc",     # Optional dependency for `boilercore.notebooks.report`
+]
 ignore_unused = [
     "gmpy2",     # for faster sympy computations
     "nbconvert", # boilercv.pre_repro.export_notebook

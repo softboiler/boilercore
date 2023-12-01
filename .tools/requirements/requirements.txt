@@ -22,5 +22,3 @@ ruamel.yaml==0.18.5
 scipy==1.11.3
 sympy==1.12
 uncertainties==3.1.7
-# ? For caching with dill, unlike the stock PyPI version
-cachier@git+https://github.com/blakeNaccarato/cachier@0892f53dc8fd9fb8a7f959305a1a9ec692876dc0
