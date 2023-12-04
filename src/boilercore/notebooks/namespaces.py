@@ -59,7 +59,11 @@ def get_nb_ns(
         parametrize_notebook(nb_client._nb, parameters=params)  # noqa: SLF001
     namespace = nb_client.get_namespace()
     return SimpleNamespace(
-        **({attr: namespace[attr] for attr in attributes} if attributes else namespace)
+        **(
+            {attr: namespace[attr] for attr in attributes if namespace.get(attr)}
+            if attributes
+            else namespace
+        )
     )
 
 
