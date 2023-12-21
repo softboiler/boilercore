@@ -60,7 +60,11 @@ def get_nb_ns(
     namespace = nb_client.get_namespace()
     return SimpleNamespace(
         **(
-            {attr: namespace[attr] for attr in attributes if namespace.get(attr)}
+            {
+                attr: namespace[attr]
+                for attr in attributes
+                if namespace.get(attr) is not None
+            }
             if attributes
             else namespace
         )
