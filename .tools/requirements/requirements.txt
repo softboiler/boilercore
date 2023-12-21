@@ -4,13 +4,13 @@ dill==0.3.7
 # ? Already specified in `requirements_core.txt`
 # dulwich
 # ? Optional dependency for `boilercore.notebooks.report`
-dvc[gs]==3.30.1
+dvc[gs]==3.35.0
 gmpy2==2.1.5
 # ? Migrated to `requirements_both.txt` since it's part of package deps
 # ipykernel
 loguru==0.7.2
 matplotlib==3.8.2
-nbconvert==7.7.3
+nbconvert==7.13.1
 nbformat==5.9.2
 numpy==1.26.2
 pandas[hdf5,performance]==2.1.4
@@ -20,6 +20,6 @@ pydantic==2.5.2
 # ? Already specified in `requirements_both.txt`
 # pytest
 ruamel.yaml==0.18.5
-scipy==1.11.3
+scipy==1.11.4
 sympy==1.12
 uncertainties==3.1.7
