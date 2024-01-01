@@ -66,7 +66,7 @@ repos:
           )$
   # * ------------------------------------------------------------------------------ * #
   - repo: "https://github.com/iterative/dvc"
-    rev: "3.35.0"
+    rev: "3.37.0"
     hooks:
       - id: "dvc-post-checkout"
         additional_dependencies: ["dvc[gs]"]
@@ -79,7 +79,7 @@ repos:
       - id: "end-of-file-fixer"
       - id: "trailing-whitespace"
   - repo: "https://github.com/srstevenson/nb-clean"
-    rev: "3.1.0"
+    rev: "3.2.0"
     hooks:
       - id: "nb-clean"
         args:
@@ -99,7 +99,7 @@ repos:
     hooks:
       - id: "markdownlint-cli2-fix"
   - repo: "https://github.com/charliermarsh/ruff-pre-commit"
-    rev: "v0.1.7"
+    rev: "v0.1.9"
     hooks:
       - id: "ruff"
         types_or: ["python", "pyi", "jupyter"]
