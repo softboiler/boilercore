@@ -34,7 +34,7 @@
       "description": "Stubs for pandas sometimes lag.",
       "groupName": "pandas",
       "matchManagers": ["pip_requirements"],
-      "matchPackagePatterns": ["pandas"]
+      "matchPackageNames": ["pandas"]
     },
     {
       "description": "Pandas stubs are managed by `.tools/scripts/core_update.py`.",
