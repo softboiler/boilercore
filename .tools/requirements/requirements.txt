@@ -1,4 +1,4 @@
-# Latest working requirements of your package, should be ahead of pyproject.toml.
+# Latest working requirements of your package, should be ahead of pyproject.toml
 dill==0.3.7
 # ? Already specified in `requirements_core.txt`
 # dulwich

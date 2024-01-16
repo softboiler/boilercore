@@ -1,4 +1,4 @@
-# Requirements for both CI and dev environments.
+# Requirements for both CI and dev environments
 # * ---------------------------------------------------------------------------------- *
 # Type checking
 pyright==1.1.347

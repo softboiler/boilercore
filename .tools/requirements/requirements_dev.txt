@@ -1,4 +1,4 @@
-# Requirements for the dev environment.
+# Requirements for the dev environment
 # Install tests package so modules can be run in debugging
 -e tests/.
 # Introspection
