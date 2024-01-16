@@ -1,5 +1,7 @@
 # Requirements for both CI and dev environments
 # * ---------------------------------------------------------------------------------- *
+# ? Plots in tests
+seaborn==0.13.0
 # ? For caching with dill, unlike the stock PyPI version
 cachier@git+https://github.com/blakeNaccarato/cachier@0892f53dc8fd9fb8a7f959305a1a9ec692876dc0
 # Type checking
@@ -11,6 +13,7 @@ ruff==0.1.11
 pytest==7.4.4
 # Testing plugins
 pytest-cov==4.1.0
+pytest-plt==1.1.0
 pytest-custom-exit-code==0.3.0
 # Format notebooks
 nb-clean==3.2.0
