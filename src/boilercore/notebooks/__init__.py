@@ -65,7 +65,7 @@ async def run_process(command: str, venv: bool = True) -> str:
     process = await create_subprocess_exec(
         f"{'.venv/scripts/' if venv else ''}{command}", *args, stdout=PIPE, stderr=PIPE
     )
-    stdout, stderr = (msg.decode("utf-8") for msg in await process.communicate())
+    stdout, stderr = (msg.decode("utf-8") for msg in await process.communicate())  # type: ignore  # pyright 1.1.347  # Implicit iter
     message = (
         (f"{stdout}\n{stderr}" if stdout and stderr else stdout or stderr)
         .replace("\r\n", "\n")

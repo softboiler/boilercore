@@ -69,6 +69,7 @@ class Fit(BaseModel):
     )
 
     @validator("model_bounds", always=True)
+    @classmethod
     def validate_model_bounds(cls, model_bounds) -> dict[str, tuple[float, float]]:
         """Substitute np.inf for 'inf' and avoid exact zero lower bounds."""
         for param, b in model_bounds.items():
@@ -96,6 +97,7 @@ class Fit(BaseModel):
     )
 
     @validator("initial_values", always=True)
+    @classmethod
     def validate_initial_values(cls, model_inputs) -> dict[str, float]:
         """Avoid exact zero guesses."""
         return {

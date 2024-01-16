@@ -137,6 +137,7 @@ class CreatePathsModel(DefaultPathsModel):
     """Parent directories will be created for all fields in this model."""
 
     @validator("*", always=True, pre=True, each_item=True)
+    @classmethod
     def create_directories(cls, value):
         """Create directories associated with each value."""
         path = Path(value)

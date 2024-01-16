@@ -25,6 +25,7 @@ class Trial(BaseModel):
     )
 
     @validator("date", pre=True)
+    @classmethod
     def validate_date(cls, date):
         return datetime.date.fromisoformat(date)
 

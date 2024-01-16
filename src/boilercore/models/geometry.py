@@ -19,6 +19,7 @@ class Geometry(BaseModel):
     )
 
     @validator("diameter", always=True)
+    @classmethod
     def validate_diameter(cls, diameter):
         """Convert from inches to meters."""
         return diameter / cls._in_p_m
@@ -36,6 +37,7 @@ class Geometry(BaseModel):
     )
 
     @validator("rods", pre=True, always=True)
+    @classmethod
     def validate_rods(cls, rods):
         """Convert from inches to meters."""
         return {
@@ -61,6 +63,7 @@ class Geometry(BaseModel):
     )
 
     @validator("coupons", pre=True, always=True)
+    @classmethod
     def validate_coupons(cls, coupons):
         """Convert from inches to meters."""
         return {coupon: value / cls._in_p_m for coupon, value in coupons.items()}
