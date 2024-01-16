@@ -14,7 +14,7 @@ dependencies = [
     "dill>=0.3.7",
     "dulwich>=0.21.5",
     "gmpy2>=2.1.5",
-    "ipykernel>=6.27.1",
+    "ipykernel>=6.29.0",
     "loguru>=0.7.0",
     "matplotlib>=3.7.2",
     "nbformat>=5.9.2",
@@ -54,6 +54,19 @@ ignore_unused = [
 ]
 [tool.fawltydeps.custom_mapping]
 ipykernel = ["IPython"]
+
+[tool.pytest.ini_options]
+addopts = """\
+    --strict-config \
+    --strict-markers \
+    --color yes \
+    -p no:legacypaths \
+    -r a \
+    """
+cache_dir = ".cache/.pytest_cache"
+markers = "slow"
+testpaths = "tests"
+xfail_strict = true
 
 [tool.pyright]
 include = ["src", "tests", "docs"]
@@ -140,29 +153,38 @@ reportUnnecessaryTypeIgnoreComment = "none"
 reportUnusedCallResult = "none"
 
 [tool.ruff]
-include = ["*.py", "*.pyi", "**/pyproject.toml", "*.ipynb"]
 fix = true
+force-exclude = true
+show-fixes = true
+show-source = true
+preview = false
+unsafe-fixes = false
 cache-dir = ".cache/.ruff_cache"
+fixable = ["ALL"]
+extend-include = ["*.ipynb"]
 select = ["ALL"]
 src = ["src", "tests"]
 target-version = "py311"
-extend-exclude = ["submodules", ".github"]
-ignore = [
+extend-unfixable = [
+    "F841", # Unused variables
+]
+extend-ignore = [
     "ANN",     # Don't require type annotations
     "ARG005",  # Allow unused lambda argument. For consistency across df pipelines.
     "C408",    # Allow dict calls
     "COM",     # Allow magic commas and magic missing commas
+    "CPY001",  # Don't check for copyright
     "D10",     # Missing docstrings
     "D20",     # Don't reformat docstrings in these ways
     "D213",    # Multi-line docstring summary should start at the second line
     "D402",    # False positives for parens in first line
+    "D412",    # Allow blanks below headers in Google-style docstrings
     "DTZ",     # Timezones are important, but only contextually necessary.
     "E501",    # Don't check line length. Black handles this.
     "EM",      # Don't check for exception message issues
     "ERA",     # False positives. Don't get rid of commented out code.
     "FBT",     # Allow boolean "traps"
     "FIX002",  # Allow TODOs
-    "F841",    # Don't check for or fix unused variables
     "FLY002",  # Allow different string representations
     "G0",      # Allow f-strings, etc. in Loguru logging
     "INP001",  # False positives. Checks for packages missing `__init__.py`
@@ -210,6 +232,7 @@ convention = "google"
 "tests/**" = [
     "ARG001", # Allow unused arguments in tests
     "S101",   # Allow assert in tests
+    "SIM300", # Allow constants (expectations) on the RHS in tests
 ]
 
 [tool.ruff.flake8-bugbear]

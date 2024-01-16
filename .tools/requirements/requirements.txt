@@ -1,13 +1,11 @@
 # Latest working requirements of your package, should be ahead of pyproject.toml.
-
 dill==0.3.7
 # ? Already specified in `requirements_core.txt`
 # dulwich
 # ? Optional dependency for `boilercore.notebooks.report`
 dvc[gs]==3.35.0
 gmpy2==2.1.5
-# ? Migrated to `requirements_both.txt` since it's part of package deps
-# ipykernel
+ipykernel==6.29.0
 loguru==0.7.2
 matplotlib==3.8.2
 nbconvert==7.13.1
