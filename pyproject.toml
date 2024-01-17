@@ -89,16 +89,15 @@ strictSetInference = true
 # Default "false" in strict
 deprecateTypingAliases = false
 enableExperimentalFeatures = false
-# Default "error" in strict
+# Default "warning" in strict
 reportMissingModuleSource = "warning"
+# Default "error" in strict
 reportMissingImports = "warning"
 reportUndefinedVariable = "warning"
 reportAssertAlwaysTrue = "warning"
 reportInvalidStringEscapeSequence = "warning"
 reportInvalidTypeVarUse = "warning"
-# Default "warning" in strict
 reportMissingTypeStubs = "none" # Overeager
-# Default "error" in strict
 reportSelfClsParameterName = "warning"
 reportUnsupportedDunderAll = "warning"
 reportUnusedExpression = "none"                # Handled by Ruff
@@ -146,7 +145,7 @@ reportUntypedBaseClass = "none"
 reportUntypedClassDecorator = "warning"
 reportUntypedFunctionDecorator = "none"        # Often out of our control
 reportUntypedNamedTuple = "warning"
-# Defualt "none" in strict
+# Default "none" in strict
 reportCallInDefaultInitializer = "none"
 reportImplicitOverride = "none"
 reportImplicitStringConcatenation = "none"
@@ -209,11 +208,7 @@ extend-ignore = [
 ]
 
 [tool.ruff.format]
-preview = true
 skip-magic-trailing-comma = true
-
-[tool.ruff.isort]
-split-on-trailing-comma = false
 
 [tool.ruff.pydocstyle]
 convention = "google"
@@ -228,13 +223,10 @@ convention = "google"
 "docs/**" = [
     "E402", # Need to allow imports below patches in docs notebooks
 ]
-"src/*/models/**" = [
-    "RUF012", # False positives for Pydantic v2 when importing via `pydantic.v1`
-]
 "tests/**" = [
-    "ARG001", # Allow unused arguments in tests
-    "S101",   # Allow assert in tests
-    "SIM300", # Allow constants (expectations) on the RHS in tests
+    "ARG001", # Allow unused arguments
+    "S101",   # Allow assert
+    "SIM300", # Allow constants (expectations) on the RHS
 ]
 
 [tool.ruff.flake8-bugbear]
