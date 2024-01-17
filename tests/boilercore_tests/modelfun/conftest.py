@@ -5,7 +5,6 @@ from types import SimpleNamespace
 
 import pytest
 import seaborn as sns
-
 from boilercore.modelfun import fix_model, get_model
 from boilercore.notebooks.namespaces import get_nb_ns
 

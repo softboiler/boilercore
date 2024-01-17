@@ -7,14 +7,14 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
-import pytest
-from cachier import cachier, set_default_params
-
 import boilercore
+import pytest
 from boilercore import filter_certain_warnings
 from boilercore.hashes import hash_args
 from boilercore.notebooks.namespaces import NO_PARAMS, Params, get_minimal_nb_ns
 from boilercore.testing import get_session_path, unwrap_node
+from cachier import cachier, set_default_params
+
 from boilercore_tests import EMPTY_NB
 
 

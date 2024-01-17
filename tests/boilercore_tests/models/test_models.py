@@ -3,9 +3,9 @@
 from pathlib import Path
 
 import pytest
+from boilercore.models import DefaultPathsModel, SynchronizedPathsYamlModel, YamlModel
 from pydantic.v1 import DirectoryPath, Field
 
-from boilercore.models import DefaultPathsModel, SynchronizedPathsYamlModel, YamlModel
 from boilercore_tests.models import VarietyOfPaths
 
 
