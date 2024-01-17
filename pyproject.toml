@@ -43,6 +43,7 @@ Tracker = "https://github.com/blakeNaccarato/boilercore/issues"
 output_format = "human_detailed"
 code = ["src"]
 deps = ["pyproject.toml"]
+# * ---------------------------------------------------------------------------------- *
 ignore_undeclared = [
     "cachier", # Can't specify my fork here for now. Used only in tests
     "dvc",     # Optional dependency for `boilercore.notebooks.report`
@@ -54,6 +55,7 @@ ignore_unused = [
 ]
 [tool.fawltydeps.custom_mapping]
 ipykernel = ["IPython"]
+# * ---------------------------------------------------------------------------------- *
 
 [tool.pytest.ini_options]
 addopts = '''
@@ -214,9 +216,11 @@ skip-magic-trailing-comma = true
 convention = "google"
 
 [tool.ruff.extend-per-file-ignores]
+# * ---------------------------------------------------------------------------------- *
 "src/*/models/**" = [
     "RUF012", # False positives for Pydantic v2 when importing via `pydantic.v1`
 ]
+# * ---------------------------------------------------------------------------------- *
 "**/*.ipynb" = [
     "B018", # Allow "useless" expressions, which do suppress outputs in notebooks
     "F821", # Allow undefined names, such as `display`
@@ -231,6 +235,7 @@ convention = "google"
     "S101",   # Allow assert
     "SIM300", # Allow constants (expectations) on the RHS
 ]
-
+# * ---------------------------------------------------------------------------------- *
 [tool.ruff.flake8-bugbear]
 extend-immutable-calls = ["typer.Argument", "typer.Option"]
+# * ---------------------------------------------------------------------------------- *
