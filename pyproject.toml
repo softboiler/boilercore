@@ -68,10 +68,15 @@ markers = "slow"
 testpaths = "tests"
 xfail_strict = true
 
+[tool.coverage.run]
+branch = true
+source = "boilercore"
+[tool.coverage.report]
+ignore_errors = true
+
 [tool.pyright]
-include = ["src", "tests", "docs"]
+exclude = ["**/node_modules", "**/__pycache__", "**/.*", "submodules"]
 stubPath = "submodules/typings"
-useLibraryCodeForTypes = true
 typeCheckingMode = "strict"
 # Default "true" in strict
 analyzeUnannotatedFunctions = true
@@ -92,11 +97,11 @@ reportAssertAlwaysTrue = "warning"
 reportInvalidStringEscapeSequence = "warning"
 reportInvalidTypeVarUse = "warning"
 # Default "warning" in strict
-reportMissingTypeStubs = "none"
+reportMissingTypeStubs = "none" # Overeager
 # Default "error" in strict
 reportSelfClsParameterName = "warning"
 reportUnsupportedDunderAll = "warning"
-reportUnusedExpression = "none"
+reportUnusedExpression = "none"                # Handled by Ruff
 reportWildcardImportFromLibrary = "warning"
 reportGeneralTypeIssues = "warning"
 reportOptionalSubscript = "warning"
@@ -108,7 +113,7 @@ reportOptionalOperand = "warning"
 reportTypedDictNotRequiredAccess = "warning"
 reportPrivateImportUsage = "warning"
 reportUnboundVariable = "warning"
-reportUnusedCoroutine = "none"
+reportUnusedCoroutine = "none"                 # Handled by Ruff
 reportFunctionMemberAccess = "warning"
 reportIncompatibleMethodOverride = "warning"
 reportIncompatibleVariableOverride = "warning"
@@ -133,10 +138,10 @@ reportUnnecessaryCast = "warning"
 reportUnnecessaryComparison = "warning"
 reportUnnecessaryContains = "warning"
 reportUnnecessaryIsInstance = "warning"
-reportUnusedClass = "none"
-reportUnusedImport = "none"
-reportUnusedFunction = "none"
-reportUnusedVariable = "none"
+reportUnusedClass = "none"                     # Handled by Ruff
+reportUnusedImport = "none"                    # Handled by Ruff
+reportUnusedFunction = "none"                  # Handled by Ruff
+reportUnusedVariable = "none"                  # Handled by Ruff
 reportUntypedBaseClass = "none"
 reportUntypedClassDecorator = "warning"
 reportUntypedFunctionDecorator = "none"        # Often out of our control
@@ -148,24 +153,23 @@ reportImplicitStringConcatenation = "none"
 reportImportCycles = "none"
 reportMissingSuperCall = "none"
 reportPropertyTypeMismatch = "none"
-reportShadowedImports = "warning"
-reportUninitializedInstanceVariable = "warning"
+reportShadowedImports = "none"
+reportUninitializedInstanceVariable = "warning" # Ensure we define instance vars
 reportUnnecessaryTypeIgnoreComment = "none"
 reportUnusedCallResult = "none"
 
 [tool.ruff]
+cache-dir = ".cache/.ruff_cache"
+extend-exclude = ["submodules"]
+extend-include = ["*.ipynb"]
 fix = true
 force-exclude = true
 show-fixes = true
 show-source = true
 preview = false
 unsafe-fixes = false
-cache-dir = ".cache/.ruff_cache"
 fixable = ["ALL"]
-extend-exclude = ["submodules/**"]
-extend-include = ["*.ipynb"]
 select = ["ALL"]
-target-version = "py311"
 extend-ignore = [
     "ANN",     # Don't require type annotations
     "ARG005",  # Allow unused lambda argument. For consistency across df pipelines.
