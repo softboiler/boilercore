@@ -70,7 +70,7 @@ xfail_strict = true
 
 [tool.coverage.run]
 branch = true
-source = "boilercore"
+source = ["boilercore"]
 [tool.coverage.report]
 ignore_errors = true
 
@@ -97,7 +97,7 @@ reportUndefinedVariable = "warning"
 reportAssertAlwaysTrue = "warning"
 reportInvalidStringEscapeSequence = "warning"
 reportInvalidTypeVarUse = "warning"
-reportMissingTypeStubs = "none" # Overeager
+reportMissingTypeStubs = "none"                # Overeager
 reportSelfClsParameterName = "warning"
 reportUnsupportedDunderAll = "warning"
 reportUnusedExpression = "none"                # Handled by Ruff
@@ -214,6 +214,9 @@ skip-magic-trailing-comma = true
 convention = "google"
 
 [tool.ruff.extend-per-file-ignores]
+"src/*/models/**" = [
+    "RUF012", # False positives for Pydantic v2 when importing via `pydantic.v1`
+]
 "**/*.ipynb" = [
     "B018", # Allow "useless" expressions, which do suppress outputs in notebooks
     "F821", # Allow undefined names, such as `display`
