@@ -211,6 +211,8 @@ extend-ignore = [
 
 [tool.ruff.format]
 skip-magic-trailing-comma = true
+[tool.ruff.isort]
+split-on-trailing-comma = false
 
 [tool.ruff.pydocstyle]
 convention = "google"
