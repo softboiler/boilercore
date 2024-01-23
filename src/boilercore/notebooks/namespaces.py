@@ -51,7 +51,25 @@ def get_ns_attrs(receiver: SimpleNamespaceReceiver) -> list[str]:
 def get_nb_ns(
     nb: str, params: Params = NO_PARAMS, attributes: Attributes = NO_ATTRS
 ) -> SimpleNamespace:
-    """Get notebook namespace, optionally parametrizing it."""
+    """Get notebook namespace, optionally parametrizing or limiting returned attributes.
+
+    Args:
+        nb: Notebook contents as text.
+        params: Parameters to inject below the first `parameters`-tagged code cell.
+        attributes: If given, limit the notebook attributes to return in the namespace.
+
+    Returns:
+        Notebook namespace.
+
+    Example:
+        ```Python
+        ns = get_nb_ns(
+            nb=Path("notebook.ipynb").read_text(encoding="utf-8"),
+            params={"some_parameter": 3, "other_parameter": [0, 1]},
+            attributes=["results", "other_attribute_to_return"],
+        )
+        ```
+    """
     nb_client = get_nb_client(nb)
     # We can't just `nb_client.execute(params=...)` since`nb_client.get_namespace()`
     # would execute all over again
@@ -60,15 +78,40 @@ def get_nb_ns(
     namespace = nb_client.get_namespace()
     return SimpleNamespace(
         **(
-            {
-                attr: namespace[attr]
-                for attr in attributes
-                if namespace.get(attr) is not None
-            }
+            {attr: namespace[attr] for attr in attributes if namespace.get(attr)}
             if attributes
             else namespace
         )
     )
+
+
+@cachier(hash_func=partial(hash_args, get_nb_ns))
+def get_cached_nb_ns(
+    nb: str, params: Params = NO_PARAMS, attributes=NO_ATTRS
+) -> SimpleNamespace:
+    """Get cached notebook namespace, optionally parametrizing or limiting attributes.
+
+    This caches the return values and avoids execution if the hash of input argument
+    values matches an earlier call.
+
+    Args:
+        nb: Notebook contents as text.
+        params: Parameters to inject below the first `parameters`-tagged code cell.
+        attributes: If given, limit the notebook attributes to return in the namespace.
+
+    Returns:
+        Notebook namespace.
+
+    Example:
+        ```Python
+        ns = get_cached_nb_ns(
+            nb=Path("notebook.ipynb").read_text(encoding="utf-8"),
+            params={"some_parameter": 3, "other_parameter": [0, 1]},
+            attributes=["results", "other_attribute_to_return"],
+        )
+        ```
+    """
+    return get_nb_ns(nb, params, attributes)
 
 
 def get_nb_client(nb: str) -> PloomberClient:
