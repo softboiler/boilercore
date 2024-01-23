@@ -7,7 +7,7 @@ from typing import Any
 from cachier.core import _default_hash_func
 
 
-def hash_args_PATCHED(  # noqa: N802
+def hash_args(
     fun: Callable[..., Any], args: tuple[Any, ...], kwds: dict[str, Any]
 ) -> str:
     """Hash a particular set of arguments meant to be passed to a particular function.
