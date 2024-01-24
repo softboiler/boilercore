@@ -1,6 +1,6 @@
 """Hash utilities."""
 
-from collections.abc import Callable, Hashable
+from collections.abc import Callable, Hashable, ItemsView, Iterable, Mapping
 from inspect import getsource, signature
 from typing import Any
 
@@ -33,31 +33,32 @@ def hash_args(
         ```
     """
     bound_args = signature(fun).bind(*args, **kwds).arguments
+
     return _default_hash_func(
-        (), {param: make_hashable(val) for param, val in bound_args.items()}
+        (), {param: freeze(val) for param, val in bound_args.items()}
     )
 
 
-def make_hashable(value: Any) -> Hashable:
+def freeze(
+    v: Hashable
+    | Callable[..., Any]
+    | Mapping[str, Any]
+    | ItemsView[str, Any]
+    | Iterable[Any],
+) -> Hashable:
     """Make value hashable."""
-    if isinstance(value, Hashable):
-        return value
-    for typ, transform in TRANSFORMS.items():
-        if isinstance(value, typ):
-            return transform(value)
-    raise TypeError(
-        f"Value of type {type(value)} not hashable and transform not implemented."
-    )
-
-
-TRANSFORMS = {
-    Callable: lambda v: getsource(v),
-    dict: lambda v: frozenset(
-        {
-            k: frozenset(v_.items()) if isinstance(v_, dict) else v
-            for k, v_ in v.items()
-        }.items()
-    ),
-    list: lambda v: frozenset(v),
-}
-"""Transforms to make values hashable."""
+    match v:
+        case Hashable():
+            return v
+        case Callable():  # type: ignore  # pyright: 1.1.347
+            getsource(v)
+        case Mapping():
+            return frozenset((k, freeze(v)) for k, v in v.items())
+        case ItemsView():
+            return frozenset((k, freeze(v)) for k, v in v)
+        case Iterable():
+            return frozenset(freeze(v) for v in v)
+        case _:
+            raise TypeError(
+                f"{type(v)} not Hashable, Callable, Mapping, ItemsView, or Iterable."
+            )

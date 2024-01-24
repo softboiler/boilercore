@@ -26,21 +26,6 @@ NO_ATTRS = []
 NO_PARAMS = {}
 
 
-def get_minimal_nb_ns(
-    nb: str, receiver: SimpleNamespaceReceiver, params: Params = NO_PARAMS
-) -> SimpleNamespace:
-    """Get minimal namespace suitable for passing to a receiving function."""
-    return get_nb_ns(nb, params, attributes=get_ns_attrs(receiver))
-
-
-@cachier(hash_func=partial(hash_args, get_minimal_nb_ns))
-def get_cached_minimal_nb_ns(
-    nb: str, receiver: SimpleNamespaceReceiver, params: Params = NO_PARAMS
-) -> SimpleNamespace:
-    """Get cached minimal namespace suitable for passing to a receiving function."""
-    return get_minimal_nb_ns(nb, receiver, params)
-
-
 def get_ns_attrs(receiver: SimpleNamespaceReceiver) -> list[str]:
     """Get the list of attribute accesses in the `ns` namespace in the receiver."""
     attributes = AccessedAttributesVisitor()
@@ -78,7 +63,11 @@ def get_nb_ns(
     namespace = nb_client.get_namespace()
     return SimpleNamespace(
         **(
-            {attr: namespace[attr] for attr in attributes if namespace.get(attr)}
+            {
+                attr: namespace[attr]
+                for attr in attributes
+                if namespace.get(attr) is not None
+            }
             if attributes
             else namespace
         )
