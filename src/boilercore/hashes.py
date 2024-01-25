@@ -33,7 +33,6 @@ def hash_args(
         ```
     """
     bound_args = signature(fun).bind(*args, **kwds).arguments
-
     return _default_hash_func(
         (), {param: freeze(val) for param, val in bound_args.items()}
     )

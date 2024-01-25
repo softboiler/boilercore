@@ -11,7 +11,12 @@ import boilercore
 import pytest
 from boilercore import filter_certain_warnings
 from boilercore.hashes import hash_args
-from boilercore.notebooks.namespaces import NO_PARAMS, Params, get_minimal_nb_ns
+from boilercore.notebooks.namespaces import (
+    NO_PARAMS,
+    Params,
+    get_cached_nb_ns,
+    get_ns_attrs,
+)
 from boilercore.testing import get_session_path, unwrap_node
 from cachier import cachier, set_default_params
 
@@ -66,7 +71,7 @@ def cached_function_and_cache_file(
     @custom_cachier
     def fun(nb: str = EMPTY_NB, params: Params = NO_PARAMS) -> SimpleNamespace:
         """Get cached minimal namespace suitable for passing to a receiving function."""
-        return get_minimal_nb_ns(nb, unwrap_node(request.node), params)
+        return get_cached_nb_ns(nb, params, get_ns_attrs(unwrap_node(request.node)))
 
     if not cache_filename:
         raise RuntimeError("Cache file not set.")
