@@ -3,7 +3,7 @@
 import ast
 from ast import NodeVisitor
 from collections import defaultdict
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Mapping
 from functools import partial
 from inspect import getsource
 from textwrap import dedent
@@ -17,7 +17,7 @@ from ploomber_engine.ipython import PloomberClient
 
 from boilercore.hashes import hash_args
 
-Params: TypeAlias = dict[str, Any]
+Params: TypeAlias = Mapping[str, Any]
 Attributes: TypeAlias = Iterable[str]
 SimpleNamespaceReceiver: TypeAlias = Callable[..., Any]
 """Should be a `Callable` with an `ns` parameter expecting a `SimpleNamespace`."""

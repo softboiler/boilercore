@@ -2,13 +2,13 @@
 
 from collections.abc import Callable, Hashable, ItemsView, Iterable, Mapping
 from inspect import getsource, signature
-from typing import Any
+from typing import Any, TypeAlias
 
 from cachier.core import _default_hash_func
 
 
 def hash_args(
-    fun: Callable[..., Any], args: tuple[Any, ...], kwds: dict[str, Any]
+    fun: Callable[..., Any], args: Iterable[Any], kwds: Mapping[str, Any]
 ) -> str:
     """Hash a particular set of arguments meant to be passed to a particular function.
 
@@ -38,13 +38,12 @@ def hash_args(
     )
 
 
-def freeze(
-    v: Hashable
-    | Callable[..., Any]
-    | Mapping[str, Any]
-    | ItemsView[str, Any]
-    | Iterable[Any],
-) -> Hashable:
+Freezable: TypeAlias = (
+    Callable[..., Any] | Mapping[str, Any] | ItemsView[str, Any] | Iterable[Any]
+)
+
+
+def freeze(v: Hashable | Freezable) -> Hashable:
     """Make value hashable."""
     match v:
         case Hashable():
@@ -52,11 +51,11 @@ def freeze(
         case Callable():  # type: ignore  # pyright: 1.1.347
             getsource(v)
         case Mapping():
-            return frozenset((k, freeze(v)) for k, v in v.items())
+            return tuple((k, freeze(v)) for k, v in v.items())
         case ItemsView():
-            return frozenset((k, freeze(v)) for k, v in v)
+            return tuple((k, freeze(v)) for k, v in v)
         case Iterable():
-            return frozenset(freeze(v) for v in v)
+            return tuple(freeze(v) for v in v)
         case _:
             raise TypeError(
                 f"{type(v)} not Hashable, Callable, Mapping, ItemsView, or Iterable."
