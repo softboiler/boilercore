@@ -112,7 +112,7 @@ reportOptionalIterable = "warning"
 reportOptionalContextManager = "warning"
 reportOptionalOperand = "warning"
 reportTypedDictNotRequiredAccess = "warning"
-reportPrivateImportUsage = "warning"
+reportPrivateImportUsage = "none"              # Flaky regarding "not exported"
 reportUnboundVariable = "warning"
 reportUnusedCoroutine = "none"                 # Handled by Ruff
 reportFunctionMemberAccess = "warning"
@@ -236,8 +236,8 @@ convention = "google"
     "ARG001", # Allow unused arguments
     "S101",   # Allow assert
     "SIM300", # Allow constants (expectations) on the RHS
+    "SLF001", # Allow private member access in tests
 ]
-# * ---------------------------------------------------------------------------------- *
+
 [tool.ruff.flake8-bugbear]
 extend-immutable-calls = ["typer.Argument", "typer.Option"]
-# * ---------------------------------------------------------------------------------- *
