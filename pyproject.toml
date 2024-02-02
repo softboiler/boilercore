@@ -166,9 +166,11 @@ extend-include = ["*.ipynb"]
 fix = true
 force-exclude = true
 show-fixes = true
-show-source = true
-preview = false
+output-format = "grouped"
+preview = true
 unsafe-fixes = false
+
+[tool.ruff.lint]
 fixable = ["ALL"]
 select = ["ALL"]
 extend-ignore = [
@@ -189,6 +191,7 @@ extend-ignore = [
     "FBT",     # Allow boolean "traps"
     "FIX002",  # Allow TODOs
     "FLY002",  # Allow different string representations
+    "FURB140", # Don't replace comprehensions with starmap
     "G0",      # Allow f-strings, etc. in Loguru logging
     "INP001",  # False positives. Checks for packages missing `__init__.py`
     "ISC",     # False positives. Implicit string concatenation is fine.
@@ -196,6 +199,7 @@ extend-ignore = [
     "PD101",   # Allow use of nunique(). False positives
     "PD901",   # Allow `df` variable name. We are all consenting adults here.
     "PD011",   # Allow use of `.values`. False positives.
+    "PLR6201", # Don't require set literal for membership checks
     "PGH003",  # Until black stops wrapping special ignores, let's allow bare
     "PIE804",  # Allow dict unpack even if unnecessary, consisent for df.assign{**...}
     "PLR0913", # Allow more than five function arguments
@@ -211,13 +215,13 @@ extend-ignore = [
 
 [tool.ruff.format]
 skip-magic-trailing-comma = true
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 split-on-trailing-comma = false
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"
 
-[tool.ruff.extend-per-file-ignores]
+[tool.ruff.lint.extend-per-file-ignores]
 # * ---------------------------------------------------------------------------------- *
 "src/*/models/**" = [
     "RUF012", # False positives for Pydantic v2 when importing via `pydantic.v1`
@@ -239,5 +243,5 @@ convention = "google"
     "SLF001", # Allow private member access in tests
 ]
 
-[tool.ruff.flake8-bugbear]
+[tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = ["typer.Argument", "typer.Option"]
