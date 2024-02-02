@@ -50,7 +50,7 @@ def fit_and_plot(
         y=y,
         y_0=fits["T_s"],
         params=fits | params.fixed_values,
-        errors=errors | {k: 0 for k in params.fixed_errors},
+        errors=errors | dict.fromkeys(params.fixed_errors, 0),
         y_errors=y_errors if y_errors is not None else None,
         ax=ax,
         run=run or "run",

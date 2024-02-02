@@ -196,7 +196,7 @@
       "label": "task: Run ruff",
       "type": "shell",
       "options": { "shell": { "executable": "pwsh", "args": ["-Command"] } },
-      "command": "ruff .",
+      "command": "ruff .; ruff format .",
       "icon": { "id": "check" },
       "problemMatcher": []
     },

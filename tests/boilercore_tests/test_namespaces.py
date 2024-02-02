@@ -36,7 +36,7 @@ def test_cleared(cached_function, cache_file):
 def test_only_a(cached_function):
     ns = cached_function(NB, {})
     ns.a  # noqa: B018
-    assert all(attr in ["a"] for attr in ns.__dict__)
+    assert all(attr == "a" for attr in ns.__dict__)
 
 
 def test_a_equals(cached_function):

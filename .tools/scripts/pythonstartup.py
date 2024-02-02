@@ -12,12 +12,12 @@ from warnings import filterwarnings
 def init():
     filter_certain_warnings()
 
-    from rich import inspect, traceback  # noqa: F401
+    from rich import inspect, traceback  # noqa: F401, PLC0415
 
     traceback.install()
 
     if not is_notebook_or_ipython():
-        from rich import pretty, print  # noqa: F401
+        from rich import pretty, print  # noqa: F401, PLC0415
 
         pretty.install()
 

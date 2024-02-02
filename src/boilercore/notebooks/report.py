@@ -95,20 +95,18 @@ async def report(nbs: list[str], paths):
     async with TaskGroup() as tg:
         for nb in nbs:
             tg.create_task(
-                report_on_notebook(
-                    **{
-                        kwarg: fold(path)
-                        for kwarg, path in dict(
-                            workdir=paths.md,
-                            template=paths.template,
-                            filt=paths.filt,
-                            zotero=paths.zotero,
-                            csl=paths.csl,
-                            docx=paths.docx / Path(nb).with_suffix(".docx").name,
-                            md=paths.md / Path(nb).with_suffix(".md").name,
-                        ).items()
-                    }
-                )
+                report_on_notebook(**{
+                    kwarg: fold(path)
+                    for kwarg, path in dict(
+                        workdir=paths.md,
+                        template=paths.template,
+                        filt=paths.filt,
+                        zotero=paths.zotero,
+                        csl=paths.csl,
+                        docx=paths.docx / Path(nb).with_suffix(".docx").name,
+                        md=paths.md / Path(nb).with_suffix(".md").name,
+                    ).items()
+                })
             )
 
 
@@ -238,19 +236,15 @@ def get_modified_files(repo: Repo) -> list[Path]:
 
 def fold_docs_nbs(paths: list[Path], docs: Path) -> list[str]:
     """Fold the paths of documentation-related notebooks."""
-    return list(
-        {
-            fold(nb)
-            for nb in sorted(
-                {
-                    path.with_suffix(".ipynb")
-                    for path in paths
-                    # Consider notebook modified even if only its `.h5` file is
-                    if path.is_relative_to(docs) and path.suffix in [".ipynb", ".h5"]
-                }
-            )
-        }
-    )
+    return list({
+        fold(nb)
+        for nb in sorted({
+            path.with_suffix(".ipynb")
+            for path in paths
+            # Consider notebook modified even if only its `.h5` file is
+            if path.is_relative_to(docs) and path.suffix in [".ipynb", ".h5"]
+        })
+    })
 
 
 # * -------------------------------------------------------------------------------- * #
