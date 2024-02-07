@@ -7,8 +7,10 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
-import boilercore
 import pytest
+from cachier import cachier, set_default_params
+
+import boilercore
 from boilercore import filter_certain_warnings
 from boilercore.hashes import hash_args
 from boilercore.notebooks.namespaces import (
@@ -18,8 +20,6 @@ from boilercore.notebooks.namespaces import (
     get_ns_attrs,
 )
 from boilercore.testing import get_session_path, unwrap_node
-from cachier import cachier, set_default_params
-
 from boilercore_tests import EMPTY_NB
 
 
@@ -27,7 +27,7 @@ from boilercore_tests import EMPTY_NB
 @pytest.fixture(autouse=True)
 def _filter_certain_warnings():
     """Filter certain warnings."""
-    filter_certain_warnings()
+    filter_certain_warnings(package=boilercore)
 
 
 @pytest.fixture(autouse=True, scope="session")

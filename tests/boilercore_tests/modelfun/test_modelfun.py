@@ -2,10 +2,11 @@
 
 import numpy as np
 import pytest
+from sympy import Eq
+
 from boilercore.fits import fit_and_plot
 from boilercore.models.fit import FIT
 from boilercore.testing import MFParam
-from sympy import Eq
 
 
 def approx(*args):

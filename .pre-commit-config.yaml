@@ -7,7 +7,6 @@ ci:
     # * ---------------------------------------------------------------------------- * #
     - "core-update"
     - "pytest-fast-only"
-    - "fawltydeps"
   autoupdate_schedule: "quarterly"
 
 repos:
@@ -51,19 +50,11 @@ repos:
             |tests/.*
             |\.tools/requirements/.*
           )$
-      - id: "fawltydeps"
-        name: "fawltydeps"
-        verbose: true
-        pass_filenames: false
-        language: "system"
-        entry: "pwsh -Command fawltydeps"
-        files: |
-          (?x)^(
-            src/.*
-            |pyproject\.toml
-            |requirements\.txt
-            |\.tools/requirements/.*
-          )$
+  - repo: "https://github.com/pre-commit/pre-commit-hooks"
+    rev: "v4.5.0"
+    hooks:
+      - id: "end-of-file-fixer"
+      - id: "trailing-whitespace"
   # * ------------------------------------------------------------------------------ * #
   - repo: "https://github.com/iterative/dvc"
     rev: "3.39.0"
@@ -73,11 +64,19 @@ repos:
       - id: "dvc-pre-push"
         additional_dependencies: ["dvc[gs]"]
   # * ------------------------------------------------------------------------------ * #
-  - repo: "https://github.com/pre-commit/pre-commit-hooks"
-    rev: "v4.5.0"
+  - repo: "https://github.com/tweag/FawltyDeps"
+    rev: "v0.15.0"
     hooks:
-      - id: "end-of-file-fixer"
-      - id: "trailing-whitespace"
+      - id: "check-undeclared"
+        files: |
+          (?x)^(
+            src/.*
+          )$
+      - id: "check-unused"
+        files: |
+          (?x)^(
+            pyproject\.toml
+          )$
   - repo: "https://github.com/DavidAnson/markdownlint-cli2"
     rev: "v0.11.0"
     hooks:
@@ -99,7 +98,7 @@ repos:
             |tests/.*
           )$
   - repo: "https://github.com/charliermarsh/ruff-pre-commit"
-    rev: "v0.2.0"
+    rev: "v0.2.1"
     hooks:
       - id: "ruff"
         types_or: ["python", "pyi", "jupyter"]

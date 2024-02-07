@@ -3,14 +3,14 @@
 from pathlib import Path
 
 import pytest
+from pydantic.v1 import DirectoryPath, Field
+
 from boilercore.models import (
     CreatePathsModel,
     DefaultPathsModel,
     SynchronizedPathsYamlModel,
     YamlModel,
 )
-from pydantic.v1 import DirectoryPath, Field
-
 from boilercore_tests.models import VarietyOfPaths
 
 
