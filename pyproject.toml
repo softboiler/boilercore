@@ -13,6 +13,7 @@ classifiers = ["License :: OSI Approved :: MIT License"]
 dependencies = [
     "dill>=0.3.7",
     "dulwich>=0.21.5",
+    "dvc>=3.10.1",
     "gmpy2>=2.1.5",
     "ipykernel>=6.29.0",
     "loguru>=0.7.0",
@@ -28,6 +29,8 @@ dependencies = [
     "scipy>=1.11.1",
     "sympy>=1.12",
     "uncertainties>=3.1.7",
+    #! Change pin during releases
+    "cachier@git+https://github.com/blakeNaccarato/cachier@0892f53dc8fd9fb8a7f959305a1a9ec692876dc0",
 ]
 [[project.authors]]
 name = "Blake Naccarato, Kwang Jin Kim"
@@ -40,14 +43,9 @@ Home = "https://github.com/blakeNaccarato/boilercore"
 Tracker = "https://github.com/blakeNaccarato/boilercore/issues"
 
 [tool.fawltydeps]
-output_format = "human_detailed"
-code = ["src"]
 deps = ["pyproject.toml"]
+code = ["src"]
 # * ---------------------------------------------------------------------------------- *
-ignore_undeclared = [
-    "cachier", # Can't specify my fork here for now. Used only in tests
-    "dvc",     # Optional dependency for `boilercore.notebooks.report`
-]
 ignore_unused = [
     "gmpy2",     # for faster sympy computations
     "nbconvert", # boilercv.pre_repro.export_notebook

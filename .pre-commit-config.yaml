@@ -46,7 +46,7 @@ repos:
         files: |
           (?x)^(
             pyproject\.toml
-            src/.*
+            |src/.*
             |tests/.*
             |\.tools/requirements/.*
           )$
