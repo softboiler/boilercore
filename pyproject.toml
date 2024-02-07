@@ -43,7 +43,6 @@ Home = "https://github.com/blakeNaccarato/boilercore"
 Tracker = "https://github.com/blakeNaccarato/boilercore/issues"
 
 [tool.fawltydeps]
-install_deps = true
 deps = ["pyproject.toml"]
 code = ["src"]
 # * ---------------------------------------------------------------------------------- *

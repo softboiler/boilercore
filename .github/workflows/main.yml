@@ -25,6 +25,13 @@ jobs:
           python-version: "3.11"
       - run: "pytest --cov"
       - uses: "codecov/codecov-action@v3.1.4"
+  fawltydeps:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "blakeNaccarato/copier-python-workflow-setup@v0.2.3"
+        with:
+          python-version: "3.11"
+      - run: "fawltydeps"
   bump_project:
     needs: ["pyright", "ruff", "pytest"]
     runs-on: "ubuntu-latest"
