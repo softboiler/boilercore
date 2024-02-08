@@ -1,8 +1,6 @@
 # Requirements for the dev environment
 # Install tests package so modules can be run in debugging
 -e tests/.
-# Introspection
-fawltydeps==0.15.0
 # * ---------------------------------------------------------------------------------- *
 # * # Experiment
 # * # ? Tracked in `requirements.txt` since it's part of package deps
