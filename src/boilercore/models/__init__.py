@@ -32,11 +32,7 @@ class YamlModel(BaseModel):
 
     def get_params(self, data_file: Path) -> dict[str, Any]:
         """Get parameters from file."""
-        return (
-            yaml.load(data_file)
-            if data_file.exists() and data_file.read_text(encoding="utf-8")
-            else {}
-        )
+        return yaml.load(data_file) or {} if data_file.exists() else {}
 
     def update_schema(self, data_file: Path):
         schema_file = data_file.with_name(f"{data_file.stem}_schema.json")
