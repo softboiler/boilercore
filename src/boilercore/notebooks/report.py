@@ -9,7 +9,9 @@ from os import chdir
 from pathlib import Path
 from shlex import split
 from sys import stdout
+from tempfile import NamedTemporaryFile
 from typing import Any
+from urllib import request
 
 from dulwich.porcelain import add
 from dvc.repo import Repo
@@ -24,6 +26,19 @@ logger.add(
     sink=stdout, enqueue=True, format=("<green>{time:mm:ss}</green> | {message}")
 )
 logger = logger.opt(colors=True)
+
+ZOTERO = Path(NamedTemporaryFile().name)
+"""Temporary file path which will contain the Zotero Lua filter.
+
+Usage conforms to [MIT license][#license] of `retorquere/zotero-better-bibtex`.
+
+[#license]: <https://raw.githubusercontent.com/retorquere/zotero-better-bibtex/v6.7.164/LICENSE>
+"""
+ZOTERO.write_bytes(
+    request.urlopen(
+        "https://raw.githubusercontent.com/retorquere/zotero-better-bibtex/v6.7.164/site/content/exporting/zotero.lua"
+    ).read()
+)
 
 
 async def generate(paths, repo: Repo | None = None):
@@ -101,7 +116,7 @@ async def report(nbs: list[str], paths):
                         workdir=paths.md,
                         template=paths.template,
                         filt=paths.filt,
-                        zotero=paths.zotero,
+                        zotero=ZOTERO,
                         csl=paths.csl,
                         docx=paths.docx / Path(nb).with_suffix(".docx").name,
                         md=paths.md / Path(nb).with_suffix(".md").name,

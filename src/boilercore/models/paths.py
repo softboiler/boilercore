@@ -25,7 +25,6 @@ class Paths(CreatePathsModel):
     fit: FilePath = package / "models/fit.py"
     # ! Scripts
     scripts: DirectoryPath = data / "scripts"
-    zotero: FilePath = scripts / "zotero.lua"
     filt: FilePath = scripts / "filt.py"
     csl: FilePath = scripts / "international-journal-of-heat-and-mass-transfer.csl"
     template: FilePath = scripts / "template.dotx"
