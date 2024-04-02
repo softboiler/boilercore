@@ -2,8 +2,8 @@
   //! Terminal
   //? Use PowerShell on all platforms, facilitates running template scripts
   "terminal.integrated.defaultProfile.windows": "PowerShell",
-  "terminal.integrated.defaultProfile.linux": "PowerShell",
-  "terminal.integrated.defaultProfile.osx": "PowerShell",
+  "terminal.integrated.defaultProfile.linux": "pwsh",
+  "terminal.integrated.defaultProfile.osx": "pwsh",
   //! File excludes
   "files.exclude": {
     //? Cache directory set in `pyproject.toml`
@@ -16,8 +16,12 @@
     "**/*pylance-notebook-cell*": true
   },
   "search.exclude": {
-    //? Don't clutter search with submodule contents
-    "submodules": true
+    //? Template clutters quick-open
+    "submodules/template": true,
+    //? Type stubs clutter quick-open
+    "submodules/typings": true,
+    //? Locks clutter searches
+    "tools/lock.json": true
   },
   //! File nesting
   "explorer.sortOrder": "foldersNestsFiles",
@@ -34,8 +38,8 @@
     ".pylintrc": "ini",
     ".root": "plaintext",
     ".sourcery.yaml": "yaml",
-    "*requirements*.txt": "pip-requirements",
     "*ipython-input*": "python",
+    "*requirements*.in": "pip-requirements",
     "pyrightconfig.json": "jsonc"
   },
   //! Git
@@ -47,6 +51,11 @@
   "git.inputValidationLength": 1e100,
   "editor.wordWrapColumn": 88,
   "editor.rulers": [88],
+  "scm.inputMaxLineCount": 50,
+  "scm.inputMinLineCount": 3,
+  "[scminput]": {
+    "editor.rulers": [88]
+  },
   //! pytest
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
@@ -73,18 +82,26 @@
   },
   //! Extensions
   //* GitHub Actions
-  "github-actions.workflows.pinned.workflows": [".github/workflows/main.yml"],
+  "github-actions.workflows.pinned.workflows": [".github/workflows/ci.yml"],
   //* Jupyter Notebooks
   "jupyter.notebookFileRoot": "${workspaceFolder}",
   "jupyter.showVariableViewWhenDebugging": true,
+  //* MyST
+  "myst.preview.extensions": ["colon_fence", "dollarmath"],
+  // * Python
+  "python.terminal.activateEnvInCurrentTerminal": true,
   //* Pylance
   "python.languageServer": "Pylance",
+  "python.analysis.diagnosticMode": "openFilesOnly",
+  "python.analysis.typeCheckingMode": "strict",
+  "editor.inlayHints.enabled": "offUnlessPressed",
+  "python.analysis.addImport.heuristics": true,
   "python.analysis.autoFormatStrings": true,
   "python.analysis.autoImportCompletions": true,
   "python.analysis.completeFunctionParens": true,
+  "python.analysis.extraCommitChars": true,
   "python.analysis.gotoDefinitionInStringLiteral": true,
   "python.analysis.importFormat": "absolute",
-  "editor.inlayHints.enabled": "offUnlessPressed",
   "python.analysis.inlayHints.callArgumentNames": "all",
   "python.analysis.inlayHints.functionReturnTypes": true,
   "python.analysis.inlayHints.pytestParameters": true,
@@ -110,14 +127,23 @@
   "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "[powershell]": {
+    "editor.defaultFormatter": "ms-vscode.powershell",
+    "editor.wordWrap": "off"
+  },
   "[yaml]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.wordWrap": "off"
+  },
+  "[github-actions-workflow]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.wordWrap": "off"
   },
   "yaml.format.printWidth": 88,
   //* ruff (PY, IPYNB)
   "ruff.importStrategy": "fromEnvironment",
-  "ruff.format.args": [],
-  "ruff.lint.args": [],
+  "ruff.lint.args": ["--config", "pyproject.toml"],
+  "ruff.format.args": ["--config", "pyproject.toml"],
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.wordWrap": "off"

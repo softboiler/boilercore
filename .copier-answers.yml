@@ -1,7 +1,7 @@
 # Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
-_commit: 22b0caa
+_commit: c69e3b8
 _src_path: gh:blakeNaccarato/copier-python
-actions_runner: ubuntu-latest
+actions_runner: ubuntu-22.04
 active: true
 github_repo_name: boilercore
 project_description: Common functionality of boiler repositories.

@@ -1,16 +1,18 @@
 ci:
   skip:
-    # * ---------------------------------------------------------------------------- * #
-    - "synchronize-params"
+    - "sync"
+    - "fawltydeps-src"
+    - "fawltydeps-docs"
+    - "fawltydeps-scripts"
+    - "fawltydeps-tests"
+    - "pytest-fast-only"
     - "dvc-post-checkout"
     - "dvc-pre-push"
-    # * ---------------------------------------------------------------------------- * #
-    - "core-update"
-    - "pytest-fast-only"
-    - "check-undeclared"
-    - "check-unused"
   autoupdate_schedule: "quarterly"
-
+default_install_hook_types:
+  - pre-commit
+  - post-checkout # sync, dvc-post-checkout
+  - pre-push # dvc-pre-push
 repos:
   - repo: "meta"
     hooks:
@@ -19,70 +21,79 @@ repos:
       - id: "check-useless-excludes"
   - repo: "local"
     hooks:
-      # * -------------------------------------------------------------------------- * #
-      - id: "synchronize-params"
-        name: "synchronize-params"
-        language: "system"
-        entry: "pwsh -Command python -m boilercore.models.params"
-        files: |
-          (?x)^(
-            src/boilercore/models/.*
-            |params.yaml
-          )$
-      # * -------------------------------------------------------------------------- * #
-      - id: "core-update"
-        name: "core-update"
-        stages: ["post-commit"]
+      - id: "sync"
+        name: "sync"
+        stages:
+          - "pre-commit"
+          - "post-checkout"
         always_run: true
-        verbose: true
-        pass_filenames: false
-        language: "system"
-        entry: "pwsh -Command python .tools/scripts/core_update.py"
-      - id: "pytest-fast-only"
-        name: "pytest-fast-only"
-        verbose: true
         pass_filenames: false
         language: "system"
         entry: |
-          pwsh -Command "pytest -m 'not slow' --suppress-no-test-exit-code"
+          pwsh -Command ". scripts/Initialize-Shell.ps1; scripts/Sync-Py.ps1"
+      - id: "fawltydeps-src"
+        name: "fawltydeps-src"
+        pass_filenames: false
+        language: "system"
+        entry: |
+          pwsh -Command ". scripts/Initialize-Shell.ps1; fawltydeps --config-file pyproject.toml"
         files: |
           (?x)^(
-            pyproject\.toml
+            pyproject.toml
+            |src/.*$
+          )$
+      - id: "fawltydeps-docs"
+        name: "fawltydeps-docs"
+        pass_filenames: false
+        language: "system"
+        files: "^docs/.*$"
+        entry: |
+          pwsh -Command ". scripts/Initialize-Shell.ps1; fawltydeps --config-file docs/pyproject.toml"
+      - id: "fawltydeps-scripts"
+        name: "fawltydeps-scripts"
+        pass_filenames: false
+        language: "system"
+        files: "^scripts/.*$"
+        entry: |
+          pwsh -Command ". scripts/Initialize-Shell.ps1; fawltydeps --config-file scripts/pyproject.toml"
+      - id: "fawltydeps-tests"
+        name: "fawltydeps-tests"
+        pass_filenames: false
+        language: "system"
+        files: "^tests/.*$"
+        entry: |
+          pwsh -Command ". scripts/Initialize-Shell.ps1; fawltydeps --config-file tests/pyproject.toml"
+      - id: "pytest-fast-only"
+        name: "pytest-fast-only"
+        pass_filenames: false
+        language: "system"
+        entry: |
+          pwsh -Command ". scripts/Initialize-Shell.ps1; pytest -m 'not slow' --suppress-no-test-exit-code"
+        files: |
+          (?x)^(
+            .*/pyproject\.toml
+            |docs/.*
+            |requirements/.*
+            |scripts/.*
             |src/.*
             |tests/.*
-            |\.tools/requirements/.*
           )$
   - repo: "https://github.com/pre-commit/pre-commit-hooks"
     rev: "v4.5.0"
     hooks:
       - id: "end-of-file-fixer"
       - id: "trailing-whitespace"
-  # * ------------------------------------------------------------------------------ * #
   - repo: "https://github.com/iterative/dvc"
-    rev: "3.45.0"
+    rev: "3.49.0"
     hooks:
       - id: "dvc-post-checkout"
         additional_dependencies: ["dvc[gs]"]
       - id: "dvc-pre-push"
         additional_dependencies: ["dvc[gs]"]
-  # * ------------------------------------------------------------------------------ * #
-  - repo: "https://github.com/tweag/FawltyDeps"
-    rev: "v0.15.0"
-    hooks:
-      - id: "check-undeclared"
-        files: |
-          (?x)^(
-            src/.*
-          )$
-      - id: "check-unused"
-        files: |
-          (?x)^(
-            pyproject\.toml
-          )$
   - repo: "https://github.com/DavidAnson/markdownlint-cli2"
-    rev: "v0.11.0"
+    rev: "v0.12.1"
     hooks:
-      - id: "markdownlint-cli2-fix"
+      - id: "markdownlint-cli2"
   - repo: "https://github.com/srstevenson/nb-clean"
     rev: "3.2.0"
     hooks:
@@ -95,14 +106,15 @@ repos:
           - "--"
         files: |
           (?x)^(
-            src/.*
-            |docs/.*
+            docs/.*
+            |src/.*
             |tests/.*
           )$
   - repo: "https://github.com/charliermarsh/ruff-pre-commit"
-    rev: "v0.2.1"
+    rev: "v0.3.5"
     hooks:
       - id: "ruff"
+        args: ["--extend-fixable", "PIE790"]
         types_or: ["python", "pyi", "jupyter"]
       - id: "ruff-format"
         types_or: ["python", "pyi", "jupyter"]

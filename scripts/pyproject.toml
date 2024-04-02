@@ -1,0 +1,21 @@
+[build-system]
+requires = ["flit_core==3.9.0"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "boilercore_tools"
+version = "0.0.0"
+description = "Tools."
+dependencies = ["cyclopts==2.5.0"]
+[project.scripts]
+"boilercore_tools" = "boilercore_tools.__main__:main"
+
+[tool.fawltydeps]
+deps = ["scripts/pyproject.toml"]
+code = ["scripts/boilercore_tools"]
+ignore_undeclared = [
+    "boilercore",
+    "boilercore_docs",
+    "boilercore_scripts",
+    "boilercore_tests",
+]
