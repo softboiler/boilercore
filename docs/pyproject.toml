@@ -12,7 +12,7 @@ dependencies = [
     "linkify-it-py==2.0.3",
     "myst-nb==1.1.0",
     "myst-parser==3.0.1",
-    "nbformat==5.10.3",
+    "nbformat==5.10.4",
     "numpydoc==1.7.0",
     "ruamel-yaml==0.18.6",
     "sphinx-autobuild==2024.4.16",
@@ -30,7 +30,7 @@ dependencies = [
     "ipykernel>=6.29.4",
     "matplotlib>=3.7.2",
     "numpy>=1.24.4",
-    "pandas[hdf5,performance]>=2.0.2",
+    "pandas[hdf5,performance]>=2.2.2",
     "seaborn>=0.12.2",
     "sympy>=1.12",
 ]
