@@ -1,9 +1,9 @@
 """Fit parameters."""
 
-from typing import Literal, TypeAlias
-
 import numpy as np
 from pydantic.v1 import BaseModel, Field, validator
+
+from boilercore.models.types import Bound
 
 FIT_METHOD = "trf"
 """Default curve fitting method. Supports bounded curve fits."""
@@ -22,10 +22,8 @@ FIXED_PARAMS = ["k", "h_w"]
 
 
 def get_model_errors(params: list[str]) -> list[str]:
+    """Get error parameters for model parameters."""
     return [f"{param}_err" for param in params]
-
-
-Bound: TypeAlias = float | Literal["-inf", "inf"]
 
 
 class Fit(BaseModel):

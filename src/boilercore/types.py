@@ -1,6 +1,7 @@
 """Types."""
 
-from typing import Literal, TypeVar
+from collections.abc import Callable, ItemsView, Iterable, Mapping
+from typing import Any, Literal, TypeAlias, TypeVar
 
 Bound = TypeVar("Bound", bound=tuple[float | str, float | str])
 """Boundary for a parameter to be fitted."""
@@ -22,3 +23,10 @@ Joint = Literal["paste", "epoxy", "solder", "none"]
 
 Sample = Literal["B3"]
 """The sample attached to the coupon in this trial."""
+
+Action: TypeAlias = Literal["default", "error", "ignore", "always", "module", "once"]
+"""Action to take for a warning."""
+Freezable: TypeAlias = (
+    Callable[..., Any] | Mapping[str, Any] | ItemsView[str, Any] | Iterable[Any]
+)
+"""Value that can be frozen."""

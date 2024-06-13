@@ -2,20 +2,19 @@
 
 from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
-from typing import Any, TypeVar, get_origin
+from typing import Any, get_origin
 
 from pydantic.v1 import BaseModel, validator
 from ruamel.yaml import YAML
+
+from boilercore.models.types import PathOrPaths, Paths
+from boilercore.models.types import T as T
 
 YAML_INDENT = 2
 yaml = YAML()
 yaml.indent(mapping=YAML_INDENT, sequence=YAML_INDENT, offset=YAML_INDENT)
 yaml.width = 1000  # Otherwise Ruamel breaks lines illegally
 yaml.preserve_quotes = True
-
-T = TypeVar("T", bound=Path | str)
-PathOrPaths = T | list[T] | dict[str, T]
-Paths = dict[str, PathOrPaths[T]]
 
 
 class YamlModel(BaseModel):

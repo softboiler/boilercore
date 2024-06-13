@@ -13,12 +13,8 @@ from cachier import cachier, set_default_params
 import boilercore
 from boilercore import filter_certain_warnings
 from boilercore.hashes import hash_args
-from boilercore.notebooks.namespaces import (
-    NO_PARAMS,
-    Params,
-    get_cached_nb_ns,
-    get_ns_attrs,
-)
+from boilercore.notebooks.namespaces import NO_PARAMS, get_cached_nb_ns, get_ns_attrs
+from boilercore.notebooks.types import Params
 from boilercore.testing import get_session_path, unwrap_node
 from boilercore_tests import EMPTY_NB
 

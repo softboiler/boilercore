@@ -2,9 +2,11 @@
 
 from collections.abc import Callable, Hashable, ItemsView, Iterable, Mapping
 from inspect import getsource, signature
-from typing import Any, TypeAlias
+from typing import Any
 
 from cachier.core import _default_hash_func
+
+from boilercore.types import Freezable
 
 
 def hash_args(
@@ -36,11 +38,6 @@ def hash_args(
     return _default_hash_func(
         (), {param: freeze(val) for param, val in bound_args.items()}
     )
-
-
-Freezable: TypeAlias = (
-    Callable[..., Any] | Mapping[str, Any] | ItemsView[str, Any] | Iterable[Any]
-)
 
 
 def freeze(v: Hashable | Freezable) -> Hashable:

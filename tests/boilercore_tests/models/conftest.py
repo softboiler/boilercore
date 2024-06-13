@@ -11,7 +11,7 @@ from boilercore.models import (
     SynchronizedPathsYamlModel,
     YamlModel,
 )
-from boilercore_tests.models import VarietyOfPaths
+from boilercore_tests.models.types import VarietyOfPaths
 
 
 @pytest.fixture(params=[DefaultPathsModel, CreatePathsModel])

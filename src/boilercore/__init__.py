@@ -5,19 +5,17 @@ from importlib.machinery import ModuleSpec
 from itertools import chain
 from pathlib import Path
 from types import ModuleType
-from typing import Literal, NamedTuple, TypeAlias
+from typing import NamedTuple
 from warnings import filterwarnings
 
 from boilercore.paths import get_module_name
+from boilercore.types import Action
 
 PROJECT_PATH = Path()
 
 
 def get_params_file():  # noqa: D103
     return PROJECT_PATH / "params.yaml"
-
-
-Action: TypeAlias = Literal["default", "error", "ignore", "always", "module", "once"]
 
 
 class WarningFilter(NamedTuple):

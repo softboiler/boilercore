@@ -44,6 +44,7 @@ VERSION = ANS["project_version"]
 # ! Intersphinx and related
 ISPX_MAPPING: dict[str, IspxMappingValue] = {
     **{pkg: get_rtd(pkg) for pkg in ["myst_parser", "nbformat", "numpydoc"]},
+    "matplotlib": get_url("matplotlib.org"),
     "pytest": get_url("docs.pytest.org/en"),
     "pandas": get_ispx("pandas.pydata.org/docs"),
     "python": get_ispx("docs.python.org/3"),
@@ -178,7 +179,6 @@ nitpicky = True
 autodoc2_packages = [
     f"../src/{PACKAGE}",
     f"{PACKAGE}_docs",
-    f"../pipeline/{PACKAGE}_pipeline",
     f"../tests/{PACKAGE}_tests",
     f"../scripts/{PACKAGE}_tools",
 ]
@@ -192,13 +192,17 @@ maximum_signature_line_length = 1
 autodoc2_docstring_parser_regexes = [(".*", f"{PACKAGE}_docs.docstrings")]
 # ! Intersphinx
 intersphinx_mapping = ISPX_MAPPING
-nitpick_ignore = []
+nitpick_ignore = [
+    ("py:class", "ploomber_engine.ipython.PloomberClient"),
+    ("py:class", "dvc.repo.Repo"),
+]
 nitpick_ignore_regex = [
     # ? Missing inventory
     (r"py:.*", r"docutils\..+"),
     (r"py:.*", r"numpydoc\.docscrape\..+"),
     (r"py:.*", r"_pytest\..+"),
     (r"py:.*", r"numpy\.typing\..+"),
+    (r"py:.*", r"ploomber_engine\.ipython\.+"),
     (r"py:.*", r"pydantic\..+"),  # ? https://github.com/pydantic/pydantic/issues/1339
     # ? TypeAlias: https://github.com/sphinx-doc/sphinx/issues/10785
     (r"py:class", rf"{PACKAGE}.*\.types\..+"),
