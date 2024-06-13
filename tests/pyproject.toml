@@ -25,10 +25,10 @@ dependencies = [
 deps = ["tests/pyproject.toml"]
 code = ["tests/boilercore_tests"]
 ignore_undeclared = [
-    "boilercore",
     "boilercore_docs",
-    "boilercore_scripts",
     "boilercore_tests",
+    "boilercore_tools",
+    "boilercore",
 ]
 ignore_unused = [
     # ? Core testung tools or plugins

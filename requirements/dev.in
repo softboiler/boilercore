@@ -2,15 +2,13 @@
 --editable docs/
 --editable scripts/
 --editable tests/
-copier==9.2.0
-pyyaml-include==1.4.1  # ! https://github.com/copier-org/copier/issues/1568
 debugpy==1.8.1
 fawltydeps==0.15.0
 flit==3.9.0
-keyring==25.0.0
-packaging==24.0
-pre-commit==3.7.0
-pyright==1.1.356
-ruff==0.3.5
+keyring==25.2.1
+pre-commit==3.7.1
+pyright==1.1.367
+ruff==0.4.8
 snakeviz==2.2.0
-sourcery-cli==1.16.0
+sourcery==1.19.0
+towncrier==23.11.0

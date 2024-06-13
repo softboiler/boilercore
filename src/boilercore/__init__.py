@@ -13,7 +13,7 @@ from boilercore.paths import get_module_name
 PROJECT_PATH = Path()
 
 
-def get_params_file():
+def get_params_file():  # noqa: D103
     return PROJECT_PATH / "params.yaml"
 
 

@@ -57,7 +57,6 @@ def cached_function_and_cache_file(
     request, project_session_path
 ) -> Iterator[tuple[Callable[..., Any], Path]]:
     """Get cached minimal namespace suitable for passing to a receiving function."""
-
     cache_dir = project_session_path / ".cachier"
     cache_filename: Path | None = None
 
@@ -81,10 +80,10 @@ def cached_function_and_cache_file(
 
 
 @pytest.fixture()
-def cached_function(cached_function_and_cache_file):
+def cached_function(cached_function_and_cache_file):  # noqa: D103
     return cached_function_and_cache_file[0]
 
 
 @pytest.fixture()
-def cache_file(cached_function_and_cache_file):
+def cache_file(cached_function_and_cache_file):  # noqa: D103
     return cached_function_and_cache_file[1]

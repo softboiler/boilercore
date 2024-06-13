@@ -97,7 +97,6 @@ def fit(
     method: Literal["trf", "dogbox"] = "trf",
 ) -> tuple[Any, Any]:
     """Get fits and errors."""
-
     # Perform fit, filling "nan" on failure or when covariance computation fails
     with catch_warnings():
         warnings.simplefilter("error", category=OptimizeWarning)

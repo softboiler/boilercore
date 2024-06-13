@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "description": "Establish base config, schedule, and manager defaults",
-  "addLabels": ["deps"],
+  "addLabels": ["dependencies"],
   "extends": ["config:base", "group:all", ":enablePreCommit"],
   "dependencyDashboardApproval": false,
   "schedule": ["on the 16th day of the month"],
@@ -9,6 +9,7 @@
     "enabled": true
   },
   "enabledManagers": [
+    "devcontainer",
     "git-submodules",
     "github-actions",
     "pep621",
@@ -24,13 +25,13 @@
       "description": "Sync with template",
       "groupName": "template",
       "matchManagers": ["git-submodules"],
-      "matchPackageNames": ["submodules/template"]
+      "matchDepNames": ["submodules/template"]
     },
     {
       "description": "Stubs for pandas sometimes lag",
       "groupName": "pandas",
       "matchManagers": ["pep621", "pip_requirements"],
-      "matchPackageNames": ["pandas", "pandas-stubs"]
+      "matchDepNames": ["pandas", "pandas-stubs"]
     }
   ]
 }

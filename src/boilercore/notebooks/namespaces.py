@@ -43,7 +43,8 @@ def get_nb_ns(
         params: Parameters to inject below the first `parameters`-tagged code cell.
         attributes: If given, limit the notebook attributes to return in the namespace.
 
-    Returns:
+    Returns
+    -------
         Notebook namespace.
 
     Example:
@@ -88,7 +89,8 @@ def get_cached_nb_ns(
         params: Parameters to inject below the first `parameters`-tagged code cell.
         attributes: If given, limit the notebook attributes to return in the namespace.
 
-    Returns:
+    Returns
+    -------
         Notebook namespace.
 
     Example:
@@ -109,11 +111,12 @@ def get_nb_client(nb: str) -> PloomberClient:
 
 
 class AccessedAttributesVisitor(NodeVisitor):
+    """Map accessed attributes to their namespaces."""
+
     def __init__(self):
-        """Maps accessed attributes to their namespaces."""
         self.names: dict[str, set[str]] = defaultdict(set)
 
-    def visit_Attribute(self, node: ast.Attribute):  # noqa: N802
+    def visit_Attribute(self, node: ast.Attribute):  # noqa: N802, D102
         if isinstance(node.value, ast.Name) and not node.attr.startswith("__"):
             self.names[node.value.id].add(node.attr)
         self.generic_visit(node)

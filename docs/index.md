@@ -1,11 +1,10 @@
-:::{include} ../README.md
-:relative-docs: docs/
-:relative-images:
-:::
+# `boilercore`
+
+Common functionality of boiler repositories.
 
 :::{toctree}
 :hidden:
-examples/index
+contributing
 changelog
 apidocs/index
 references
