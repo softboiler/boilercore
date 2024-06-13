@@ -144,7 +144,7 @@ numpydoc==1.7.0
 omegaconf==2.3.0
 orjson==3.10.4
 packaging==24.1
-pandas-stubs==2.2.2.240514
+pandas-stubs==2.2.2.240603
 pandas==2.2.2
 pandocfilters==1.5.1
 parso==0.8.4
