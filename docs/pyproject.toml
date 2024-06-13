@@ -12,7 +12,7 @@ dependencies = [
     "linkify-it-py==2.0.3",
     "myst-nb==1.1.0",
     "myst-parser==3.0.1",
-    "nbformat==5.10.3",
+    "nbformat==5.10.4",
     "numpydoc==1.7.0",
     "ruamel-yaml==0.18.6",
     "sphinx-autobuild==2024.4.16",
