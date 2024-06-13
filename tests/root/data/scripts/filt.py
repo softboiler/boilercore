@@ -12,7 +12,7 @@ memory: list[str] = []
 """Memory of block keys for multi-block matching."""
 
 
-def main(
+def main(  # noqa: D103
     key: str, _value: str, _format: str, _meta: dict[str, Any]
 ) -> list[Any] | None:
     checks = [check_table(key)]
@@ -38,6 +38,7 @@ TABLE = ["RawBlock", "Plain", "Str"]
 
 
 def check_table(key: str) -> Check:
+    """Check if the current block is part of a table."""
     if key == TABLE[0]:
         memory.append(key)
         return Check()

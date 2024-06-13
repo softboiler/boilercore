@@ -8,7 +8,6 @@ from pydantic.v1 import BaseModel, validator
 from ruamel.yaml import YAML
 
 from boilercore.models.types import PathOrPaths, Paths
-from boilercore.models.types import T as T
 
 YAML_INDENT = 2
 yaml = YAML()
@@ -34,6 +33,7 @@ class YamlModel(BaseModel):
         return yaml.load(data_file) or {} if data_file.exists() else {}
 
     def update_schema(self, data_file: Path):
+        """Update the schema file next to the data file."""
         schema_file = data_file.with_name(f"{data_file.stem}_schema.json")
         schema_file.write_text(
             encoding="utf-8", data=f"{self.schema_json(indent=YAML_INDENT)}\n"
@@ -90,6 +90,8 @@ class DefaultPathsModel(BaseModel):
     """All fields must be path-like and have defaults specified in this model."""
 
     class Config:
+        """Model config."""
+
         @staticmethod
         def schema_extra(schema: dict[str, Any], model):
             """Replace backslashes with forward slashes in paths."""

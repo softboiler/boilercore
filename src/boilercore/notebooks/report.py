@@ -42,6 +42,7 @@ ZOTERO.write_bytes(
 
 
 async def generate(paths, repo: Repo | None = None):
+    """Generate reports for notebooks."""
     nbs = get_nbs(repo, paths)
     if not nbs:
         return

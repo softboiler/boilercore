@@ -1,3 +1,5 @@
+"""Model function generation tools."""
+
 import warnings
 from collections.abc import Callable
 from functools import wraps

@@ -12,6 +12,8 @@ from numpy.typing import ArrayLike
 
 
 class MFParam(NamedTuple):
+    """Parameter for model function tests."""
+
     run: str
     y: ArrayLike
     expected: dict[str, float]

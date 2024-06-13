@@ -18,6 +18,7 @@ from boilercore_tests.models.types import VarietyOfPaths
 def paths_and_model(
     request: pytest.FixtureRequest, tmp_path: Path
 ) -> tuple[VarietyOfPaths, type[DefaultPathsModel]]:
+    """Paths and model."""
     path = tmp_path / "directory"
     path_sequence = tuple(tmp_path / path for path in ["a", "b", "c"])
     path_mapping = {f"{i}": path for i, path in enumerate(path_sequence)}
@@ -33,6 +34,7 @@ def paths_and_model(
 def pathsmodel(
     request: pytest.FixtureRequest, tmp_path: Path
 ) -> type[DefaultPathsModel]:
+    """Paths model."""
     path_ = tmp_path / "directory"
     path_sequence_ = tuple(tmp_path / path for path in ["a", "b", "c"])
     path_mapping_ = {f"{i}": path for i, path in enumerate(path_sequence_)}
@@ -61,6 +63,7 @@ def pathsmodel(
 def yamlmodel(
     request: pytest.FixtureRequest, pathsmodel: type[DefaultPathsModel]
 ) -> type[DefaultPathsModel]:
+    """YAML model."""
     tmp_path = pathsmodel.__fields__["tmp_path_"].default
 
     class Params(request.param):

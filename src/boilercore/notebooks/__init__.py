@@ -1,4 +1,4 @@
-"""Notebook helpers."""
+"""Formatting and display utilities."""
 
 from asyncio import create_subprocess_exec
 from asyncio.subprocess import PIPE
@@ -15,6 +15,7 @@ from sympy.printing.latex import latex
 
 def set_format():
     """Set up formatting for interactive notebook sessions.
+
     The triple curly braces in the f-string allows the format function to be dynamically
     specified by a given float specification. The intent is clearer this way, and may be
     extended in the future by making `float_spec` a parameter.
@@ -32,16 +33,19 @@ def disp_named(*args: tuple[Any, str]):
 
 
 def disp_free(title, eqn, **kwargs):
+    """Display free symbols."""
     disp(title, eqn, **kwargs)
     disp("Free symbols", FiniteSet(*eqn.rhs.free_symbols), **kwargs)
 
 
 def disp(title, *exprs, **kwargs):
+    """Display equation."""
     print(f"{title}:")  # noqa: T201
     display(*(math_mod(expr, **kwargs) for expr in exprs))
 
 
 def math_mod(expr, long_frac_ratio=3, **kwargs):
+    """Represent expression as LaTeX math."""
     return Math(latex(expr, long_frac_ratio=long_frac_ratio, **kwargs))
 
 

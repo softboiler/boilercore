@@ -27,6 +27,7 @@ class Trial(BaseModel):
     @validator("date", pre=True)
     @classmethod
     def validate_date(cls, date):
+        """Validate a date."""
         return datetime.date.fromisoformat(date)
 
     group: Group
@@ -43,6 +44,7 @@ class Trial(BaseModel):
 
     @property
     def timestamp(self):
+        """Trial timestamp."""
         return pd.Timestamp(self.date)
 
     # Loaded from config, but not propagated to dataframes. Not readable in a table
@@ -61,6 +63,7 @@ class Trial(BaseModel):
     thermocouple_pos: dict[str, float] = Field(default=None, exclude=True)
 
     def setup(self, paths, geometry: Geometry, copper_temps: list[str]):
+        """Set up the trial."""
         self.set_paths(paths)
         self.set_geometry(geometry, copper_temps)
 

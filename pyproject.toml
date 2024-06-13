@@ -43,12 +43,7 @@ email = "blake.naccarato@gmail.com"
 
 [tool.coverage.run]
 branch = true
-source = [
-    "boilercore",
-    "boilercore_docs",
-    "boilercore_tests",
-    "boilercore_tools",
-]
+source = ["boilercore", "boilercore_docs", "boilercore_tests", "boilercore_tools"]
 [tool.coverage.report]
 ignore_errors = true
 [tool.fawltydeps]
@@ -281,6 +276,9 @@ skip-magic-trailing-comma = true
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
 [tool.ruff.lint.extend-per-file-ignores]
+"src/*/models/**" = [
+    "RUF012", # False positives for Pydantic v2 when importing via `pydantic.v1`
+]
 "**/*.ipynb" = [
     "B018", # Allow "useless" expressions, which do suppress outputs in notebooks
     "E703", # Allow semicolons to suppress outputs in notebooks
