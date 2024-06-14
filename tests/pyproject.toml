@@ -31,7 +31,7 @@ ignore_undeclared = [
     "boilercore",
 ]
 ignore_unused = [
-    # ? Core testung tools or plugins
+    # ? Core testing tools or plugins
     "pytest-cov",
     "pytest-custom-exit-code",
     "pytest-github-actions-annotate-failures",
