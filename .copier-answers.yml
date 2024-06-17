@@ -7,7 +7,7 @@ github_repo_name: boilercore
 project_description: Common functionality of boiler repositories.
 project_email: blake.naccarato@gmail.com
 project_name: boilercore
-project_owner_github_username: blakeNaccarato
+project_owner_github_username: softboiler
 project_owner_name: Blake Naccarato, Kwang Jin Kim
 project_version: 0.0.4
 python_version: '3.11'
