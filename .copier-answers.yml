@@ -1,10 +1,10 @@
 # Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
-_commit: 1949a71
+_commit: 0764b33
 _src_path: gh:blakeNaccarato/copier-python
 actions_runner: ubuntu-22.04
 active: true
 github_repo_name: boilercore
-project_description: Common functionality of boiler repositories.
+project_description: Common functionality of boiler repositories
 project_email: blake.naccarato@gmail.com
 project_name: boilercore
 project_owner_github_username: softboiler
