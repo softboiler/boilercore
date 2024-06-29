@@ -18,7 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ### Changes
 
-- Publish first version under CalVer([#53](https://github.com/softboiler/boilercore/issues/53))
+- Publish first version under CalVer ([#53](https://github.com/softboiler/boilercore/issues/53))
 
 ## [0.0.4](https://github.com/softboiler/boilercore/releases/tag/0.0.4)
 
