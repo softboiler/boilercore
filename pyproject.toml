@@ -9,7 +9,11 @@ description = "Common functionality of boiler repositories"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.11"
-classifiers = ["License :: OSI Approved :: MIT License"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
 dependencies = [
     "dill>=0.3.7",
     "dulwich>=0.21.5",
@@ -26,7 +30,7 @@ dependencies = [
     "pydantic>=2",
     "pytest>=7.4.0",
     "ruamel.yaml>=0.17.32",
-    "scipy>=1.11.1",
+    "scipy>=1.11.2",
     "sympy>=1.12",
     "uncertainties>=3.1.7",
     "cachier>=3.0.0",
