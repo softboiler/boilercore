@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "boilercore"
-version = "0.0.4"
+version = "2024.01.01"
 description = "Common functionality of boiler repositories"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -78,7 +78,7 @@ directory = "changelog"
 filename = "CHANGELOG.md"
 template = "changelog/towncrier_template.md.jinja"
 title_format = ""
-issue_format = "[#{issue}](https://github.com/softboiler/boilercore/{issue})"
+issue_format = "[#{issue}](https://github.com/softboiler/boilercore/issues/{issue})"
 underlines = ["", "", ""]
 [[tool.towncrier.section]]
 path = ""
