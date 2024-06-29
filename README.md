@@ -2,7 +2,12 @@
 
 [![All Contributors](https://img.shields.io/github/all-contributors/softboiler/boilercv?color=ee8449&style=flat-square)](#contributors)
 
-Common functionality of boiler repositories.
+Common functionality of boiler repositories. To use `cachier` test adapter
+functionality, install the hacked version which replaces `pickle` with `dill`.
+
+```PowerShell
+pip install 'cachier @ git+https://github.com/blakeNaccarato/cachier@db7f394a553a90944ca25c2d687771006e77a024'
+```
 
 ## Project information
 
