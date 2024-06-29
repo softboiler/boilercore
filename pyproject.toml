@@ -30,7 +30,7 @@ dependencies = [
     "sympy>=1.12",
     "uncertainties>=3.1.7",
     #! Change pin during releases
-    "cachier@git+https://github.com/blakeNaccarato/cachier@0892f53dc8fd9fb8a7f959305a1a9ec692876dc0",
+    "cachier @ git+https://github.com/blakeNaccarato/cachier@db7f394a553a90944ca25c2d687771006e77a024",
 ]
 [project.urls]
 Changes = "https://softboiler.github.io/boilercore/changelog.html"

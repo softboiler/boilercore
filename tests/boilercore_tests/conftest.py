@@ -59,7 +59,7 @@ def cached_function_and_cache_file(
     def custom_cachier(fun: Callable[..., Any]):
         nonlocal cache_filename
         wrapper = cachier(hash_func=partial(hash_args, fun), cache_dir=cache_dir)(fun)
-        cache_filename = Path(getclosurevars(wrapper).nonlocals["core"]._cache_fname())
+        cache_filename = Path(getclosurevars(wrapper).nonlocals["core"].cache_fname)
 
         return wrapper
 

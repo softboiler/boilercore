@@ -159,7 +159,7 @@ jobs:
         python:
           # - "3.10"  # ? Using some 3.11-specific features
           - "3.11"
-          # - "3.12" # ? No support in my commit-pinned fork of cachier
+          - "3.12"
           # - "3.13.0-beta.2"  # ? https://github.com/indygreg/python-zstandard/issues/210
           # - "3.14.0-alpha.0"  # ? https://github.com/PyO3/pyo3/issues/3555
     runs-on: "${{ matrix.runner }}"

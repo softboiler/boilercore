@@ -18,7 +18,7 @@ dependencies = [
     "pydantic>=2",
     "seaborn==0.13.2",
     "sympy>=1.12",
-    "cachier@git+https://github.com/blakeNaccarato/cachier@0892f53dc8fd9fb8a7f959305a1a9ec692876dc0",
+    "cachier @ git+https://github.com/blakeNaccarato/cachier@db7f394a553a90944ca25c2d687771006e77a024",
 ]
 
 [tool.fawltydeps]
