@@ -10,27 +10,23 @@ See https://github.com/python-attrs/attrs/blob/main/.github/CONTRIBUTING.md#chan
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Calendar Versioning](https://calver.org/). The **first number** of the version is the year. The **second number** is incremented with each release, starting at 1 for each year. The **third number** is for emergencies when we need to start branches for older releases, or for very minor changes.
 
 <!-- towncrier release notes start -->
 
-## [Unreleased]
-
-- Nothing yet
-
-## [0.0.4]
+## [0.0.4](https://github.com/softboiler/boilercore/releases/tag/0.0.4)
 
 - Capitalize citation file so it will be recognized by Zenodo
 
-## [0.0.3]
+## [0.0.3](https://github.com/softboiler/boilercore/releases/tag/0.0.3)
 
 - Include DOI in citation file
 
-## [0.0.2]
+## [0.0.2](https://github.com/softboiler/boilercore/releases/tag/0.0.2)
 
 - Add placeholder citation file
 
-## [0.0.1]
+## [0.0.1](https://github.com/softboiler/boilercore/releases/tag/0.0.1)
 
 - Pydantic models for boiler projects
 - Jupyter notebook namespace helpers for module code and tests
@@ -39,13 +35,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - Common paths and helpers for walking project modules, useful in tests
 - Useful constructs for warning filtering, especially in tests
 
-## [0.0.0]
+## [0.0.0](https://github.com/softboiler/boilercore/releases/tag/0.0.0)
 
 - No features yet
-
-[Unreleased]: https://github.com/softboiler/boilercore/compare/0.0.4...HEAD
-[0.0.4]: https://github.com/softboiler/boilercore/releases/tag/0.0.4
-[0.0.3]: https://github.com/softboiler/boilercore/releases/tag/0.0.3
-[0.0.2]: https://github.com/softboiler/boilercore/releases/tag/0.0.2
-[0.0.1]: https://github.com/softboiler/boilercore/releases/tag/0.0.1
-[0.0.0]: https://github.com/softboiler/boilercore/releases/tag/0.0.0
