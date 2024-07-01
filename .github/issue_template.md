@@ -10,9 +10,9 @@ Please apply the `bug` label
 
 ### Please confirm that this bug affects the latest version
 
-<!-- Please verify the issue is present in the latest version by installing it with `pip install boilercore==2024.01.01` and checking that the bug is still there #} -->
+<!-- Please verify the issue is present in the latest version by installing it with `pip install boilercore==2024.1.2` and checking that the bug is still there #} -->
 
-- [ ] This bug affects version `2024.01.01` of `boilercore`.
+- [ ] This bug affects version `2024.1.2` of `boilercore`.
 
 ### Please indicate which operating system(s) you are using
 

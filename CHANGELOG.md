@@ -14,6 +14,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 <!-- towncrier release notes start -->
 
+## [2024.1.2](https://github.com/softboiler/boilercore/tree/2024.1.2)
+
+### Changes
+
+- Specify CalVer without leading zeros since PyPI normalizes those away anyways([#55](https://github.com/softboiler/boilercore/issues/55))
+
 ## [2024.01.01](https://github.com/softboiler/boilercore/tree/2024.01.01)
 
 ### Changes

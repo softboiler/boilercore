@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "boilercore"
-version = "2024.01.01"
+version = "2024.1.2"
 description = "Common functionality of boiler repositories"
 readme = "README.md"
 license = { file = "LICENSE" }
