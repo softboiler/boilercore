@@ -19,7 +19,8 @@ begin {
     $Template = $TemplateExists ? $Template : 'origin/main'
     function Get-Ref {
         Param($Ref)
-        return ($Ref -eq 'HEAD') ? $(git rev-parse $Template) : $Ref
+        $TemplateRev = $TemplateExists ? "HEAD:$Template" : 'origin/main'
+        return ($Ref -eq 'HEAD') ? $(git rev-parse $TemplateRev) : $Ref
     }
 }
 process {
