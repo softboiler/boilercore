@@ -9,4 +9,4 @@ paths:
   filt: data/scripts/filt.py
   csl: data/scripts/international-journal-of-heat-and-mass-transfer.csl
   template: data/scripts/template.dotx
-  model: data/model.dillpickle
+  models: data/models

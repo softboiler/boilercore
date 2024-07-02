@@ -4,4 +4,4 @@ stages:
     deps:
       - "${paths.stages.modelfun}"
     outs:
-      - "${paths.model}"
+      - "${paths.models}"

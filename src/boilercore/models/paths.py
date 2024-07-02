@@ -1,7 +1,5 @@
 """Project paths."""
 
-from pathlib import Path
-
 from pydantic.v1 import DirectoryPath, FilePath
 
 import boilercore
@@ -30,4 +28,4 @@ class Paths(CreatePathsModel):
     template: FilePath = scripts / "template.dotx"
 
     # * DVC-tracked results
-    model: Path = data / "model.dillpickle"
+    models: DirectoryPath = data / "models"
