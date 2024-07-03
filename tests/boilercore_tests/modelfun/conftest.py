@@ -27,7 +27,7 @@ def nb_model(ns):
 @pytest.fixture()
 def model(params):
     """Deserialized model."""
-    _, model = get_model(params.paths.model)
+    _, model = get_model(params.paths.models)
     return model
 
 

@@ -4,15 +4,19 @@ import warnings
 from collections.abc import Callable
 from functools import wraps
 from pathlib import Path
+from sys import version_info
 from typing import Any
 
 import dill
 import numpy as np
 
 
-def get_model(model: Path):
+def get_model(models: Path):
     """Unpickle the model function for fitting data."""
-    file_bytes = Path(model).read_bytes()
+    file_bytes = Path(
+        models
+        / f"modelfun-{'.'.join([str(elem) for elem in version_info[:2]])}.dillpickle"
+    ).read_bytes()
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", dill.UnpicklingWarning)
         unpickled_model = dill.loads(file_bytes)
