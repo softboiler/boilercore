@@ -14,6 +14,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 <!-- towncrier release notes start -->
 
+## [2024.1.3](https://github.com/softboiler/boilercore/tree/2024.1.3)
+
+### Changes
+
+- Sign releases from now on
+- Generate model function for all supported Python versions
+
 ## [2024.1.2](https://github.com/softboiler/boilercore/tree/2024.1.2)
 
 ### Changes
