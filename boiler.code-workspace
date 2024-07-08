@@ -4,6 +4,9 @@
       "path": "."
     },
     {
+      "path": "../boilercine"
+    },
+    {
       "path": "../boilercv"
     },
     {
@@ -11,6 +14,12 @@
     },
     {
       "path": "../boilerdata"
+    },
+    {
+      "path": "../softboiler.github.io"
+    },
+    {
+      "path": "../.github"
     }
   ],
   "launch": {
