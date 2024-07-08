@@ -40,7 +40,7 @@ def hash_args(
     )
 
 
-def freeze(v: Hashable | Freezable) -> Hashable:
+def freeze(v: Hashable | Freezable | Any) -> Hashable:
     """Make value hashable."""
     match v:
         case Hashable():
