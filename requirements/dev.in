@@ -8,7 +8,7 @@ fawltydeps==0.16.0
 pandas-stubs~=2.2.2
 pipdeptree==2.23.0
 pre-commit==3.7.1
-pyright==1.1.369
+pyright==1.1.364
 ruff==0.4.10
 snakeviz==2.2.0
 sourcery==1.19.0
