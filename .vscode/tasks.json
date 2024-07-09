@@ -149,13 +149,6 @@
       "icon": { "id": "file-symlink-directory" },
       "problemMatcher": []
     },
-    {
-      "label": "setup: Finish initializing machine (cross-platform)",
-      "type": "shell",
-      "command": "scripts/Initialize-Machine.ps1",
-      "icon": { "id": "file-symlink-directory" },
-      "problemMatcher": []
-    },
 
     // * -------------------------------------------------------------------------- * //
     // * OTHER TASKS * //
@@ -186,13 +179,6 @@
       "type": "shell",
       "command": ". scripts/Initialize-Shell.ps1; pipdeptree --reverse --packages ${input:dependency}",
       "icon": { "id": "versions" },
-      "problemMatcher": []
-    },
-    {
-      "label": "task: Run pytest with coverage",
-      "type": "shell",
-      "command": ". scripts/Initialize-Shell.ps1; pytest --cov  --cov-config pyproject.toml --cov-report xml",
-      "icon": { "id": "check" },
       "problemMatcher": []
     },
     {

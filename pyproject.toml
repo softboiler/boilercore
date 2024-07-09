@@ -54,8 +54,7 @@ email = "blake.naccarato@gmail.com"
 [tool.coverage.run]
 branch = true
 source = ["boilercore", "boilercore_docs", "boilercore_tests", "boilercore_tools"]
-[tool.coverage.report]
-ignore_errors = true
+
 [tool.fawltydeps]
 deps = ["pyproject.toml"]
 code = ["src"]
@@ -68,12 +67,17 @@ ipykernel = ["IPython"]
 
 
 [tool.pytest.ini_options]
+# ! https://github.com/pytest-dev/pytest-cov/issues/479#issuecomment-1247444988
 addopts = '''
     --strict-config
     --strict-markers
-    --color yes
+    --suppress-no-test-exit-code
+    --color=yes
     -p no:legacypaths
     -r a
+    --cov
+    --cov-config=pyproject.toml
+    --cov-report=xml
 '''
 cache_dir = ".cache/.pytest_cache"
 markers = "slow"
@@ -113,12 +117,10 @@ exclude = [
     "**/AppData",
     "bin",
     "submodules/template",
-    "submodules/typings",
     "submodules/**/docs",
     "submodules/**/scripts",
     "submodules/**/tests",
 ]
-stubPath = "submodules/typings"
 typeCheckingMode = "strict"
 # Default "true" in strict
 analyzeUnannotatedFunctions = true
