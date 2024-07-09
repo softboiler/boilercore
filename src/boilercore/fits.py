@@ -35,7 +35,7 @@ def fit_and_plot(
 ) -> tuple[dict[str, float], dict[str, float]]:
     """Get fits and errors for project model and plot the results."""
     if not ax:
-        _fig, ax = plt.subplots()
+        _fig, ax = plt.subplots()  # pyright: ignore[reportAssignmentType]
     fits, errors = fit_from_params(
         model=model,
         params=params,
@@ -152,7 +152,7 @@ def plot_fit(
 ):
     """Plot a model fit."""
     if not ax:
-        _fig, ax = plt.subplots()
+        _fig, ax = plt.subplots()  # pyright: ignore[reportAssignmentType]
         ax: Axes
     ax.margins(0, 0)
     ax.set_title(f"{run = }" if run else "run")
