@@ -12,26 +12,26 @@ from boilercore.notebooks.namespaces import get_nb_ns
 MODELFUN = Path("src/boilercore/stages/modelfun.ipynb")
 
 
-@pytest.fixture()
+@pytest.fixture
 def ns(request) -> SimpleNamespace:
     """Namespace for the model function notebook."""
     return get_nb_ns(MODELFUN.read_text(encoding="utf-8"))
 
 
-@pytest.fixture()
+@pytest.fixture
 def nb_model(ns):
     """Notebook model."""
     return fix_model(ns.models.for_ufloat)
 
 
-@pytest.fixture()
+@pytest.fixture
 def model(params):
     """Deserialized model."""
     _, model = get_model(params.paths.models)
     return model
 
 
-@pytest.fixture()
+@pytest.fixture
 def plt(plt):
     """Plot."""
     sns.set_theme(

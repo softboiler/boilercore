@@ -32,7 +32,7 @@ def project_session_path(tmp_path_factory) -> Path:
     return get_session_path(tmp_path_factory, boilercore)
 
 
-@pytest.fixture()
+@pytest.fixture
 def params(project_session_path):
     """Parameters."""
     from boilercore.models.params import PARAMS  # noqa: PLC0415
@@ -48,7 +48,7 @@ def cache_dir(project_session_path) -> Path:
     return cache_directory
 
 
-@pytest.fixture()
+@pytest.fixture
 def cached_function_and_cache_file(
     request, project_session_path
 ) -> Iterator[tuple[Callable[..., Any], Path]]:
@@ -75,11 +75,11 @@ def cached_function_and_cache_file(
     (cache_dir / cache_filename).unlink(missing_ok=True)
 
 
-@pytest.fixture()
+@pytest.fixture
 def cached_function(cached_function_and_cache_file):  # noqa: D103
     return cached_function_and_cache_file[0]
 
 
-@pytest.fixture()
+@pytest.fixture
 def cache_file(cached_function_and_cache_file):  # noqa: D103
     return cached_function_and_cache_file[1]
