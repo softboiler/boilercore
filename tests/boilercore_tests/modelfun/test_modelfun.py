@@ -31,7 +31,7 @@ def test_syms(group_name: str):
     assert all(var == sym.name for var, sym in symvars.items())
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 def test_forward_model(nb_model):
     """Test that the model evaluates to the expected output for known input."""
     # fmt: off
@@ -64,7 +64,7 @@ def test_forward_model(nb_model):
     )
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 @pytest.mark.usefixtures("plt")
 @pytest.mark.parametrize(
     ("run", "y", "expected"),
@@ -105,7 +105,7 @@ def test_model_fit(params, model, run, y, expected):
     assert result == approx(expected)
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 def test_ode(ns):
     """Verify the solution to the ODE by substitution."""
     # Don't subs/simplify the lhs then try equating to zero. Doesn't work. "Truth value of
@@ -114,14 +114,14 @@ def test_ode(ns):
     assert ode.subs(T(x), T_int_expr).simplify()
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 def test_temperature_continuous(ns):
     """Test that temperature is continuous at the domain transition."""
     T_wa_expr_w, T_wa_expr_a = ns.T_wa_expr_w, ns.T_wa_expr_a  # noqa: N806
     assert Eq(T_wa_expr_w, T_wa_expr_a).simplify()
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 def test_temperature_gradient_continuous(ns):
     """Test that the temperature gradient is continuous at the domain transition."""
     q_wa_expr_w, q_wa_expr_a = ns.q_wa_expr_w, ns.q_wa_expr_a
