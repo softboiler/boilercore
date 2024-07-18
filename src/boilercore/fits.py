@@ -60,10 +60,10 @@ class Fit:
     """Model fit method."""
     independent_params: list[str] = field(default_factory=lambda: ["x"])
     """Independent parameters."""
-    free_params: list[str] = field(default_factory=lambda: ["T_s", "q_s", "h_a"])
+    free_params: list[str] = field(default_factory=lambda: ["T_s", "q_s", "h_w", "h_a"])
     """Free parameters."""
     fixed_params: list[str] = field(
-        default_factory=lambda: ["h_w", "r", "T_infa", "T_infw", "x_s", "x_wa", "k"]
+        default_factory=lambda: ["r", "T_infa", "T_infw", "x_s", "x_wa", "k"]
     )
     """Parameters to fix. Evaluated before fitting, overridable in code."""
     bounds: dict[str, tuple[float, float]] = field(
