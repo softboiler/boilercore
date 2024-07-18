@@ -4,7 +4,6 @@ paths:
   data: data
   stages:
     modelfun: src/boilercore/stages/modelfun.ipynb
-  fit: src/boilercore/models/fit.py
   scripts: data/scripts
   filt: data/scripts/filt.py
   csl: data/scripts/international-journal-of-heat-and-mass-transfer.csl

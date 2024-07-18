@@ -6,10 +6,10 @@ from types import SimpleNamespace
 import pytest
 import seaborn as sns
 
-from boilercore.modelfun import fix_model, get_model
 from boilercore.notebooks.namespaces import get_nb_ns
+from boilercore_tests.modelfun import FIT
 
-MODELFUN = Path("src/boilercore/stages/modelfun.ipynb")
+MODELFUN = Path("src/boilercore/stages/modelfun.ipynb").resolve()
 
 
 @pytest.fixture()
@@ -19,16 +19,9 @@ def ns(request) -> SimpleNamespace:
 
 
 @pytest.fixture()
-def nb_model(ns):
-    """Notebook model."""
-    return fix_model(ns.models.for_ufloat)
-
-
-@pytest.fixture()
 def model(params):
     """Deserialized model."""
-    _, model = get_model(params.paths.models)
-    return model
+    return FIT.get_models(params.paths.models)[1]
 
 
 @pytest.fixture()

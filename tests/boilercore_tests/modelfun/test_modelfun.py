@@ -1,12 +1,12 @@
 """Test model function and model fit."""
 
-import numpy as np
 import pytest
+from numpy import allclose, array, linspace, sqrt
 from sympy import Eq
 
 from boilercore.fits import fit_and_plot
-from boilercore.models.fit import FIT
 from boilercore.testing import MFParam
+from boilercore_tests.modelfun import FIT
 
 
 def approx(*args):
@@ -14,9 +14,7 @@ def approx(*args):
     return pytest.approx(*args, rel=0.001, abs=0.01)
 
 
-@pytest.mark.parametrize(
-    "group_name", ["params", "inputs", "intermediate_vars", "functions"]
-)
+@pytest.mark.parametrize("group_name", ["params", "intermediate_vars", "functions"])
 def test_syms(group_name: str):
     """Test that declared symbolic variables are assigned to the correct symbols."""
     from boilercore import syms  # noqa: PLC0415
@@ -32,19 +30,12 @@ def test_syms(group_name: str):
 
 
 @pytest.mark.slow()
-def test_forward_model(nb_model):
+def test_forward_model(model):
     """Test that the model evaluates to the expected output for known input."""
     # fmt: off
-    assert np.allclose(
-        nb_model(
-            x=np.linspace(0, 0.10),
-            T_s=105,  # (C)
-            q_s=20,  # (W/cm^2)p
-            h_a=100,  # (W/m^2-K)
-            h_w=np.finfo(float).eps,  # (W/m^2-K)
-            k=400,  # (W/m-K)
-        ),
-        np.array(
+    assert allclose(
+        model(x=linspace(0, 0.10), **FIT.values),
+        array(
             [
                 105.00000000, 106.02040672, 107.04081917, 108.06122589,
                 109.08163071, 110.10204124, 111.12244987, 112.14286041,
@@ -73,7 +64,7 @@ def test_forward_model(nb_model):
             *MFParam(
                 run=(id_ := "low"),  # Run: 2022-09-14T10:21:00
                 y=[93.91, 93.28, 94.48, 94.84, 96.30],
-                expected={"T_s": 97.26, "q_s": -1.57, "h_a": 2.75},
+                expected={"T_s": 97.74, "q_s": -22269.14, "h_a": 11.66},
             ),
             id=id_,
         ),
@@ -81,7 +72,7 @@ def test_forward_model(nb_model):
             *MFParam(
                 run=(id_ := "med"),  # Run: 2022-09-14T12:09:46
                 y=[108.00, 106.20, 105.50, 104.40, 102.00],
-                expected={"T_s": 100.98, "q_s": 1.69, "h_a": 13.64},
+                expected={"T_s": 100.98, "q_s": 16796.62, "h_a": 13.80},
             ),
             id=id_,
         ),
@@ -89,7 +80,7 @@ def test_forward_model(nb_model):
             *MFParam(
                 run=(id_ := "high"),  # Run: 2022-09-14 15:17:21
                 y=[165.7, 156.8, 149.2, 141.1, 116.4],
-                expected={"T_s": 103.37, "q_s": 21.60, "h_a": 23.38},
+                expected={"T_s": 105.00, "q_s": 202199.76, "h_a": 32.20},
             ),
             id=id_,
         ),
@@ -98,7 +89,7 @@ def test_forward_model(nb_model):
 def test_model_fit(params, model, run, y, expected):
     """Test that the model fit is as expected."""
     x = params.geometry.rods["R"]
-    y_errors = np.array([*[2.2] * 4, *[1.0]]) / np.sqrt(10)
+    y_errors = array([*[2.2] * 4, *[1.0]]) / sqrt(10)
     result, _ = fit_and_plot(
         model=model, params=FIT, x=x, y=y, y_errors=y_errors, run=run
     )

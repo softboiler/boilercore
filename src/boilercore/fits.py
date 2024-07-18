@@ -1,20 +1,154 @@
 """Model fits."""
 
 import warnings
-from collections.abc import Mapping, Sequence
-from functools import partial
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass, field
+from functools import partial, wraps
+from pathlib import Path
+from sys import version_info
 from typing import Any, Literal
 from warnings import catch_warnings
 
+import dill
+import numpy
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
+from numpy import array, finfo, inf, vectorize
 from scipy.optimize import OptimizeWarning, curve_fit
 from scipy.stats import t
+from sympy import Symbol, lambdify
 from uncertainties import ufloat
+from uncertainties.umath import exp, sqrt  # pyright: ignore[reportAttributeAccessIssue]
 
-from boilercore.models.fit import Fit
 from boilercore.types import Bound, Guess
+
+EPS: float = finfo(float).eps  # pyright: ignore[reportAssignmentType]
+"""Minimum positive value to avoid divide-by-zero for affected parameters."""
+
+
+def fix_model(f) -> Callable[..., Any]:
+    """Fix edge-cases of lambdify where all inputs must be arrays.
+
+    See the notes section in the link below where it says, "However, in some cases
+    the generated function relies on the input being a numpy array."
+
+    https://docs.sympy.org/latest/modules/utilities/lambdify.html#sympy.utilities.lambdify.lambdify
+    """
+
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        result = f(
+            *(array(arg) for arg in args), **{k: array(v) for k, v in kwargs.items()}
+        )
+
+        return result if result.size > 1 else result.item()
+
+    return wrapper
+
+
+def get_model_errors(params: list[Symbol]) -> list[str]:
+    """Get error parameters for model parameters."""
+    return [f"{param.name}_err" for param in params]
+
+
+@dataclass
+class Fit:
+    """Model fit."""
+
+    fit_method: str = "trf"
+    """Model fit method."""
+    independent_params: list[str] = field(default_factory=lambda: ["x"])
+    """Independent parameters."""
+    free_params: list[str] = field(default_factory=lambda: ["T_s", "q_s", "h_a"])
+    """Free parameters."""
+    fixed_params: list[str] = field(
+        default_factory=lambda: ["h_w", "r", "T_infa", "T_infw", "x_s", "x_wa", "k"]
+    )
+    """Parameters to fix. Evaluated before fitting, overridable in code."""
+    bounds: dict[str, tuple[float, float]] = field(
+        default_factory=lambda: {
+            "T_s": (EPS, inf),
+            "q_s": (-inf, inf),
+            "h_w": (EPS, inf),
+            "h_a": (EPS, inf),
+            "r": (EPS, inf),
+            "T_infa": (EPS, inf),
+            "T_infw": (EPS, inf),
+            "x_s": (-inf, inf),
+            "x_wa": (-inf, inf),
+            "k": (EPS, inf),
+        }
+    )
+    """Bounds of model parameters."""
+    values: dict[str, float] = field(
+        default_factory=lambda: {
+            "T_s": 105.0,  # (K)
+            "q_s": 2e5,  # (W/m^2)
+            "h_w": EPS,  # (W/m^2-K)
+            "h_a": 100.0,  # (W/m^2-K)
+            "r": 0.0047625,  # (m)
+            "T_infa": 25.0,  # (K)
+            "T_infw": 100.0,  # (K)
+            "x_s": 0.0,  # (m)
+            "x_wa": 0.0381,  # (m) Distance from collar surface to chamber floor, plus protuberance
+            "k": 400.0,  # (W/m-K)
+        }
+    )
+    """Values of model parameters."""
+
+    @property
+    def errors(self) -> list[str]:
+        """Error parameters for each free parameter."""
+        return [f"{param}_err" for param in self.free_params]
+
+    @property
+    def fixed_values(self) -> dict[str, float]:
+        """Fixed values for each fixed parameter."""
+        return {p: v for p, v in self.values.items() if p in self.fixed_params}
+
+    @property
+    def fixed_errors(self) -> list[str]:
+        """Error parameters for each fixed parameter."""
+        return [f"{p}_err" for p in self.fixed_params]
+
+    @property
+    def free_errors(self) -> list[str]:
+        """Error parameters for each free parameter."""
+        return [f"{p}_err" for p in self.free_params]
+
+    @property
+    def params_and_errors(self) -> list[str]:
+        """Model parameters and their errors."""
+        return [
+            *self.free_params,
+            *self.fixed_params,
+            *self.free_errors,
+            *self.fixed_errors,
+        ]
+
+    def get_models(self, models: Path) -> tuple[Callable[..., Any], Callable[..., Any]]:
+        """Unpickle the model function for fitting data."""
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", dill.UnpicklingWarning)
+            expr = dill.loads(
+                Path(
+                    models
+                    / f"modelfun-{'.'.join([str(elem) for elem in version_info[:2]])}.dillpickle"
+                ).read_bytes()
+            )
+        params = {p.name: p for p in expr.free_symbols}
+        args = [
+            params[p]
+            for p in [*self.independent_params, *self.free_params, *self.fixed_params]
+        ]
+        model = lambdify(args=args, expr=expr, modules=numpy)
+        overrides = {f.name: vectorize(f) for f in (exp, sqrt)}
+        model_with_uncertainty = lambdify(
+            args=args, expr=expr, modules=[overrides, numpy]
+        )
+        return model, fix_model(model_with_uncertainty)
+
 
 XY_COLOR = (0.2, 0.2, 0.2)
 """Default color for measurement points."""
@@ -71,8 +205,8 @@ def fit_from_params(
         model=model,
         fixed_values=params.fixed_values,
         free_params=params.free_params,
-        initial_values=params.initial_values,
-        model_bounds=params.model_bounds,
+        initial_values=params.values,
+        model_bounds=params.bounds,
         x=x,
         y=y,
         y_errors=y_errors,

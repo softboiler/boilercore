@@ -19,23 +19,23 @@ stages:
     deps:
     - path: src/boilercore/stages/modelfun.ipynb
       hash: md5
-      md5: 85cf4c9c1573b689b6aa86c4567f9539
-      size: 31398
+      md5: c3ea5ab24a0435f5aefe120ef7bcaf77
+      size: 6235
     outs:
     - path: data/models/modelfun-3.12.dillpickle
       hash: md5
-      md5: 4c8f5419f842a9f1f2de719d8e51a7ed
-      size: 60741
+      md5: 75e092f44d0df89ebfd148838133fc81
+      size: 1112
   modelfun-3.11:
     cmd: ploomber-engine src/boilercore/stages/modelfun.ipynb NUL --parameters PYTHON_VERSION
       3.11
     deps:
     - path: src/boilercore/stages/modelfun.ipynb
       hash: md5
-      md5: 2ac709169afd1e0dadd32910612bf557
-      size: 8111
+      md5: c3ea5ab24a0435f5aefe120ef7bcaf77
+      size: 6235
     outs:
     - path: data/models/modelfun-3.11.dillpickle
       hash: md5
-      md5: 79f36b9dd6d19be02ab360ae7a8d801c
-      size: 63301
+      md5: 5496feba82331752a39059cb49cae48a
+      size: 1293

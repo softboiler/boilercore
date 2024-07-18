@@ -20,7 +20,6 @@ class Paths(CreatePathsModel):
     )
 
     # * DVC-tracked inputs
-    fit: FilePath = package / "models/fit.py"
     # ! Scripts
     scripts: DirectoryPath = data / "scripts"
     filt: FilePath = scripts / "filt.py"
