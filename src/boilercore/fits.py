@@ -4,10 +4,11 @@ import warnings
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from functools import partial, wraps
+from math import isnan
 from pathlib import Path
 from sys import version_info
 from typing import Any, Literal
-from warnings import catch_warnings
+from warnings import catch_warnings, warn
 
 import dill
 import numpy
@@ -25,6 +26,12 @@ from boilercore.types import Bound, Guess
 
 EPS: float = finfo(float).eps  # pyright: ignore[reportAssignmentType]
 """Minimum positive value to avoid divide-by-zero for affected parameters."""
+MIN_CONVECTION_COEFF = 1e-3
+"""Minimum positive convection coefficient to avoid instability of exponents."""
+INIT_CONVECTION_COEFF = 1.0
+"""An initial guess not too close to zero to avoid iteration instability."""
+MIN_TEMP = 1e-3
+"""Minimum temperature to avoid instability near absolute zero."""
 
 
 def fix_model(f) -> Callable[..., Any]:
@@ -56,25 +63,25 @@ def get_model_errors(params: list[Symbol]) -> list[str]:
 class Fit:
     """Model fit."""
 
-    fit_method: str = "trf"
+    fit_method: Literal["trf", "dogbox"] = "trf"
     """Model fit method."""
     independent_params: list[str] = field(default_factory=lambda: ["x"])
     """Independent parameters."""
-    free_params: list[str] = field(default_factory=lambda: ["T_s", "q_s", "h_w", "h_a"])
+    free_params: list[str] = field(default_factory=lambda: ["T_s", "q_s", "h_a"])
     """Free parameters."""
     fixed_params: list[str] = field(
-        default_factory=lambda: ["r", "T_infa", "T_infw", "x_s", "x_wa", "k"]
+        default_factory=lambda: ["h_w", "r", "T_infa", "T_infw", "x_s", "x_wa", "k"]
     )
     """Parameters to fix. Evaluated before fitting, overridable in code."""
     bounds: dict[str, tuple[float, float]] = field(
         default_factory=lambda: {
-            "T_s": (EPS, inf),
+            "T_s": (MIN_TEMP, inf),
             "q_s": (-inf, inf),
-            "h_w": (EPS, inf),
-            "h_a": (EPS, inf),
+            "h_w": (MIN_CONVECTION_COEFF, inf),
+            "h_a": (MIN_CONVECTION_COEFF, inf),
             "r": (EPS, inf),
-            "T_infa": (EPS, inf),
-            "T_infw": (EPS, inf),
+            "T_infa": (MIN_TEMP, inf),
+            "T_infw": (MIN_TEMP, inf),
             "x_s": (-inf, inf),
             "x_wa": (-inf, inf),
             "k": (EPS, inf),
@@ -85,8 +92,8 @@ class Fit:
         default_factory=lambda: {
             "T_s": 105.0,  # (K)
             "q_s": 2e5,  # (W/m^2)
-            "h_w": EPS,  # (W/m^2-K)
-            "h_a": 100.0,  # (W/m^2-K)
+            "h_w": INIT_CONVECTION_COEFF,  # (W/m^2-K)
+            "h_a": INIT_CONVECTION_COEFF,  # (W/m^2-K)
             "r": 0.0047625,  # (m)
             "T_infa": 25.0,  # (K)
             "T_infw": 100.0,  # (K)
@@ -147,7 +154,9 @@ class Fit:
         model_with_uncertainty = lambdify(
             args=args, expr=expr, modules=[overrides, numpy]
         )
-        return model, fix_model(model_with_uncertainty)
+        return partial(model, **self.fixed_values), fix_model(
+            partial(model_with_uncertainty, **self.fixed_values)
+        )
 
 
 XY_COLOR = (0.2, 0.2, 0.2)
@@ -177,6 +186,7 @@ def fit_and_plot(
         y=y,
         y_errors=y_errors,
         confidence_interval=confidence_interval,
+        method=params.fit_method,
     )
     plot_fit(
         model=model,
@@ -199,11 +209,11 @@ def fit_from_params(
     y: Any,
     y_errors: Any = None,
     confidence_interval: float = CONFIDENCE_INTERVAL_95,
+    method: Literal["trf", "dogbox"] = "trf",
 ) -> tuple[dict[str, float], dict[str, float]]:
     """Get fits and errors for project model."""
     fits, errors = fit(
         model=model,
-        fixed_values=params.fixed_values,
         free_params=params.free_params,
         initial_values=params.values,
         model_bounds=params.bounds,
@@ -211,6 +221,7 @@ def fit_from_params(
         y=y,
         y_errors=y_errors,
         confidence_interval=confidence_interval,
+        method=method,
     )
     return (
         dict(zip(params.free_params, fits, strict=True)),
@@ -220,7 +231,6 @@ def fit_from_params(
 
 def fit(
     model: Any,
-    fixed_values: Any,
     free_params: list[str],
     initial_values: Mapping[str, Guess],
     model_bounds: Mapping[str, Bound],
@@ -233,10 +243,9 @@ def fit(
     """Get fits and errors."""
     # Perform fit, filling "nan" on failure or when covariance computation fails
     with catch_warnings():
-        warnings.simplefilter("error", category=OptimizeWarning)
         try:
             fits, pcov = curve_fit(
-                f=partial(model, **fixed_values),
+                f=model,
                 p0=get_guesses(free_params, initial_values),
                 # Expects e.g. ([L1, L2, L3], [H1, H2, H3])
                 bounds=tuple(zip(*get_bounds(free_params, model_bounds), strict=True)),
@@ -250,11 +259,9 @@ def fit(
             dim = len(free_params)
             fits = np.full(dim, np.nan)
             pcov = np.full((dim, dim), np.nan)
-
     # Compute confidence interval
     standard_errors = np.sqrt(np.diagonal(pcov))
     errors = standard_errors * confidence_interval
-
     # Catching `OptimizeWarning` should be enough, but let's explicitly check for inf
     fits = np.where(np.isinf(errors), np.nan, fits)
     errors = np.where(np.isinf(errors), np.nan, errors)
@@ -285,6 +292,11 @@ def plot_fit(
     run: str | None = None,
 ):
     """Plot a model fit."""
+    if any(isnan(p) for p in params.values()):
+        warn(
+            "Cannot plot model fit with `nan` parameters.", RuntimeWarning, stacklevel=2
+        )
+        return
     if not ax:
         _fig, ax = plt.subplots()  # pyright: ignore[reportAssignmentType]
         ax: Axes

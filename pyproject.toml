@@ -78,6 +78,7 @@ addopts = '''
     --cov
     --cov-config=pyproject.toml
     --cov-report=xml
+    --plots=tests/plots
 '''
 cache_dir = ".cache/.pytest_cache"
 markers = "slow"
