@@ -75,9 +75,6 @@ addopts = '''
     --color=yes
     -p no:legacypaths
     -r a
-    --cov
-    --cov-config=pyproject.toml
-    --cov-report=xml
     --plots=tests/plots
 '''
 cache_dir = ".cache/.pytest_cache"
@@ -108,20 +105,8 @@ name = "Changes"
 showcontent = true
 
 [tool.pyright]
-exclude = [
-    "**/node_modules",
-    "**/__pycache__",
-    "**/.*",
-    "**/.*/**",
-    "**/.venv",
-    "**/.vscode/extensions",
-    "**/AppData",
-    "bin",
-    "submodules/template",
-    "submodules/**/docs",
-    "submodules/**/scripts",
-    "submodules/**/tests",
-]
+stubPath = "submodules/stubs/stubs"
+ignore = ["bin", "submodules", "scripts/install.py"]
 typeCheckingMode = "strict"
 # Default "true" in strict
 analyzeUnannotatedFunctions = true
@@ -220,7 +205,7 @@ reportUnusedCallResult = "none"
 
 [tool.ruff]
 cache-dir = ".cache/.ruff_cache"
-extend-exclude = ["bin", "submodules"]
+extend-exclude = ["bin", "submodules", "scripts/install.py"]
 extend-include = ["*.ipynb"]
 src = ["src", "docs", "scripts", "tests"]
 output-format = "grouped"
