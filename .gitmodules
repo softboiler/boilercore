@@ -1,3 +1,6 @@
 [submodule "template"]
 	path = submodules/template
 	url = https://github.com/blakeNaccarato/copier-python.git
+[submodule "cachier"]
+	path = submodules/cachier
+	url = https://github.com/blakeNaccarato/cachier.git
