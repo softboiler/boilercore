@@ -1,10 +1,13 @@
 """Basic models."""
 
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
+from itertools import chain
+from json import dumps
 from pathlib import Path
-from typing import Any, get_origin
+from types import EllipsisType, GenericAlias
+from typing import Annotated, Any, ClassVar, get_args, get_origin
 
-from pydantic.v1 import BaseModel, validator
+from pydantic import BaseModel, ConfigDict, field_validator
 from ruamel.yaml import YAML
 
 from boilercore.models.types import PathOrPaths, Paths
@@ -36,7 +39,8 @@ class YamlModel(BaseModel):
         """Update the schema file next to the data file."""
         schema_file = data_file.with_name(f"{data_file.stem}_schema.json")
         schema_file.write_text(
-            encoding="utf-8", data=f"{self.schema_json(indent=YAML_INDENT)}\n"
+            encoding="utf-8",
+            data=f"{dumps(self.model_json_schema(), indent=YAML_INDENT)}\n",
         )
 
 
@@ -63,56 +67,77 @@ class SynchronizedPathsYamlModel(YamlModel):
 
     def get_paths(self) -> dict[str, Paths[str]]:
         """Get all paths specified in paths-type models."""
-        maybe_excludes = self.__exclude_fields__
-        excludes = set(maybe_excludes.keys()) if maybe_excludes else set()
+        excludes = {k for k, v in self.model_fields.items() if v.exclude}
         defaults: dict[str, Paths[str]] = {}
-        for key, field in self.__fields__.items():
+        for key, field in self.model_fields.items():
             if key in excludes:
                 continue
-            if generic_ := get_origin(field.type_):
-                type_ = type(generic_)
+            if generic_ := get_origin(field.annotation):
+                annotation = type(generic_)
             else:
-                type_ = field.type_
-            if issubclass(type_, DefaultPathsModel):
-                defaults[key] = type_.get_paths()
+                annotation = field.annotation
+            if issubclass(annotation, DefaultPathsModel):  # pyright: ignore[reportArgumentType]
+                defaults[key] = annotation.get_paths()
         return defaults
 
 
-def check_pathlike(model: BaseModel, field: str, type_: type):
+def check_pathlike(model: BaseModel, field: str, annotation: type | GenericAlias):
     """Check that the field is path-like."""
-    if not issubclass(type_, Path):
+    for typ in get_types(annotation):
+        if isinstance(typ, EllipsisType):
+            continue
+        if not issubclass(typ, Path):
+            raise TypeError(
+                f"Field <{field}> is not Path-like in {model}, derived from {DefaultPathsModel}."
+            )
+
+
+def get_types(
+    annotation: type | EllipsisType | GenericAlias,
+) -> Iterator[type | EllipsisType]:
+    """Get types."""
+    if isinstance(annotation, type | EllipsisType):
+        yield annotation
+    elif (origin := get_origin(annotation)) and (args := get_args(annotation)):
+        if issubclass(origin, Mapping):
+            value_annotation = args[-1]
+            yield from get_types(value_annotation)
+        elif issubclass(origin, Sequence):
+            yield from chain.from_iterable(get_types(a) for a in args)
+        elif issubclass(origin, Annotated):
+            annotated_type = args[0]
+            yield from get_types(annotated_type)
+    else:
+        raise TypeError("Type not supported.")
+
+
+def schema_extra(schema: dict[str, Any], model):
+    """Replace backslashes with forward slashes in paths."""
+    if schema.get("required"):
         raise TypeError(
-            f"Field <{field}> is not Path-like in {model}, derived from {DefaultPathsModel}."
+            f"Defaults must be specified in {model}, derived from {DefaultPathsModel}."
         )
+    for (field, prop), annotation in zip(
+        schema["properties"].items(),
+        (field.annotation for field in model.model_fields.values()),
+        strict=True,
+    ):
+        # If default is a container, `annotation` will be the type of its elements.
+        check_pathlike(model, field, annotation)
+        prop["default"] = apply_to_path_or_paths(prop.get("default"), pathfold)
 
 
 class DefaultPathsModel(BaseModel):
     """All fields must be path-like and have defaults specified in this model."""
 
-    class Config:
-        """Model config."""
-
-        @staticmethod
-        def schema_extra(schema: dict[str, Any], model):
-            """Replace backslashes with forward slashes in paths."""
-            if schema.get("required"):
-                raise TypeError(
-                    f"Defaults must be specified in {model}, derived from {DefaultPathsModel}."
-                )
-            for (field, prop), type_ in zip(
-                schema["properties"].items(),
-                (field.type_ for field in model.__fields__.values()),
-                strict=True,
-            ):
-                # If default is a container, `type_` will be the type of its elements.
-                check_pathlike(model, field, type_)
-                prop["default"] = apply_to_path_or_paths(prop.get("default"), pathfold)
+    model_config: ClassVar[ConfigDict] = ConfigDict(json_schema_extra=schema_extra)
 
     @classmethod
     def get_paths(cls) -> Paths[str]:
         """Get the paths for this model."""
         return {
-            key: value["default"] for key, value in cls.schema()["properties"].items()
+            key: value["default"]
+            for key, value in cls.model_json_schema()["properties"].items()
         }
 
 
@@ -120,7 +145,7 @@ def apply_to_path_or_paths(
     path_or_paths: PathOrPaths[Any], fun: Callable[[Any], Any]
 ) -> PathOrPaths[Any]:
     """Apply a function to a path, sequence of paths, or mapping of names to paths."""
-    if isinstance(path_or_paths, str):
+    if isinstance(path_or_paths, Path | str):
         return fun(path_or_paths)
     elif isinstance(path_or_paths, Sequence):
         return [fun(path) for path in path_or_paths]
@@ -130,18 +155,22 @@ def apply_to_path_or_paths(
         raise TypeError("Type not supported.")
 
 
+def create_directories(path: Path | str) -> None:
+    """Create directories."""
+    path = Path(path)
+    if path.is_file():
+        return
+    path.mkdir(parents=True, exist_ok=True)
+
+
 class CreatePathsModel(DefaultPathsModel):
     """Parent directories will be created for all fields in this model."""
 
-    @validator("*", always=True, pre=True, each_item=True)
+    @field_validator("*", mode="before")
     @classmethod
     def create_directories(cls, value):
         """Create directories associated with each value."""
-        path = Path(value)
-        if path.is_file():
-            return value
-        directory = path.parent if path.suffix else path
-        directory.mkdir(parents=True, exist_ok=True)
+        apply_to_path_or_paths(value, create_directories)
         return value
 
 
