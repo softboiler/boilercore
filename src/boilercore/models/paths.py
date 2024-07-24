@@ -1,6 +1,6 @@
 """Project paths."""
 
-from pydantic.v1 import DirectoryPath, FilePath
+from pydantic import DirectoryPath, FilePath
 
 import boilercore
 from boilercore import PROJECT_PATH

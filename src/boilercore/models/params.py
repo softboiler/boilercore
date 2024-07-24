@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from pydantic.v1 import Field
+from pydantic import Field
 
 from boilercore import get_params_file
 from boilercore.fits import Fit

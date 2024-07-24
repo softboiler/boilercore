@@ -81,37 +81,7 @@ class SynchronizedPathsYamlModel(YamlModel):
         return defaults
 
 
-def check_pathlike(model: BaseModel, field: str, annotation: type | GenericAlias):
-    """Check that the field is path-like."""
-    for typ in get_types(annotation):
-        if isinstance(typ, EllipsisType):
-            continue
-        if not issubclass(typ, Path):
-            raise TypeError(
-                f"Field <{field}> is not Path-like in {model}, derived from {DefaultPathsModel}."
-            )
-
-
-def get_types(
-    annotation: type | EllipsisType | GenericAlias,
-) -> Iterator[type | EllipsisType]:
-    """Get types."""
-    if isinstance(annotation, type | EllipsisType):
-        yield annotation
-    elif (origin := get_origin(annotation)) and (args := get_args(annotation)):
-        if issubclass(origin, Mapping):
-            value_annotation = args[-1]
-            yield from get_types(value_annotation)
-        elif issubclass(origin, Sequence):
-            yield from chain.from_iterable(get_types(a) for a in args)
-        elif issubclass(origin, Annotated):
-            annotated_type = args[0]
-            yield from get_types(annotated_type)
-    else:
-        raise TypeError("Type not supported.")
-
-
-def schema_extra(schema: dict[str, Any], model):
+def json_schema_extra(schema: dict[str, Any], model):
     """Replace backslashes with forward slashes in paths."""
     if schema.get("required"):
         raise TypeError(
@@ -130,7 +100,7 @@ def schema_extra(schema: dict[str, Any], model):
 class DefaultPathsModel(BaseModel):
     """All fields must be path-like and have defaults specified in this model."""
 
-    model_config: ClassVar[ConfigDict] = ConfigDict(json_schema_extra=schema_extra)
+    model_config: ClassVar[ConfigDict] = ConfigDict(json_schema_extra=json_schema_extra)
 
     @classmethod
     def get_paths(cls) -> Paths[str]:
@@ -139,6 +109,55 @@ class DefaultPathsModel(BaseModel):
             key: value["default"]
             for key, value in cls.model_json_schema()["properties"].items()
         }
+
+
+class CreatePathsModel(DefaultPathsModel):
+    """Parent directories will be created for all fields in this model."""
+
+    @field_validator("*", mode="before")
+    @classmethod
+    def create_directories(cls, value):
+        """Create directories associated with each value."""
+        apply_to_path_or_paths(value, create_directories)
+        return value
+
+
+def check_pathlike(model: BaseModel, field: str, annotation: type | GenericAlias):
+    """Check that the field is path-like."""
+    for typ in get_types(annotation):
+        if isinstance(typ, EllipsisType):
+            continue
+        if not issubclass(typ, Path):
+            raise TypeError(
+                f"Field <{field}> is not Path-like in {model}, derived from {DefaultPathsModel}."
+            )
+
+
+def get_types(
+    annotation: type | EllipsisType | GenericAlias,
+) -> Iterator[type | EllipsisType]:
+    """Get types for scalar, mapping, sequence, and annotated types."""
+    if isinstance(annotation, type | EllipsisType):
+        yield annotation
+    elif (origin := get_origin(annotation)) and (args := get_args(annotation)):
+        if issubclass(origin, Mapping):
+            value_annotation = args[-1]
+            yield from get_types(value_annotation)
+        elif issubclass(origin, Sequence):
+            yield from chain.from_iterable(get_types(a) for a in args)
+        elif issubclass(origin, Annotated):
+            annotated_type = args[0]
+            yield from get_types(annotated_type)
+    else:
+        raise TypeError("Type not supported.")
+
+
+def create_directories(path: Path | str) -> None:
+    """Create directories."""
+    path = Path(path)
+    if path.is_file():
+        return
+    path.mkdir(parents=True, exist_ok=True)
 
 
 def apply_to_path_or_paths(
@@ -153,25 +172,6 @@ def apply_to_path_or_paths(
         return {key: fun(path) for key, path in path_or_paths.items()}
     else:
         raise TypeError("Type not supported.")
-
-
-def create_directories(path: Path | str) -> None:
-    """Create directories."""
-    path = Path(path)
-    if path.is_file():
-        return
-    path.mkdir(parents=True, exist_ok=True)
-
-
-class CreatePathsModel(DefaultPathsModel):
-    """Parent directories will be created for all fields in this model."""
-
-    @field_validator("*", mode="before")
-    @classmethod
-    def create_directories(cls, value):
-        """Create directories associated with each value."""
-        apply_to_path_or_paths(value, create_directories)
-        return value
 
 
 def pathfold(path: str) -> str:
