@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from pydantic import BaseModel, DirectoryPath, Field, FilePath, validator
+from pydantic import BaseModel, DirectoryPath, Field, FilePath, field_validator
 
 from boilercore.models import YamlModel
 from boilercore.models.geometry import Geometry
@@ -24,7 +24,7 @@ class Trial(BaseModel):
         default=..., description="The date of the trial.", exclude=True
     )
 
-    @validator("date", pre=True)
+    @field_validator("date", mode="before")
     @classmethod
     def validate_date(cls, date):
         """Validate a date."""

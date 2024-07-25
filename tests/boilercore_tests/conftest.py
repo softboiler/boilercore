@@ -8,7 +8,7 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
-from cachier import cachier, set_default_params
+from cachier import cachier, set_default_params  # pyright: ignore[reportMissingImports]
 
 import boilercore
 from boilercore import filter_certain_warnings
