@@ -4,7 +4,7 @@ from collections.abc import Callable, Hashable, ItemsView, Iterable, Mapping
 from inspect import getsource, signature
 from typing import Any
 
-from cachier.config import _default_hash_func
+from cachier.config import _default_hash_func  # pyright: ignore[reportMissingImports]
 
 from boilercore.types import Freezable
 

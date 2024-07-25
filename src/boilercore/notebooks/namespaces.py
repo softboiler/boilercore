@@ -8,7 +8,7 @@ from inspect import getsource
 from textwrap import dedent
 from types import SimpleNamespace
 
-from cachier import cachier
+from cachier import cachier  # pyright: ignore[reportMissingImports]
 from nbformat import NO_CONVERT, reads
 from ploomber_engine._util import parametrize_notebook
 from ploomber_engine.ipython import PloomberClient

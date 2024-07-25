@@ -57,7 +57,7 @@ functions = symbols(
     T_w,
     T,
     """,
-    cls=Function,
+    cls=Function,  # pyright: ignore[reportArgumentType]
 )
 (
     T_int,  # (T*, K) The general solution to the ODE
