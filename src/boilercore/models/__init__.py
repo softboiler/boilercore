@@ -8,6 +8,7 @@ from types import EllipsisType, GenericAlias
 from typing import Annotated, Any, ClassVar, get_args, get_origin
 
 from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic.json_schema import GenerateJsonSchema, JsonSchemaWarningKind
 from ruamel.yaml import YAML
 
 from boilercore.models.types import PathOrPaths, Paths
@@ -17,6 +18,12 @@ yaml = YAML()
 yaml.indent(mapping=YAML_INDENT, sequence=YAML_INDENT, offset=YAML_INDENT)
 yaml.width = 1000  # Otherwise Ruamel breaks lines illegally
 yaml.preserve_quotes = True
+
+
+class GenerateJsonSchemaNoWarnDefault(GenerateJsonSchema):
+    """Don't warn about non-serializable defaults since we handle them."""
+
+    ignored_warning_kinds: set[JsonSchemaWarningKind] = {"non-serializable-default"}
 
 
 class YamlModel(BaseModel):
@@ -40,7 +47,7 @@ class YamlModel(BaseModel):
         schema_file = data_file.with_name(f"{data_file.stem}_schema.json")
         schema_file.write_text(
             encoding="utf-8",
-            data=f"{dumps(self.model_json_schema(), indent=YAML_INDENT)}\n",
+            data=f"{dumps(self.model_json_schema(schema_generator=GenerateJsonSchemaNoWarnDefault), indent=YAML_INDENT)}\n",
         )
 
 
@@ -81,7 +88,7 @@ class SynchronizedPathsYamlModel(YamlModel):
         return defaults
 
 
-def json_schema_extra(schema: dict[str, Any], model):
+def json_schema_extra(schema: dict[str, Any], model: type[BaseModel]):
     """Replace backslashes with forward slashes in paths."""
     if schema.get("required"):
         raise TypeError(
@@ -92,9 +99,15 @@ def json_schema_extra(schema: dict[str, Any], model):
         (field.annotation for field in model.model_fields.values()),
         strict=True,
     ):
-        # If default is a container, `annotation` will be the type of its elements.
-        check_pathlike(model, field, annotation)
-        prop["default"] = apply_to_path_or_paths(prop.get("default"), pathfold)
+        check_pathlike(model, field, annotation)  # pyright: ignore[reportArgumentType]
+        prop["default"] = apply_to_path_or_paths(
+            model.model_fields[field].default,
+            lambda path: (
+                Path(path).relative_to(cwd)
+                if path.is_relative_to(cwd := Path.cwd())
+                else path
+            ).as_posix(),
+        )
 
 
 class DefaultPathsModel(BaseModel):
@@ -107,7 +120,9 @@ class DefaultPathsModel(BaseModel):
         """Get the paths for this model."""
         return {
             key: value["default"]
-            for key, value in cls.model_json_schema()["properties"].items()
+            for key, value in cls.model_json_schema(
+                schema_generator=GenerateJsonSchemaNoWarnDefault
+            )["properties"].items()
         }
 
 
@@ -122,7 +137,7 @@ class CreatePathsModel(DefaultPathsModel):
         return value
 
 
-def check_pathlike(model: BaseModel, field: str, annotation: type | GenericAlias):
+def check_pathlike(model: type[BaseModel], field: str, annotation: type | GenericAlias):
     """Check that the field is path-like."""
     for typ in get_types(annotation):
         if isinstance(typ, EllipsisType):
@@ -172,14 +187,3 @@ def apply_to_path_or_paths(
         return {key: fun(path) for key, path in path_or_paths.items()}
     else:
         raise TypeError("Type not supported.")
-
-
-def pathfold(path: str) -> str:
-    """Return the shortest possible path with forward slashes."""
-    return str(prefer_relative_path(Path(path))).replace("\\", "/")
-
-
-def prefer_relative_path(path: Path) -> Path:
-    """Return the path relative to the current working directory if possible."""
-    cwd = Path.cwd()
-    return path.relative_to(cwd) if path.is_relative_to(cwd) else path
