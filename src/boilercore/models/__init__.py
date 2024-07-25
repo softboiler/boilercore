@@ -23,7 +23,9 @@ yaml.preserve_quotes = True
 class GenerateJsonSchemaNoWarnDefault(GenerateJsonSchema):
     """Don't warn about non-serializable defaults since we handle them."""
 
-    ignored_warning_kinds: set[JsonSchemaWarningKind] = {"non-serializable-default"}
+    ignored_warning_kinds: ClassVar[set[JsonSchemaWarningKind]] = {  # pyright: ignore[reportIncompatibleVariableOverride]
+        "non-serializable-default"
+    }
 
 
 class YamlModel(BaseModel):
