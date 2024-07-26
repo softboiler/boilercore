@@ -133,7 +133,7 @@ class CreatePathsModel(DefaultPathsModel):
 
     @field_validator("*", mode="before")
     @classmethod
-    def create_directories(cls, value):
+    def create_directories(cls, value: PathOrPaths[Path | str]):
         """Create directories associated with each value."""
         apply_to_path_or_paths(value, create_directories)
         return value
@@ -172,7 +172,7 @@ def get_types(
 def create_directories(path: Path | str) -> None:
     """Create directories."""
     path = Path(path)
-    if path.is_file():
+    if path.is_file() or path.suffix:
         return
     path.mkdir(parents=True, exist_ok=True)
 
