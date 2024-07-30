@@ -57,11 +57,6 @@ def filter_certain_warnings(
             )
             for category in categories
         ),
-        # Ignore this as it crops up only during test time under some configurations
-        WarningFilter(
-            message=r"ImportDenier\.find_spec\(\) not found; falling back to find_module\(\)",
-            category=ImportWarning,
-        ),
         # Additionally filter these other warnings
         *other_warnings,
     ]:
