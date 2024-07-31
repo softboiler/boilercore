@@ -11,10 +11,11 @@ import pytest
 from cachier import cachier, set_default_params  # pyright: ignore[reportMissingImports]
 
 import boilercore
-from boilercore import filter_certain_warnings
+from boilercore import filter_boiler_warnings
 from boilercore.hashes import hash_args
+from boilercore.models.params import Params
+from boilercore.notebooks import namespaces
 from boilercore.notebooks.namespaces import NO_PARAMS, get_cached_nb_ns, get_ns_attrs
-from boilercore.notebooks.types import Params
 from boilercore.testing import get_session_path, unwrap_node
 from boilercore_tests import EMPTY_NB
 
@@ -23,10 +24,10 @@ from boilercore_tests import EMPTY_NB
 @pytest.fixture(autouse=True)
 def _filter_certain_warnings():
     """Filter certain warnings."""
-    filter_certain_warnings(package=boilercore)
+    filter_boiler_warnings()
 
 
-@pytest.fixture(autouse=True, scope="session")
+@pytest.fixture()
 def project_session_path(tmp_path_factory) -> Path:
     """Project session path."""
     return get_session_path(tmp_path_factory, boilercore)
@@ -35,9 +36,9 @@ def project_session_path(tmp_path_factory) -> Path:
 @pytest.fixture()
 def params(project_session_path):
     """Parameters."""
-    from boilercore.models.params import PARAMS  # noqa: PLC0415
-
-    return PARAMS
+    return Params(
+        root=project_session_path, data_file=project_session_path / "params.yaml"
+    )
 
 
 @pytest.fixture(scope="session")
@@ -64,7 +65,9 @@ def cached_function_and_cache_file(
         return wrapper
 
     @custom_cachier
-    def fun(nb: str = EMPTY_NB, params: Params = NO_PARAMS) -> SimpleNamespace:
+    def fun(
+        nb: str = EMPTY_NB, params: namespaces.Params = NO_PARAMS
+    ) -> SimpleNamespace:
         """Get cached minimal namespace suitable for passing to a receiving function."""
         return get_cached_nb_ns(nb, params, get_ns_attrs(unwrap_node(request.node)))
 

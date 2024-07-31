@@ -26,7 +26,8 @@ def get_session_path(
     test_data_name = Path("root")
     project_test_data = Path("tests") / test_data_name
     session_path = tmp_path_factory.getbasetemp() / test_data_name
-    package.PROJECT_PATH = session_path  # type: ignore
+    if getattr(package, "PROJECT_PATH", None):
+        package.PROJECT_PATH = session_path  # type: ignore
     copytree(project_test_data, session_path, dirs_exist_ok=True)
     return session_path
 
