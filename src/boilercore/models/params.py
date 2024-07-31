@@ -21,7 +21,3 @@ class Params(SynchronizedPathsYamlModel):
         root = (root or Path.cwd()).resolve()
         data_file = data_file or root / "params.yaml"
         super().__init__(data_file, paths=Paths(root=root))
-
-
-PARAMS = Params()
-"""All project parameters, including paths."""
