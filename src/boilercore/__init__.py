@@ -14,10 +14,6 @@ from boilercore.types import Action
 PROJECT_PATH = Path()
 
 
-def get_params_file():  # noqa: D103
-    return PROJECT_PATH / "params.yaml"
-
-
 class WarningFilter(NamedTuple):
     """A warning filter, e.g. to be unpacked into `warnings.filterwarnings`."""
 

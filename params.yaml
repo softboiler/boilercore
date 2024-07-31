@@ -1,5 +1,4 @@
 paths:
-  project: .
   package: src/boilercore
   data: data
   stages:

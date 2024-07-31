@@ -4,13 +4,11 @@ from pathlib import Path
 
 from pydantic import Field
 
-from boilercore import get_params_file
+from boilercore import PROJECT_PATH
 from boilercore.fits import Fit
 from boilercore.models import SynchronizedPathsYamlModel
 from boilercore.models.geometry import Geometry
 from boilercore.models.paths import Paths
-
-PARAMS_FILE = get_params_file()
 
 
 class Params(SynchronizedPathsYamlModel):
@@ -18,10 +16,14 @@ class Params(SynchronizedPathsYamlModel):
 
     fit: Fit = Field(default_factory=Fit, description="Model fit parameters.")
     geometry: Geometry = Field(default_factory=Geometry, description="Geometry.")
-    paths: Paths = Field(default_factory=Paths)
+    paths: Paths
 
-    def __init__(self, data_file: Path = PARAMS_FILE, **kwargs):
-        super().__init__(data_file, **kwargs)
+    def __init__(
+        self,
+        data_file: Path = PROJECT_PATH / Path("params.yaml"),
+        root: Path = PROJECT_PATH,
+    ):
+        super().__init__(data_file, paths=Paths(root=root.resolve()))
 
 
 PARAMS = Params()

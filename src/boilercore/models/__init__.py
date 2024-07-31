@@ -1,14 +1,19 @@
 """Basic models."""
 
+from __future__ import annotations
+
 from collections.abc import Callable, Iterator, Mapping, Sequence
+from functools import partial
 from itertools import chain
 from json import dumps
 from pathlib import Path
 from types import EllipsisType, GenericAlias
-from typing import Annotated, Any, ClassVar, get_args, get_origin
+from typing import Annotated, Any, ClassVar, NamedTuple, get_args, get_origin
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic.fields import FieldInfo
 from pydantic.json_schema import GenerateJsonSchema, JsonSchemaWarningKind
+from pydantic.types import PathType
 from ruamel.yaml import YAML
 
 from boilercore.models.types import PathOrPaths, Paths
@@ -34,11 +39,10 @@ class YamlModel(BaseModel):
     Updates a JSON schema next to the YAML file with each initialization.
     """
 
-    def __init__(self, data_file: Path, **kwargs):
+    def __init__(self, data_file: Path, /, **kwargs):
         """Initialize and update the schema."""
         self.update_schema(data_file)
-        params = self.get_params(data_file)
-        super().__init__(**(params | kwargs))
+        super().__init__(**(self.get_params(data_file) | kwargs))
 
     def get_params(self, data_file: Path) -> dict[str, Any]:
         """Get parameters from file."""
@@ -60,62 +64,76 @@ class SynchronizedPathsYamlModel(YamlModel):
     pipeline orchestration.
     """
 
-    def __init__(self, data_file: Path, **kwargs):
+    def __init__(self, data_file: Path, /, **kwargs):
         """Initialize and update the schema."""
         super().__init__(data_file, **kwargs)
+        params = self.get_params(data_file)
+        for outer_field, value in self.model_fields.items():
+            if issubclass((typ := get_field_type(value)), DefaultPathsModel):
+                paths = getattr(self, outer_field)
+                for field in typ.model_fields:
+                    if field == "root":
+                        continue
+                    params[outer_field][field] = apply_to_path_or_paths(
+                        getattr(paths, field), partial(try_relative, other=paths.root)
+                    )
+        yaml.dump(params, data_file)
 
     def get_params(self, data_file: Path) -> dict[str, Paths[Path]]:
         """Get parameters from file, synchronizing paths in the file."""
-        params = super().get_params(data_file)
-        paths = self.get_paths()
-        yaml.dump(params | paths, data_file)
-        for i, param in paths.items():
-            for j, p in param.items():
-                paths[i][j] = apply_to_path_or_paths(p, lambda p_: Path(p_).resolve())
-        return params | paths
+        return super().get_params(data_file) | self.get_paths()
 
     def get_paths(self) -> dict[str, Paths[str]]:
         """Get all paths specified in paths-type models."""
-        excludes = {k for k, v in self.model_fields.items() if v.exclude}
         defaults: dict[str, Paths[str]] = {}
-        for key, field in self.model_fields.items():
-            if key in excludes:
+        for field, value in self.model_fields.items():
+            if value.exclude:
                 continue
-            if generic_ := get_origin(field.annotation):
-                annotation = type(generic_)
-            else:
-                annotation = field.annotation
-            if issubclass(annotation, DefaultPathsModel):  # pyright: ignore[reportArgumentType]
-                defaults[key] = annotation.get_paths()
+            if issubclass((typ := get_field_type(value)), DefaultPathsModel):
+                defaults[field] = typ.get_paths()
         return defaults
+
+
+def try_relative(path: Path, other: Path) -> str:
+    """Try to get a string path relative to another."""
+    return (path.relative_to(other) if path.is_relative_to(other) else path).as_posix()
+
+
+def get_field_type(field: FieldInfo) -> type:
+    """Get the type of a field."""
+    return (  # pyright: ignore[reportReturnType]
+        type(generic_)
+        if (generic_ := get_origin(field.annotation))
+        else field.annotation
+    )
 
 
 def json_schema_extra(schema: dict[str, Any], model: type[BaseModel]):
     """Replace backslashes with forward slashes in paths."""
-    if schema.get("required"):
+    if (reqd := schema.get("required")) and "root" in reqd:
+        schema["required"] = []
+    if schema["required"]:
         raise TypeError(
             f"Defaults must be specified in {model}, derived from {DefaultPathsModel}."
         )
-    for (field, prop), annotation in zip(
+    for (field, prop), (annotation, default) in zip(
         schema["properties"].items(),
-        (field.annotation for field in model.model_fields.values()),
+        ((field.annotation, field.default) for field in model.model_fields.values()),
         strict=True,
     ):
+        if field == "root":
+            continue
         check_pathlike(model, field, annotation)  # pyright: ignore[reportArgumentType]
-        prop["default"] = apply_to_path_or_paths(
-            model.model_fields[field].default,
-            lambda path: (
-                Path(path).relative_to(cwd)
-                if path.is_relative_to(cwd := Path.cwd())
-                else path
-            ).as_posix(),
-        )
+        prop["default"] = apply_to_path_or_paths(default, lambda path: path.as_posix())
 
 
 class DefaultPathsModel(BaseModel):
     """All fields must be path-like and have defaults specified in this model."""
 
-    model_config: ClassVar[ConfigDict] = ConfigDict(json_schema_extra=json_schema_extra)
+    root: Path
+    model_config: ClassVar[ConfigDict] = ConfigDict(
+        validate_default=True, json_schema_extra=json_schema_extra
+    )
 
     @classmethod
     def get_paths(cls) -> Paths[str]:
@@ -125,37 +143,63 @@ class DefaultPathsModel(BaseModel):
             for key, value in cls.model_json_schema(
                 schema_generator=GenerateJsonSchemaNoWarnDefault
             )["properties"].items()
+            if key != "root"
         }
 
 
 class CreatePathsModel(DefaultPathsModel):
     """Parent directories will be created for all fields in this model."""
 
-    @field_validator("*", mode="before")
+    @model_validator(mode="before")
     @classmethod
-    def create_directories(cls, value: PathOrPaths[Path | str]):
-        """Create directories associated with each value."""
-        apply_to_path_or_paths(value, create_directories)
-        return value
+    def create_directories(cls, data: dict[str, Any]) -> dict[str, Any]:
+        """Create directories for directory paths."""
+        for field, value in cls.model_fields.items():
+            if field == "root":
+                continue
+            metadata = value.metadata or list(
+                chain.from_iterable(
+                    v.metadata
+                    for v in get_types(value.annotation)  # pyright: ignore[reportArgumentType]
+                )
+            )
+            apply_to_path_or_paths(
+                value.default,
+                partial(create_directories, metadata=metadata),  # pyright: ignore[reportArgumentType]
+            )
+        return data
+
+
+def create_directories(path, metadata: list[Any]):
+    """Create directories for directory paths."""
+    if PathType("dir") in metadata:
+        path.mkdir(parents=True, exist_ok=True)
 
 
 def check_pathlike(model: type[BaseModel], field: str, annotation: type | GenericAlias):
     """Check that the field is path-like."""
     for typ in get_types(annotation):
-        if isinstance(typ, EllipsisType):
+        if isinstance(typ.typ, EllipsisType):
             continue
-        if not issubclass(typ, Path):
+        if not issubclass(typ.typ, Path):
             raise TypeError(
                 f"Field <{field}> is not Path-like in {model}, derived from {DefaultPathsModel}."
             )
 
 
+class Typ(NamedTuple):
+    """A type and its metadata."""
+
+    typ: type | EllipsisType
+    metadata: list[Any]
+
+
 def get_types(
-    annotation: type | EllipsisType | GenericAlias,
-) -> Iterator[type | EllipsisType]:
+    annotation: type | EllipsisType | GenericAlias, metadata: list[Any] | None = None
+) -> Iterator[Typ]:
     """Get types for scalar, mapping, sequence, and annotated types."""
     if isinstance(annotation, type | EllipsisType):
-        yield annotation
+        yield Typ(annotation, metadata or [])
     elif (origin := get_origin(annotation)) and (args := get_args(annotation)):
         if issubclass(origin, Mapping):
             value_annotation = args[-1]
@@ -163,18 +207,10 @@ def get_types(
         elif issubclass(origin, Sequence):
             yield from chain.from_iterable(get_types(a) for a in args)
         elif issubclass(origin, Annotated):
-            annotated_type = args[0]
-            yield from get_types(annotated_type)
+            typ, *metadata = args
+            yield from get_types(typ, metadata)
     else:
         raise TypeError("Type not supported.")
-
-
-def create_directories(path: Path | str) -> None:
-    """Create directories."""
-    path = Path(path)
-    if path.is_file() or path.suffix:
-        return
-    path.mkdir(parents=True, exist_ok=True)
 
 
 def apply_to_path_or_paths(

@@ -48,11 +48,10 @@ def test_model_combinations(
         field_file: Path = Field(default=file_)
 
     class Params(yamlmodel):
-        paths: Paths = Field(default_factory=Paths)
-        field_paths: Paths = Paths()
+        paths: Paths
 
         def __init__(self):
-            super().__init__(tmp_path / "params.yaml")
+            super().__init__(tmp_path / "params.yaml", paths=Paths(root=tmp_path))
 
     if chdir:
         with monkeypatch.context() as m:
