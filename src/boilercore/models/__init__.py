@@ -10,7 +10,7 @@ from pathlib import Path
 from types import EllipsisType, GenericAlias
 from typing import Annotated, Any, ClassVar, NamedTuple, get_args, get_origin
 
-from pydantic import BaseModel, ConfigDict, FilePath, model_validator
+from pydantic import BaseModel, ConfigDict, DirectoryPath, FilePath, model_validator
 from pydantic.fields import FieldInfo
 from pydantic.json_schema import GenerateJsonSchema, JsonSchemaWarningKind
 from pydantic.types import PathType
@@ -39,12 +39,24 @@ yaml.width = 1000  # Otherwise Ruamel breaks lines illegally
 yaml.preserve_quotes = True
 
 
-class GenerateJsonSchemaNoWarnDefault(GenerateJsonSchema):
-    """Don't warn about non-serializable defaults since we handle them."""
+class BoilercorePydanticPluginSettings(BaseModel):
+    """Plugin settings for boilercore."""
 
-    ignored_warning_kinds: ClassVar[set[JsonSchemaWarningKind]] = {  # pyright: ignore[reportIncompatibleVariableOverride]
-        "non-serializable-default"
-    }
+    source_relative: bool = True
+
+
+def validate_settings(
+    model_config: SettingsConfigDict,
+) -> BoilercorePydanticPluginSettings:
+    """Validate settings."""
+    return BoilercorePydanticPluginSettings(
+        **(
+            settings
+            if (plugin := model_config.get("plugin_settings"))  # pyright: ignore[reportCallIssue]
+            and (settings := plugin.get("boilercore"))
+            else {}
+        )
+    )
 
 
 def yaml_json_schema_extra(schema: dict[str, Any]):
@@ -60,22 +72,26 @@ class SynchronizedPathsYamlModel(BaseSettings):
     pipeline orchestration.
     """
 
-    source: FilePath
     model_config = SettingsConfigDict(
-        yaml_file_encoding="utf-8", json_schema_extra=yaml_json_schema_extra
+        yaml_file_encoding="utf-8",
+        json_schema_extra=yaml_json_schema_extra,
+        plugin_settings={"boilercore": {"source_relative": True}},
     )
+    source: FilePath
 
     def __init__(self, **kwargs):
-        """Initialize and update the schema."""
+        """Initialize and update  schema."""
         super().__init__(**kwargs)
-        self.update_schema(self.source)
-
-    def update_schema(self, data_file: Path):
-        """Update the schema file next to the data file."""
-        schema_file = data_file.with_name(f"{data_file.stem}_schema.json")
-        schema_file.write_text(
+        source_schema = self.source.with_name(f"{self.source.stem}_schema.json")
+        source_schema.write_text(
             encoding="utf-8",
-            data=f"{dumps(self.model_json_schema(schema_generator=GenerateJsonSchemaNoWarnDefault), indent=YAML_INDENT)}\n",
+            data=dumps(
+                self.model_json_schema(
+                    schema_generator=GenerateJsonSchemaNoWarnDefault
+                ),
+                indent=YAML_INDENT,
+            )
+            + "\n",
         )
 
     @classmethod
@@ -86,36 +102,41 @@ class SynchronizedPathsYamlModel(BaseSettings):
         *_args: PydanticBaseSettingsSource,
         **_kwds: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
-        """Customize settings sources."""
-        default_paths_settings = DefaultPathsSettingsSource(
-            settings_cls,
-            init_settings.init_kwargs,  # pyright: ignore[reportAttributeAccessIssue]
-        )
+        """Customize settings sources.
+
+        Prioritize values passed during initialization, then values from YAML which are
+        not part of paths models.
+        """
         return (
             init_settings,
-            default_paths_settings,
             NonPathsYamlConfigSettingsSource(
                 settings_cls,
+                init_settings.init_kwargs,  # pyright: ignore[reportAttributeAccessIssue]
                 yaml_file=get_yaml_file(settings_cls, init_settings.init_kwargs),  # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
-                default_paths_kwargs=default_paths_settings.init_kwargs,
             ),
         )
 
 
-class DefaultPathsSettingsSource(InitSettingsSource):
-    """Source class that loads defaults."""
-
-    def __init__(self, settings_cls: type[BaseSettings], init_kwargs: dict[str, Any]):
-        super().__init__(settings_cls, get_default_paths(settings_cls, init_kwargs))
+def get_yaml_file(model: type[BaseSettings], init_kwargs: dict[str, Any]) -> Path:
+    """Get YAML file for settings."""
+    if init := init_kwargs.get(SOURCE):
+        if not Path(init).exists():
+            Path(init).touch()
+        return init
+    elif default := model.model_fields[SOURCE].default:
+        if not Path(default).exists():
+            Path(default).touch()
+        return default
+    raise ValueError("No source file specified.")
 
 
 class NonPathsYamlConfigSettingsSource(YamlConfigSettingsSource):
-    """Source class that loads non-paths from `yaml`."""
+    """Settings source classs that loads from YAML, excluding default paths."""
 
     def __init__(
         self,
         settings_cls: type[BaseSettings],
-        default_paths_kwargs: dict[str, Any],
+        init_kwargs: dict[str, Any],
         yaml_file: sources.PathType | None = DEFAULT_PATH,
         yaml_file_encoding: str | None = None,
     ):
@@ -124,36 +145,57 @@ class NonPathsYamlConfigSettingsSource(YamlConfigSettingsSource):
             yaml_file=yaml_file,
             yaml_file_encoding=yaml_file_encoding,
         )
-        source = yaml.load(yaml_file) or {} if Path(yaml_file).exists() else {}  # pyright: ignore[reportArgumentType]
+        default_paths = DefaultPathsSettingsSource(
+            settings_cls, init_kwargs
+        ).init_kwargs
+        yaml_path = Path(yaml_file)  # pyright: ignore[reportArgumentType]
+        source = yaml.load(yaml_file) or {} if yaml_path.exists() else {}
         kwargs: dict[str, Any] = {}
-        for field, value in settings_cls.model_fields.items():
+        for field, info in settings_cls.model_fields.items():
             if field == "source":
                 continue
-            if issubclass(get_field_type(value), DefaultPathsModel):
+            if issubclass(get_field_type(info), DefaultPathsModel):
                 source[field] = {
-                    key: apply_to_path_or_paths(
-                        v,
+                    field_: apply_to_paths(
+                        value,
                         partial(
-                            lambda path: (
-                                path.relative_to(Path.cwd())
-                                if path.is_relative_to(Path.cwd())
+                            lambda path, source_relative: (
+                                path.relative_to(yaml_path.parent)
+                                if source_relative
+                                and path.is_relative_to(yaml_path.parent)
                                 else path
-                            ).as_posix()
+                            ).as_posix(),
+                            source_relative=validate_settings(
+                                settings_cls.model_config
+                            ).source_relative,
                         ),
                     )
-                    for key, v in default_paths_kwargs[field].items()
-                    if key != ROOT
+                    for field_, value in default_paths[field].items()
+                    if field_ != ROOT
                 }
             elif kwarg := self.init_kwargs.get(field):
                 kwargs[field] = kwarg
-        yaml.dump(source, Path(yaml_file))  # pyright: ignore[reportArgumentType]
+        yaml.dump(source, yaml_path)
         self.init_kwargs = kwargs
+
+
+class DefaultPathsSettingsSource(InitSettingsSource):
+    """Settings source class that gets default paths from the model."""
+
+    def __init__(self, settings_cls: type[BaseSettings], init_kwargs: dict[str, Any]):
+        defaults: dict[str, Paths[str]] = {}
+        for field, value in settings_cls.model_fields.items():
+            if issubclass((typ := get_field_type(value)), DefaultPathsModel):
+                defaults[field] = typ.get_default_paths(
+                    get_root(typ, field, init_kwargs)
+                )
+        super().__init__(settings_cls, defaults)
 
 
 def default_paths_json_schema_extra(schema: dict[str, Any], model: type[BaseModel]):
     """Replace backslashes with forward slashes in paths."""
     if schema.get("required"):
-        raise TypeError(
+        raise ValueError(
             f"Defaults must be specified in {model}, derived from {DefaultPathsModel}."
         )
     for (field, prop), (annotation, default) in zip(
@@ -163,14 +205,20 @@ def default_paths_json_schema_extra(schema: dict[str, Any], model: type[BaseMode
     ):
         if field == ROOT:
             continue
-        check_pathlike(model, field, annotation)  # pyright: ignore[reportArgumentType]
-        prop["default"] = apply_to_path_or_paths(default, lambda path: path.as_posix())
+        for typ in get_types(annotation):  # pyright: ignore[reportArgumentType]
+            if isinstance(typ.typ, EllipsisType):
+                continue
+            if not issubclass(typ.typ, Path):
+                raise TypeError(
+                    f"Field <{field}> is not Path-like in {model}, derived from {DefaultPathsModel}."
+                )
+        prop["default"] = apply_to_paths(default, lambda path: path.as_posix())
 
 
 class DefaultPathsModel(BaseModel):
     """All fields must be path-like and have defaults specified in this model."""
 
-    root: Path
+    root: DirectoryPath
     model_config: ClassVar[ConfigDict] = ConfigDict(
         validate_default=True, json_schema_extra=default_paths_json_schema_extra
     )
@@ -179,11 +227,11 @@ class DefaultPathsModel(BaseModel):
     def get_default_paths(cls, root: Path) -> Paths[str]:
         """Get default paths for this model."""
         return {
-            key: apply_to_path_or_paths(value["default"], lambda path: root / path)
-            for key, value in cls.model_json_schema(
+            field: apply_to_paths(prop["default"], lambda path: root / path)
+            for field, prop in cls.model_json_schema(
                 schema_generator=GenerateJsonSchemaNoWarnDefault
             )["properties"].items()
-            if key != ROOT
+            if field != ROOT
         }
 
 
@@ -195,35 +243,36 @@ class CreatePathsModel(DefaultPathsModel):
     def create_directories(cls, data: dict[str, Any]) -> dict[str, Any]:
         """Create directories for directory paths."""
         root = get_root(cls, ROOT, data)
-        for field, value in cls.model_fields.items():
+        for field, info in cls.model_fields.items():
             if field == ROOT:
                 continue
-            metadata = value.metadata or list(
+            metadata = info.metadata or list(
                 chain.from_iterable(
-                    v.metadata
-                    for v in get_types(value.annotation)  # pyright: ignore[reportArgumentType]
+                    typ.metadata
+                    for typ in get_types(info.annotation)  # pyright: ignore[reportArgumentType]
                 )
             )
-            data[field] = apply_to_path_or_paths(
-                value.default,
+            data[field] = apply_to_paths(
+                info.default,
                 partial(make_absolute_and_create, root=root, metadata=metadata),
             )
         return data
 
 
-def get_yaml_file(
-    settings_cls: type[BaseSettings], init_kwargs: dict[str, Any]
-) -> Path:
-    """Get YAML file for settings."""
-    if init := init_kwargs.get(SOURCE):
-        if not Path(init).exists():
-            Path(init).touch()
-        return init
-    elif model := settings_cls.model_fields[SOURCE].default:
-        if not Path(model).exists():
-            Path(model).touch()
-        return model
-    raise ValueError("No source file specified.")
+def make_absolute_and_create(path, root: Path, metadata: list[Any]):
+    """Create directories for directory paths."""
+    absolute = root / path
+    if PathType("dir") in metadata:
+        absolute.mkdir(parents=True, exist_ok=True)
+    return absolute
+
+
+class GenerateJsonSchemaNoWarnDefault(GenerateJsonSchema):
+    """Don't warn about non-serializable defaults since we handle them."""
+
+    ignored_warning_kinds: ClassVar[set[JsonSchemaWarningKind]] = {  # pyright: ignore[reportIncompatibleVariableOverride]
+        "non-serializable-default"
+    }
 
 
 def get_field_type(field: FieldInfo) -> type:
@@ -235,62 +284,18 @@ def get_field_type(field: FieldInfo) -> type:
     )
 
 
-def get_root(typ: type[DefaultPathsModel], field: str, init_kwargs: dict[str, Any]):
+def get_root(model: type[DefaultPathsModel], field: str, init_kwargs: dict[str, Any]):
     """Get the root path of a model."""
     root = (
         root
         if (init := init_kwargs.get(field)) and (root := init.get(ROOT))
-        else typ.model_fields[ROOT].default
+        else model.model_fields[ROOT].default
     )
     if not root.is_absolute():
         raise ValueError(
-            f"Root path must be absolute in {typ}, derived from {DefaultPathsModel}."
+            f"Root path must be absolute in {model}, derived from {DefaultPathsModel}."
         )
     return root
-
-
-def get_default_paths(
-    model: type[BaseModel] | BaseModel, init_kwargs: dict[str, Any]
-) -> dict[str, Paths[str]]:
-    """Get default paths of a model."""
-    defaults: dict[str, Paths[str]] = {}
-    for field, value in model.model_fields.items():
-        if issubclass((typ := get_field_type(value)), DefaultPathsModel):
-            defaults[field] = typ.get_default_paths(get_root(typ, field, init_kwargs))
-    return defaults
-
-
-def apply_to_path_or_paths(
-    path_or_paths: PathOrPaths[Any], fun: Callable[[Any], Any]
-) -> PathOrPaths[Any]:
-    """Apply a function to a path, sequence of paths, or mapping of names to paths."""
-    if isinstance(path_or_paths, Path | str):
-        return fun(path_or_paths)
-    elif isinstance(path_or_paths, Sequence):
-        return [fun(path) for path in path_or_paths]
-    elif isinstance(path_or_paths, Mapping):
-        return {key: fun(path) for key, path in path_or_paths.items()}
-    else:
-        raise TypeError("Type not supported.")
-
-
-def check_pathlike(model: type[BaseModel], field: str, annotation: type | GenericAlias):
-    """Check that the field is path-like."""
-    for typ in get_types(annotation):
-        if isinstance(typ.typ, EllipsisType):
-            continue
-        if not issubclass(typ.typ, Path):
-            raise TypeError(
-                f"Field <{field}> is not Path-like in {model}, derived from {DefaultPathsModel}."
-            )
-
-
-def make_absolute_and_create(path, root: Path, metadata: list[Any]):
-    """Create directories for directory paths."""
-    absolute = root / path
-    if PathType("dir") in metadata:
-        absolute.mkdir(parents=True, exist_ok=True)
-    return absolute
 
 
 class Typ(NamedTuple):
@@ -308,12 +313,35 @@ def get_types(
         yield Typ(annotation, metadata or [])
     elif (origin := get_origin(annotation)) and (args := get_args(annotation)):
         if issubclass(origin, Mapping):
-            value_annotation = args[-1]
-            yield from get_types(value_annotation)
+            yield from get_types(_value_annotation := args[-1])
         elif issubclass(origin, Sequence):
-            yield from chain.from_iterable(get_types(a) for a in args)
+            yield from chain.from_iterable(get_types(arg) for arg in args)
         elif issubclass(origin, Annotated):
             typ, *metadata = args
             yield from get_types(typ, metadata)
     else:
-        raise TypeError("Type not supported.")
+        raise TypeError(
+            "\n".join([
+                f"Unsupported type found in {annotation}. Supported types are scalar,"
+                "mapping, sequence, and annotated types."
+            ])
+        )
+
+
+def apply_to_paths(
+    path_or_paths: PathOrPaths[Any], fun: Callable[[Any], Any]
+) -> PathOrPaths[Any]:
+    """Apply a function to a path, sequence of paths, or mapping of names to paths."""
+    if isinstance(path_or_paths, Path | str):
+        return fun(path_or_paths)
+    elif isinstance(path_or_paths, Sequence):
+        return [fun(path) for path in path_or_paths]
+    elif isinstance(path_or_paths, Mapping):
+        return {key: fun(path) for key, path in path_or_paths.items()}
+    else:
+        raise TypeError(
+            "\n".join([
+                f"Type of {path_or_paths} not supported. Supported types are a path,"
+                "sequence of paths, or mapping of names to paths."
+            ])
+        )
