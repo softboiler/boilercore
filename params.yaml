@@ -1,9 +1,9 @@
 paths:
-  scripts: scripts
-  filt: scripts/filt.py
-  csl: scripts/international-journal-of-heat-and-mass-transfer.csl
-  template: scripts/template.dotx
-  models: models
+  scripts: data/scripts
+  filt: data/scripts/filt.py
+  csl: data/scripts/international-journal-of-heat-and-mass-transfer.csl
+  template: data/scripts/template.dotx
+  models: data/models
 package_paths:
   stages:
-    modelfun: stages/modelfun.ipynb
+    modelfun: src/boilercore/stages/modelfun.ipynb

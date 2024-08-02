@@ -1,13 +1,13 @@
 stages:
   modelfun-3.11:
-    cmd: "ploomber-engine ${paths.stages.modelfun} NUL --parameters PYTHON_VERSION 3.11"
+    cmd: "ploomber-engine ${package_paths.stages.modelfun} NUL --parameters PYTHON_VERSION 3.11"
     deps:
-      - "${paths.stages.modelfun}"
+      - "${package_paths.stages.modelfun}"
     outs:
       - "${paths.models}/modelfun-3.11.dillpickle"
   modelfun-3.12:
-    cmd: "ploomber-engine ${paths.stages.modelfun} NUL --parameters PYTHON_VERSION 3.12"
+    cmd: "ploomber-engine ${package_paths.stages.modelfun} NUL --parameters PYTHON_VERSION 3.12"
     deps:
-      - "${paths.stages.modelfun}"
+      - "${package_paths.stages.modelfun}"
     outs:
       - "${paths.models}/modelfun-3.12.dillpickle"

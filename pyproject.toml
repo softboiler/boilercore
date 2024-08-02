@@ -284,6 +284,7 @@ convention = "numpy"
 [tool.ruff.lint.extend-per-file-ignores]
 "**/*.ipynb" = [
     "B018", # Allow "useless" expressions, which do suppress outputs in notebooks
+    "E402", # Need to allow imports below patches
     "E703", # Allow semicolons to suppress outputs in notebooks
     "F821", # Allow undefined names, such as `display`
     "S101", # Allow assert

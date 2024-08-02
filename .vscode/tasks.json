@@ -5,15 +5,10 @@
   "version": "2.0.0",
   "inputs": [
     {
-      "id": "templateOptions",
+      "id": "changeType",
       "type": "pickString",
-      "description": "Template options.",
-      "options": ["", "-Prompt", "-Stay", "-Stay -Prompt", "-Recopy -Prompt"]
-    },
-    {
-      "id": "ref",
-      "type": "promptString",
-      "description": "Commit SHA or other VCS reference."
+      "description": "Change type.",
+      "options": ["breaking", "deprecation", "change"]
     },
     {
       "id": "dependency",
@@ -21,15 +16,26 @@
       "description": "Show tree of packages requesting this dependency."
     },
     {
+      "id": "ref",
+      "type": "promptString",
+      "description": "Commit SHA or other VCS reference."
+    },
+    {
+      "id": "stage",
+      "type": "pickString",
+      "description": "Stage name.",
+      "options": ["modelfun-3.11", "modelfun-3.12"]
+    },
+    {
+      "id": "templateOptions",
+      "type": "pickString",
+      "description": "Template options.",
+      "options": ["", "-Prompt", "-Stay", "-Stay -Prompt", "-Recopy -Prompt"]
+    },
+    {
       "id": "version",
       "type": "promptString",
       "description": "Version number."
-    },
-    {
-      "id": "changeType",
-      "type": "pickString",
-      "description": "Change type.",
-      "options": ["breaking", "deprecation", "change"]
     }
   ],
   "tasks": [

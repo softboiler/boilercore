@@ -97,7 +97,6 @@ class SynchronizedPathsYamlModel(BaseSettings):
             NonPathsYamlConfigSettingsSource(
                 settings_cls,
                 yaml_file=get_yaml_file(settings_cls, init_settings.init_kwargs),  # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
-                init_kwargs=init_settings.init_kwargs,  # pyright: ignore[reportAttributeAccessIssue]
                 default_paths_kwargs=default_paths_settings.init_kwargs,
             ),
         )
@@ -116,7 +115,6 @@ class NonPathsYamlConfigSettingsSource(YamlConfigSettingsSource):
     def __init__(
         self,
         settings_cls: type[BaseSettings],
-        init_kwargs: dict[str, Any],
         default_paths_kwargs: dict[str, Any],
         yaml_file: sources.PathType | None = DEFAULT_PATH,
         yaml_file_encoding: str | None = None,
@@ -131,13 +129,16 @@ class NonPathsYamlConfigSettingsSource(YamlConfigSettingsSource):
         for field, value in settings_cls.model_fields.items():
             if field == "source":
                 continue
-            if issubclass((typ := get_field_type(value)), DefaultPathsModel):
+            if issubclass(get_field_type(value), DefaultPathsModel):
                 source[field] = {
                     key: apply_to_path_or_paths(
                         v,
                         partial(
-                            lambda path, root: path.relative_to(root).as_posix(),
-                            root=get_root(typ, field, init_kwargs),
+                            lambda path: (
+                                path.relative_to(Path.cwd())
+                                if path.is_relative_to(Path.cwd())
+                                else path
+                            ).as_posix()
                         ),
                     )
                     for key, v in default_paths_kwargs[field].items()
