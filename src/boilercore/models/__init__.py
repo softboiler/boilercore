@@ -33,6 +33,8 @@ ROOT = "root"
 """Name of the root path model attribute."""
 INDENT = 2
 """Indentation for YAML and JSON."""
+ENCODING = "utf-8"
+"""File encoding."""
 yaml = YAML()
 """Customized YAML loader/dumper."""
 yaml.indent(mapping=INDENT, sequence=INDENT, offset=INDENT)
@@ -74,7 +76,7 @@ class SynchronizedPathsYamlModel(BaseSettings):
     """
 
     model_config = SettingsConfigDict(
-        yaml_file_encoding="utf-8",
+        yaml_file_encoding=ENCODING,
         json_schema_extra=yaml_json_schema_extra,
         plugin_settings={"boilercore": {"source_relative": True}},
     )
@@ -85,7 +87,7 @@ class SynchronizedPathsYamlModel(BaseSettings):
         super().__init__(**kwargs)
         source_schema = self.source.with_name(f"{self.source.stem}_schema.json")
         source_schema.write_text(
-            encoding="utf-8",
+            encoding=ENCODING,
             data=dumps(
                 self.model_json_schema(
                     schema_generator=GenerateJsonSchemaNoWarnDefault
@@ -110,9 +112,13 @@ class SynchronizedPathsYamlModel(BaseSettings):
         """
         return (
             init_settings,
-            NonPathsYamlConfigSettingsSource(
+            default_paths := DefaultPathsSettingsSource(
                 settings_cls,
                 init_settings.init_kwargs,  # pyright: ignore[reportAttributeAccessIssue]
+            ),
+            NonPathsModelYamlConfigSettingsSource(
+                settings_cls,
+                default_paths.init_kwargs,
                 yaml_file=get_yaml_file(settings_cls, init_settings.init_kwargs),  # pyright: ignore[reportArgumentType, reportAttributeAccessIssue]
             ),
         )
@@ -131,33 +137,51 @@ def get_yaml_file(model: type[BaseSettings], init_kwargs: dict[str, Any]) -> Pat
     raise ValueError("No source file specified.")
 
 
-class NonPathsYamlConfigSettingsSource(YamlConfigSettingsSource):
-    """Settings source classs that loads from YAML, excluding default paths."""
+class DefaultPathsSettingsSource(InitSettingsSource):
+    """Settings source class that gets default paths from the model."""
+
+    def __init__(self, settings_cls: type[BaseSettings], init_paths: dict[str, Any]):
+        defaults: dict[str, Paths[str]] = {}
+        for field, value in settings_cls.model_fields.items():
+            if issubclass((typ := get_field_type(value)), DefaultPathsModel):
+                defaults[field] = typ.get_default_paths(
+                    get_root(typ, field, init_paths)
+                )
+        super().__init__(settings_cls, defaults)
+
+
+class NonPathsModelYamlConfigSettingsSource(YamlConfigSettingsSource):
+    """Settings source classs that loads from YAML, excluding paths model values.
+
+    Also synchronizes paths model default values back to the YAML.
+    """
 
     def __init__(
         self,
         settings_cls: type[BaseSettings],
-        init_kwargs: dict[str, Any],
+        default_paths: dict[str, Paths[str]],
         yaml_file: sources.PathType | None = DEFAULT_PATH,
-        yaml_file_encoding: str | None = None,
+        _yaml_file_encoding: str | None = None,
     ):
         super().__init__(
-            settings_cls=settings_cls,
-            yaml_file=yaml_file,
-            yaml_file_encoding=yaml_file_encoding,
+            settings_cls=settings_cls, yaml_file=yaml_file, yaml_file_encoding=ENCODING
         )
-        default_paths = DefaultPathsSettingsSource(
-            settings_cls, init_kwargs
-        ).init_kwargs
         yaml_path = Path(yaml_file)  # pyright: ignore[reportArgumentType]
-        source = yaml.load(yaml_file) or {} if yaml_path.exists() else {}
-        kwargs: dict[str, Any] = {}
+        source = yaml.load(yaml_path) or {} if yaml_path.exists() else {}
+        # ? Start with extra source kwargs in case config allows them
+        non_pathsmodel_source_kwargs = _extra_source_kwargs = {
+            field: source[field]
+            for field in [
+                f for f in source if f not in settings_cls.model_fields and f != SOURCE
+            ]
+        }
+        # ? Sync paths model paths back to source and populate kwargs with others
         for field, info in settings_cls.model_fields.items():
-            if field == "source":
+            if field == SOURCE:
                 continue
             if issubclass(get_field_type(info), DefaultPathsModel):
                 source[field] = {
-                    field_: apply_to_paths(
+                    paths_model_field: apply_to_paths(
                         value,
                         partial(
                             lambda path, source_relative: (
@@ -171,26 +195,15 @@ class NonPathsYamlConfigSettingsSource(YamlConfigSettingsSource):
                             ).source_relative,
                         ),
                     )
-                    for field_, value in default_paths[field].items()
-                    if field_ != ROOT
+                    for paths_model_field, value in default_paths[field].items()
+                    if paths_model_field != ROOT
                 }
-            elif kwarg := self.init_kwargs.get(field):
-                kwargs[field] = kwarg
+                continue
+            if kwarg := self.init_kwargs.get(field):
+                non_pathsmodel_source_kwargs[field] = kwarg
+                continue
         yaml.dump(source, yaml_path)
-        self.init_kwargs = kwargs
-
-
-class DefaultPathsSettingsSource(InitSettingsSource):
-    """Settings source class that gets default paths from the model."""
-
-    def __init__(self, settings_cls: type[BaseSettings], init_kwargs: dict[str, Any]):
-        defaults: dict[str, Paths[str]] = {}
-        for field, value in settings_cls.model_fields.items():
-            if issubclass((typ := get_field_type(value)), DefaultPathsModel):
-                defaults[field] = typ.get_default_paths(
-                    get_root(typ, field, init_kwargs)
-                )
-        super().__init__(settings_cls, defaults)
+        self.init_kwargs = non_pathsmodel_source_kwargs
 
 
 def default_paths_json_schema_extra(schema: dict[str, Any], model: type[BaseModel]):
