@@ -11,12 +11,12 @@ import pytest
 from cachier import cachier, set_default_params  # pyright: ignore[reportMissingImports]
 
 import boilercore
-from boilercore import filter_boiler_warnings
 from boilercore.hashes import hash_args
 from boilercore.models.params import Params
 from boilercore.notebooks import namespaces
 from boilercore.notebooks.namespaces import NO_PARAMS, get_cached_nb_ns, get_ns_attrs
 from boilercore.testing import get_session_path, unwrap_node
+from boilercore.warnings import filter_boiler_warnings
 from boilercore_tests import EMPTY_NB
 
 
@@ -36,9 +36,7 @@ def project_session_path(tmp_path_factory) -> Path:
 @pytest.fixture()
 def params(project_session_path):
     """Parameters."""
-    return Params(
-        root=project_session_path, data_file=project_session_path / "params.yaml"
-    )
+    return Params(source=project_session_path / "params.yaml")
 
 
 @pytest.fixture(scope="session")

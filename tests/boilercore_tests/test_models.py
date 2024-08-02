@@ -3,24 +3,21 @@
 from pathlib import Path
 
 import pytest
-from pydantic import DirectoryPath, Field
+from pydantic import DirectoryPath, Field, FilePath
 
 from boilercore.models import (
     CreatePathsModel,
     DefaultPathsModel,
     SynchronizedPathsYamlModel,
-    YamlModel,
 )
 
 
 @pytest.mark.parametrize("pathsmodel", [DefaultPathsModel, CreatePathsModel])
-@pytest.mark.parametrize("yamlmodel", [YamlModel, SynchronizedPathsYamlModel])
 @pytest.mark.parametrize(
     "chdir", [pytest.param(True, id="chdir"), pytest.param(False, id="nochdir")]
 )
 def test_model_combinations(
     pathsmodel: type[DefaultPathsModel],
-    yamlmodel: type[YamlModel],
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     chdir: bool,
@@ -38,6 +35,7 @@ def test_model_combinations(
         file_.touch()
 
     class Paths(pathsmodel):
+        root: DirectoryPath = tmp_path
         path: DirectoryPath = path_
         field_path: DirectoryPath = Field(default=path_)
         path_sequence: tuple[DirectoryPath, ...] = path_sequence_
@@ -47,11 +45,9 @@ def test_model_combinations(
         file: Path = file_
         field_file: Path = Field(default=file_)
 
-    class Params(yamlmodel):
-        paths: Paths
-
-        def __init__(self):
-            super().__init__(tmp_path / "params.yaml", paths=Paths(root=tmp_path))
+    class Params(SynchronizedPathsYamlModel):
+        source: FilePath = tmp_path / "params.yaml"
+        paths: Paths = Field(default_factory=Paths)
 
     if chdir:
         with monkeypatch.context() as m:

@@ -35,6 +35,7 @@ dependencies = [
     "pandas[hdf5,performance]>=2.2.2",
     "ploomber-engine>=0.0.30",
     "pydantic>=2.8.2",
+    "pydantic-settings>=2.4.0",
     "pytest>=7.4.0",
     "ruamel.yaml>=0.17.32",
     "scipy>=1.11.2",
