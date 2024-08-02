@@ -194,7 +194,7 @@ class CreatePathsModel(DefaultPathsModel):
     @classmethod
     def create_directories(cls, data: dict[str, Any]) -> dict[str, Any]:
         """Create directories for directory paths."""
-        root = data.get("root", cls.model_fields[ROOT].default)
+        root = get_root(cls, ROOT, data)
         for field, value in cls.model_fields.items():
             if field == ROOT:
                 continue
@@ -206,7 +206,7 @@ class CreatePathsModel(DefaultPathsModel):
             )
             data[field] = apply_to_path_or_paths(
                 value.default,
-                partial(make_absolute_and_create, other=root, metadata=metadata),
+                partial(make_absolute_and_create, root=root, metadata=metadata),
             )
         return data
 
@@ -237,11 +237,16 @@ def get_field_type(field: FieldInfo) -> type:
 
 def get_root(typ: type[DefaultPathsModel], field: str, init_kwargs: dict[str, Any]):
     """Get the root path of a model."""
-    return (
+    root = (
         root
         if (init := init_kwargs.get(field)) and (root := init.get(ROOT))
         else typ.model_fields[ROOT].default
     )
+    if not root.is_absolute():
+        raise ValueError(
+            f"Root path must be absolute in {typ}, derived from {DefaultPathsModel}."
+        )
+    return root
 
 
 def get_default_paths(
@@ -280,9 +285,9 @@ def check_pathlike(model: type[BaseModel], field: str, annotation: type | Generi
             )
 
 
-def make_absolute_and_create(path, other: Path, metadata: list[Any]):
+def make_absolute_and_create(path, root: Path, metadata: list[Any]):
     """Create directories for directory paths."""
-    absolute = other / path
+    absolute = root / path
     if PathType("dir") in metadata:
         absolute.mkdir(parents=True, exist_ok=True)
     return absolute
