@@ -87,7 +87,7 @@
       "label": "dvc: sync params",
       "type": "process",
       "command": "pwsh",
-      "args": ["-Command", "python -m boilercore.models.params"],
+      "args": ["-Command", "python -m boilercore.models.sync_params"],
       "icon": { "id": "graph" },
       "problemMatcher": []
     },
