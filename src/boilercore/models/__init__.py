@@ -31,10 +31,11 @@ SOURCE = "source"
 """Name of the settings source model attribute."""
 ROOT = "root"
 """Name of the root path model attribute."""
-YAML_INDENT = 2
-"""YAML indentation."""
+INDENT = 2
+"""Indentation for YAML and JSON."""
 yaml = YAML()
-yaml.indent(mapping=YAML_INDENT, sequence=YAML_INDENT, offset=YAML_INDENT)
+"""Customized YAML loader/dumper."""
+yaml.indent(mapping=INDENT, sequence=INDENT, offset=INDENT)
 yaml.width = 1000  # Otherwise Ruamel breaks lines illegally
 yaml.preserve_quotes = True
 
@@ -89,7 +90,7 @@ class SynchronizedPathsYamlModel(BaseSettings):
                 self.model_json_schema(
                     schema_generator=GenerateJsonSchemaNoWarnDefault
                 ),
-                indent=YAML_INDENT,
+                indent=INDENT,
             )
             + "\n",
         )
