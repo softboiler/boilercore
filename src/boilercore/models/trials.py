@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from pydantic import BaseModel, DirectoryPath, Field, FilePath, field_validator
 
-from boilercore.models import SynchronizedSchemaYamlModel
+from boilercore.models import SynchronizedPathsYamlModel
 from boilercore.models.geometry import Geometry
 from boilercore.types import Coupon, Group, Joint, Rod, Sample
 
@@ -104,10 +104,8 @@ class Trial(BaseModel):
         self.thermocouple_pos = dict(zip(copper_temps, thermocouple_pos, strict=True))
 
 
-class Trials(SynchronizedSchemaYamlModel):
+class Trials(SynchronizedPathsYamlModel):
     """The trials."""
 
+    source: FilePath = Path.cwd() / "trials.yaml"
     trials: list[Trial]
-
-    def __init__(self, data_file: Path):
-        super().__init__(data_file)

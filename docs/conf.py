@@ -46,6 +46,7 @@ ISPX_MAPPING: dict[str, IspxMappingValue] = {
     **{pkg: get_rtd(pkg) for pkg in ["myst_parser", "nbformat", "numpydoc"]},
     "matplotlib": get_url("matplotlib.org"),
     "pytest": get_url("docs.pytest.org/en"),
+    "sympy": get_url("docs.sympy.org", latest=True),
     "pandas": get_ispx("pandas.pydata.org/docs"),
     "python": get_ispx("docs.python.org/3"),
 }
@@ -202,6 +203,10 @@ nitpick_ignore_regex = [
     (r"py:.*", r"numpydoc\.docscrape\..+"),
     (r"py:.*", r"_pytest\..+"),
     (r"py:.*", r"numpy\.typing\..+"),
+    (  # ? sympy: https://github.com/sympy/sympy/issues/17619#issuecomment-536781620
+        r"py:.*",
+        r"sympy\..+",
+    ),
     (r"py:.*", r"ploomber_engine\.ipython\.+"),
     (r"py:.*", r"pydantic\..+"),  # ? https://github.com/pydantic/pydantic/issues/1339
     # ? TypeAlias: https://github.com/sphinx-doc/sphinx/issues/10785
