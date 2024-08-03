@@ -2,7 +2,16 @@
   // * ----------------------------------------------------------------------------- * #
   //! Schema
   "yaml.schemas": {
-    "params_schema.json": "params.yaml"
+    "params_schema.json": "params.yaml",
+    // ? `boilercore`
+    "src/boilercore/settings_schema.json": "src/boilercore/settings.yaml",
+    "src/boilercore/settings_plugin_schema.json": "src/boilercore/settings_plugin.yaml",
+    // ? `boilercore_docs`
+    "docs/boilercore_docs/settings_schema.json": "docs/boilercore_docs/settings.yaml",
+    "docs/boilercore_docs/settings_plugin_schema.json": "docs/boilercore_docs/settings_plugin.yaml",
+    // ? `boilercore_tests`
+    "tests/boilercore_tests/settings_schema.json": "tests/boilercore_tests/settings.yaml",
+    "tests/boilercore_tests/settings_plugin_schema.json": "tests/boilercore_tests/settings_plugin.yaml"
   },
   // * ----------------------------------------------------------------------------- * #
   //! Terminal

@@ -1,8 +1,10 @@
 # Ignore test plots
 tests/plots
-
-# Ignore schema, which has absolute paths that will vary by system
-params_schema.json
+# Ignore schemas, which have absolute paths that will vary by system
+*schema.json
+# Ignore local dev environment settings
+*.env
+settings*.yaml
 
 # * -------------------------------------------------------------------------------- * #
 # * Template gitignore
