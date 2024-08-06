@@ -3,6 +3,8 @@
 from collections.abc import Callable, ItemsView, Iterable, Mapping
 from typing import Any, Literal, TypeAlias, TypeVar
 
+from pydantic_settings import BaseSettings
+
 Bound = TypeVar("Bound", bound=tuple[float | str, float | str])
 """Boundary for a parameter to be fitted."""
 
@@ -31,3 +33,6 @@ Freezable: TypeAlias = (
     Callable[..., Any] | Mapping[str, Any] | ItemsView[str, Any] | Iterable[Any]
 )
 """Value that can be frozen."""
+
+SettingsModel = TypeVar("SettingsModel", bound=BaseSettings)
+"""Settings model type."""

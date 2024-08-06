@@ -25,8 +25,13 @@ from pydantic_settings import (
 from pydantic_settings.sources import DEFAULT_PATH
 from ruamel.yaml import YAML
 
+import boilercore
 from boilercore.models.types import PathOrPaths, Paths
+from boilercore.paths import get_module_name
+from boilercore.settings import default_plugin_config_dict, get_plugin_settings
 
+PACKAGE_NAME = get_module_name(boilercore)
+"""Module name."""
 SOURCE = "source"
 """Name of the settings source model attribute."""
 ROOT = "root"
@@ -40,26 +45,6 @@ yaml = YAML()
 yaml.indent(mapping=INDENT, sequence=INDENT, offset=INDENT)
 yaml.width = 1000  # Otherwise Ruamel breaks lines illegally
 yaml.preserve_quotes = True
-
-
-class BoilercorePydanticPluginSettings(BaseModel):
-    """Plugin settings for boilercore."""
-
-    source_relative: bool = True
-
-
-def validate_settings(
-    model_config: SettingsConfigDict,
-) -> BoilercorePydanticPluginSettings:
-    """Validate settings."""
-    return BoilercorePydanticPluginSettings(
-        **(
-            settings
-            if (plugin := model_config.get("plugin_settings"))  # pyright: ignore[reportCallIssue]
-            and (settings := plugin.get("boilercore"))
-            else {}
-        )
-    )
 
 
 def yaml_json_schema_extra(schema: dict[str, Any]):
@@ -78,7 +63,7 @@ class SynchronizedPathsYamlModel(BaseSettings):
     model_config = SettingsConfigDict(
         yaml_file_encoding=ENCODING,
         json_schema_extra=yaml_json_schema_extra,
-        plugin_settings={"boilercore": {"source_relative": True}},
+        plugin_settings=default_plugin_config_dict,
     )
     source: FilePath
 
@@ -130,7 +115,7 @@ def get_yaml_file(model: type[BaseSettings], init_kwargs: dict[str, Any]) -> Pat
         if not Path(init).exists():
             Path(init).touch()
         return init
-    elif default := model.model_fields[SOURCE].default:
+    elif default := model.model_fields[SOURCE].get_default(call_default_factory=True):
         if not Path(default).exists():
             Path(default).touch()
         return default
@@ -142,11 +127,20 @@ class DefaultPathsSettingsSource(InitSettingsSource):
 
     def __init__(self, settings_cls: type[BaseSettings], init_paths: dict[str, Any]):
         defaults: dict[str, Paths[str]] = {}
-        for field, value in settings_cls.model_fields.items():
-            if issubclass((typ := get_field_type(value)), DefaultPathsModel):
-                defaults[field] = typ.get_default_paths(
-                    get_root(typ, field, init_paths)
-                )
+        for field, info in settings_cls.model_fields.items():
+            if not issubclass(get_field_type(info), DefaultPathsModel):
+                continue
+            if init := init_paths.get(field):
+                defaults[field] = init
+                continue
+            if not info.is_required() and (
+                default := info.get_default(call_default_factory=True)
+            ):
+                defaults[field] = default
+                continue
+            raise ValueError(
+                f"Fields derived from {DefaultPathsModel} in {settings_cls} must have defaults."
+            )
         super().__init__(settings_cls, defaults)
 
 
@@ -180,6 +174,11 @@ class NonPathsModelYamlConfigSettingsSource(YamlConfigSettingsSource):
             if field == SOURCE:
                 continue
             if issubclass(get_field_type(info), DefaultPathsModel):
+                defaults = (
+                    paths.model_dump()
+                    if isinstance((paths := default_paths[field]), DefaultPathsModel)
+                    else paths
+                )
                 source[field] = {
                     paths_model_field: apply_to_paths(
                         value,
@@ -190,12 +189,12 @@ class NonPathsModelYamlConfigSettingsSource(YamlConfigSettingsSource):
                                 and path.is_relative_to(yaml_path.parent)
                                 else path
                             ).as_posix(),
-                            source_relative=validate_settings(
+                            source_relative=get_plugin_settings(
                                 settings_cls.model_config
                             ).source_relative,
                         ),
                     )
-                    for paths_model_field, value in default_paths[field].items()
+                    for paths_model_field, value in defaults.items()
                     if paths_model_field != ROOT
                 }
                 continue
@@ -208,25 +207,34 @@ class NonPathsModelYamlConfigSettingsSource(YamlConfigSettingsSource):
 
 def default_paths_json_schema_extra(schema: dict[str, Any], model: type[BaseModel]):
     """Replace backslashes with forward slashes in paths."""
-    if schema.get("required"):
-        raise ValueError(
-            f"Defaults must be specified in {model}, derived from {DefaultPathsModel}."
+    root_info = model.model_fields[ROOT]
+    get_relative: Callable[[Path], str] = (
+        partial(make_relative, other=root)
+        if (
+            root := (
+                None
+                if root_info.is_required()
+                else root_info.get_default(call_default_factory=True)
+            )
         )
-    for (field, prop), (annotation, default) in zip(
+        else lambda path: path.as_posix()
+    )
+    for (field, prop), default in zip(
         schema["properties"].items(),
-        ((field.annotation, field.default) for field in model.model_fields.values()),
+        (
+            info.get_default(call_default_factory=True)
+            for info in model.model_fields.values()
+        ),
         strict=True,
     ):
         if field == ROOT:
             continue
-        for typ in get_types(annotation):  # pyright: ignore[reportArgumentType]
-            if isinstance(typ.typ, EllipsisType):
-                continue
-            if not issubclass(typ.typ, Path):
-                raise TypeError(
-                    f"Field <{field}> is not Path-like in {model}, derived from {DefaultPathsModel}."
-                )
-        prop["default"] = apply_to_paths(default, lambda path: path.as_posix())
+        prop["default"] = apply_to_paths(default, get_relative)
+
+
+def make_relative(path: Path, other: Path) -> str:
+    """Make path relative to other path."""
+    return path.relative_to(other).as_posix()
 
 
 class DefaultPathsModel(BaseModel):
@@ -238,15 +246,20 @@ class DefaultPathsModel(BaseModel):
     )
 
     @classmethod
-    def get_default_paths(cls, root: Path) -> Paths[str]:
-        """Get default paths for this model."""
-        return {
-            field: apply_to_paths(prop["default"], lambda path: root / path)
-            for field, prop in cls.model_json_schema(
-                schema_generator=GenerateJsonSchemaNoWarnDefault
-            )["properties"].items()
-            if field != ROOT
-        }
+    def __pydantic_init_subclass__(cls, **kwargs):  # noqa: PLW3201
+        if not (root_info := cls.model_fields[ROOT]).is_required():
+            root = root_info.get_default(call_default_factory=True)
+            if not root.is_absolute():
+                raise ValueError(f"Root not absolute in {cls}.")
+            for info in cls.model_fields.values():
+                if info.is_required():
+                    raise ValueError("Default not specified.")
+                for typ in get_types(info.annotation):  # pyright: ignore[reportArgumentType]
+                    if isinstance(typ.typ, EllipsisType):
+                        continue
+                    if not issubclass(typ.typ, Path):
+                        raise ValueError("Field not Path-like.")  # noqa: TRY004  # ? So Pydantic will group errors
+        super().__init_subclass__(**kwargs)
 
 
 class CreatePathsModel(DefaultPathsModel):
@@ -256,7 +269,8 @@ class CreatePathsModel(DefaultPathsModel):
     @classmethod
     def create_directories(cls, data: dict[str, Any]) -> dict[str, Any]:
         """Create directories for directory paths."""
-        root = get_root(cls, ROOT, data)
+        default_root = cls.model_fields[ROOT].get_default(call_default_factory=True)
+        root = root if (root := data.get(ROOT)) else default_root
         for field, info in cls.model_fields.items():
             if field == ROOT:
                 continue
@@ -267,15 +281,22 @@ class CreatePathsModel(DefaultPathsModel):
                 )
             )
             data[field] = apply_to_paths(
-                info.default,
-                partial(make_absolute_and_create, root=root, metadata=metadata),
+                info.get_default(call_default_factory=True),
+                partial(
+                    make_absolute_and_create,
+                    root=root,
+                    default_root=default_root,
+                    metadata=metadata,
+                ),
             )
         return data
 
 
-def make_absolute_and_create(path, root: Path, metadata: list[Any]):
+def make_absolute_and_create(
+    path: Path, root: Path, default_root: Path, metadata: list[Any]
+):
     """Create directories for directory paths."""
-    absolute = root / path
+    absolute = root / path.relative_to(default_root)
     if PathType("dir") in metadata:
         absolute.mkdir(parents=True, exist_ok=True)
     return absolute
@@ -296,20 +317,6 @@ def get_field_type(field: FieldInfo) -> type:
         if (generic_ := get_origin(field.annotation))
         else field.annotation
     )
-
-
-def get_root(model: type[DefaultPathsModel], field: str, init_kwargs: dict[str, Any]):
-    """Get the root path of a model."""
-    root = (
-        root
-        if (init := init_kwargs.get(field)) and (root := init.get(ROOT))
-        else model.model_fields[ROOT].default
-    )
-    if not root.is_absolute():
-        raise ValueError(
-            f"Root path must be absolute in {model}, derived from {DefaultPathsModel}."
-        )
-    return root
 
 
 class Typ(NamedTuple):
@@ -334,7 +341,7 @@ def get_types(
             typ, *metadata = args
             yield from get_types(typ, metadata)
     else:
-        raise TypeError(
+        raise ValueError(
             "\n".join([
                 f"Unsupported type found in {annotation}. Supported types are scalar,"
                 "mapping, sequence, and annotated types."
@@ -353,7 +360,7 @@ def apply_to_paths(
     elif isinstance(path_or_paths, Mapping):
         return {key: fun(path) for key, path in path_or_paths.items()}
     else:
-        raise TypeError(
+        raise ValueError(  # noqa: TRY004  # ? So Pydantic will group errors
             "\n".join([
                 f"Type of {path_or_paths} not supported. Supported types are a path,"
                 "sequence of paths, or mapping of names to paths."

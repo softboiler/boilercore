@@ -1,5 +1,6 @@
 """Settings."""
 
+from pydantic import BaseModel, ConfigDict
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -7,17 +8,33 @@ from pydantic_settings import (
 )
 
 import boilercore
+import boilercore.settings_models
+from boilercore import settings_models
+from boilercore.paths import get_module_name
 from boilercore.settings_models import (
     customise_sources,
     get_settings_paths,
+    set_plugin_settings,
     sync_settings_schema,
 )
+
+
+class Constants(BaseModel):
+    """Constants."""
+
+    package_name: str = get_module_name(boilercore)
+
+
+const = Constants()
+
 
 paths = get_settings_paths(boilercore)
 
 
 class PluginModelConfig(BaseSettings):
     """Pydantic plugin model configuration."""
+
+    source_relative: bool = True
 
     @classmethod
     def settings_customise_sources(
@@ -56,3 +73,21 @@ for path, model in zip(
     sync_settings_schema(path, model)
 
 default = Settings()
+default_plugin_config = PluginModelConfig()
+default_plugin_config_dict = set_plugin_settings(
+    const.package_name, default_plugin_config
+)
+
+
+def get_plugin_settings(model_config: ConfigDict | SettingsConfigDict):
+    """Get Pydantic plugin model configuration.
+
+    ```Python
+    boilercore_pydantic_plugin_settings = get_plugin_settings(Model.model_config)
+    ```
+    """
+    return settings_models.get_plugin_settings(
+        model_config=model_config,
+        package_name=const.package_name,
+        config=PluginModelConfig,
+    )

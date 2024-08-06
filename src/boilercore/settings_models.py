@@ -5,15 +5,18 @@ from json import dumps
 from pathlib import Path
 from site import getsitepackages
 from types import ModuleType
+from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
+    SettingsConfigDict,
     YamlConfigSettingsSource,
 )
 
 from boilercore.paths import get_module_name, get_package_dir
+from boilercore.types import SettingsModel
 
 
 class Paths(BaseModel):
@@ -81,18 +84,40 @@ def customise_sources(
     return (init_settings, *get_yaml_sources(settings_cls, yaml_files, encoding))
 
 
-def get_plugin_settings(
-    package_name: str, config: BaseSettings
-) -> dict[str, BaseSettings]:
-    """Get Pydantic plugin model configuration.
+def set_plugin_settings(package_name: str, config: BaseSettings) -> dict[str, Any]:
+    """Set Pydantic plugin model configuration.
 
     ```Python
     model_config = SettingsConfigDict(
-        plugin_settings={"boilercv_docs": PluginModelConfig()}
+        plugin_settings=set_plugin_settings("my_package", MyPluginSettingsModel)
     )
     ```
     """
     return {package_name: config}
+
+
+def get_plugin_settings(
+    model_config: ConfigDict | SettingsConfigDict,
+    package_name: str,
+    config: type[SettingsModel],
+) -> SettingsModel:
+    """Get Pydantic plugin model configuration.
+
+    ```Python
+    plugin_settings = get_plugin_settings(
+        Model.model_config, "my_package", MyPluginSettingsModel
+    )
+    ```
+    """
+    return (
+        settings
+        if (
+            (all_settings := model_config.get("plugin_settings"))
+            and (settings := all_settings.get(package_name))
+            and isinstance(settings, config)
+        )
+        else config()
+    )
 
 
 def sync_settings_schema(
