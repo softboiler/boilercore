@@ -8,7 +8,7 @@ from itertools import chain
 from json import dumps
 from pathlib import Path
 from types import EllipsisType, GenericAlias
-from typing import Annotated, Any, ClassVar, NamedTuple, get_args, get_origin
+from typing import Annotated, Any, ClassVar, Literal, NamedTuple, get_args, get_origin
 
 from pydantic import BaseModel, ConfigDict, DirectoryPath, FilePath, model_validator
 from pydantic.fields import FieldInfo
@@ -255,8 +255,6 @@ class DefaultPathsModel(BaseModel):
                 if info.is_required():
                     raise ValueError("Default not specified.")
                 for typ in get_types(info.annotation):  # pyright: ignore[reportArgumentType]
-                    if isinstance(typ.typ, EllipsisType):
-                        continue
                     if not issubclass(typ.typ, Path):
                         raise ValueError("Field not Path-like.")  # noqa: TRY004  # ? So Pydantic will group errors
         super().__init_subclass__(**kwargs)
@@ -322,7 +320,7 @@ def get_field_type(field: FieldInfo) -> type:
 class Typ(NamedTuple):
     """A type and its metadata."""
 
-    typ: type | EllipsisType
+    typ: type
     metadata: list[Any]
 
 
@@ -330,10 +328,14 @@ def get_types(
     annotation: type | EllipsisType | GenericAlias, metadata: list[Any] | None = None
 ) -> Iterator[Typ]:
     """Get types for scalar, mapping, sequence, and annotated types."""
-    if isinstance(annotation, type | EllipsisType):
+    if annotation == Ellipsis:
+        yield from ()
+    elif isinstance(annotation, type):
         yield Typ(annotation, metadata or [])
     elif (origin := get_origin(annotation)) and (args := get_args(annotation)):
-        if issubclass(origin, Mapping):
+        if origin == Literal:
+            yield from get_types(args)  # pyright: ignore[reportArgumentType]
+        elif issubclass(origin, Mapping):
             yield from get_types(_value_annotation := args[-1])
         elif issubclass(origin, Sequence):
             yield from chain.from_iterable(get_types(arg) for arg in args)
@@ -342,7 +344,7 @@ def get_types(
             yield from get_types(typ, metadata)
     else:
         raise ValueError(
-            "\n".join([
+            "\n  ".join([
                 f"Unsupported type found in {annotation}. Supported types are scalar,"
                 "mapping, sequence, and annotated types."
             ])
