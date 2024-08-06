@@ -357,14 +357,13 @@ def apply_to_paths(
     """Apply a function to a path, sequence of paths, or mapping of names to paths."""
     if isinstance(path_or_paths, Path | str):
         return fun(path_or_paths)
-    elif isinstance(path_or_paths, Sequence):
+    if isinstance(path_or_paths, Sequence):
         return [fun(path) for path in path_or_paths]
-    elif isinstance(path_or_paths, Mapping):
+    if isinstance(path_or_paths, Mapping):
         return {key: fun(path) for key, path in path_or_paths.items()}
-    else:
-        raise ValueError(  # noqa: TRY004  # ? So Pydantic will group errors
-            "\n".join([
-                f"Type of {path_or_paths} not supported. Supported types are a path,"
-                "sequence of paths, or mapping of names to paths."
-            ])
-        )
+    raise ValueError(  # ? So Pydantic will group errors
+        "\n".join([
+            f"Type of {path_or_paths} not supported. Supported types are a path,"
+            "sequence of paths, or mapping of names to paths."
+        ])
+    )
