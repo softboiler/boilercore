@@ -10,7 +10,7 @@ from pathlib import Path
 from types import EllipsisType, GenericAlias
 from typing import Annotated, Any, ClassVar, Literal, NamedTuple, get_args, get_origin
 
-from pydantic import BaseModel, ConfigDict, DirectoryPath, FilePath, model_validator
+from pydantic import BaseModel, DirectoryPath, FilePath, model_validator
 from pydantic.fields import FieldInfo
 from pydantic.json_schema import GenerateJsonSchema, JsonSchemaWarningKind
 from pydantic.types import PathType
@@ -133,14 +133,9 @@ class DefaultPathsSettingsSource(InitSettingsSource):
             if init := init_paths.get(field):
                 defaults[field] = init
                 continue
-            if not info.is_required() and (
-                default := info.get_default(call_default_factory=True)
-            ):
+            if default := info.get_default(call_default_factory=True):
                 defaults[field] = default
                 continue
-            raise ValueError(
-                f"Fields derived from {DefaultPathsModel} in {settings_cls} must have defaults."
-            )
         super().__init__(settings_cls, defaults)
 
 
@@ -237,11 +232,11 @@ def make_relative(path: Path, other: Path) -> str:
     return path.relative_to(other).as_posix()
 
 
-class DefaultPathsModel(BaseModel):
+class DefaultPathsModel(BaseSettings):
     """All fields must be path-like and have defaults specified in this model."""
 
     root: DirectoryPath
-    model_config: ClassVar[ConfigDict] = ConfigDict(
+    model_config = SettingsConfigDict(
         validate_default=True, json_schema_extra=default_paths_json_schema_extra
     )
 
@@ -258,6 +253,41 @@ class DefaultPathsModel(BaseModel):
                     if not issubclass(typ.typ, Path):
                         raise ValueError("Field not Path-like.")  # noqa: TRY004  # ? So Pydantic will group errors
         super().__init_subclass__(**kwargs)
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        *_args: PydanticBaseSettingsSource,
+        **_kwds: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        """Customize settings sources."""
+        if root := init_settings.init_kwargs.get(ROOT):  # pyright: ignore[reportAttributeAccessIssue]
+            return (
+                init_settings,
+                RelativeDefaultPathsSettingsSource(settings_cls, root),
+            )
+        else:
+            return (init_settings,)
+
+
+class RelativeDefaultPathsSettingsSource(InitSettingsSource):
+    """Settings source class that gets default paths relative to the root."""
+
+    def __init__(self, settings_cls: type[BaseSettings], root: Path):
+        defaults: dict[str, PathOrPaths[str]] = {}
+        default_root = settings_cls.model_fields[ROOT].get_default(
+            call_default_factory=True
+        )
+        for field, info in settings_cls.model_fields.items():
+            if field == ROOT:
+                continue
+            defaults[field] = apply_to_paths(
+                info.get_default(call_default_factory=True),
+                lambda path: root / path.relative_to(default_root),
+            )
+        super().__init__(settings_cls, defaults)
 
 
 class CreatePathsModel(DefaultPathsModel):
@@ -292,7 +322,7 @@ class CreatePathsModel(DefaultPathsModel):
 
 def make_absolute_and_create(
     path: Path, root: Path, default_root: Path, metadata: list[Any]
-):
+) -> Path:
     """Create directories for directory paths."""
     absolute = root / path.relative_to(default_root)
     if PathType("dir") in metadata:
