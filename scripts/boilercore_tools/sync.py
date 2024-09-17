@@ -7,17 +7,18 @@ from datetime import datetime
 from json import dumps, loads
 from pathlib import Path
 from re import finditer
-from shlex import quote, split
+from shlex import split
 from subprocess import run
 from sys import version_info
 from typing import TYPE_CHECKING
 
+from boilercore_tools.environment import escape
 from boilercore_tools.types import Dep, PythonVersion, SubmoduleInfoKind, ops
 
 if version_info >= (3, 11):  # noqa: UP036, RUF100
     from datetime import UTC  # pyright: ignore[reportAttributeAccessIssue]
 else:
-    from datetime import timezone  # pyright: ignore[reportPossiblyUnboundVariable]
+    from datetime import timezone
 
     UTC = timezone.utc  # noqa: UP017, RUF100
 
@@ -32,20 +33,21 @@ REQS = Path("requirements")
 """Requirements."""
 DEV = REQS / "dev.in"
 """Other development tools and editable local dependencies."""
+OVERRIDES = REQS / "override.txt"
+"""Overrides to satisfy otherwise incompatible combinations."""
+NODEPS = REQS / "nodeps.in"
+"""Path to dependencies which should not have their transitive dependencies compiled."""
 DEPS = (
     DEV,
     *[
         Path(editable["path"]) / "pyproject.toml"
         for editable in finditer(
-            r"(?m)^(?:-e|--editable)\s(?P<path>.+)$", DEV.read_text("utf-8")
+            r"(?m)^(?:-e|--editable)\s(?P<path>.+)$",
+            "".join([path.read_text("utf-8") for path in [DEV, OVERRIDES, NODEPS]]),
         )
     ],
 )
 """Paths to compile dependencies for."""
-OVERRIDES = REQS / "override.txt"
-"""Overrides to satisfy otherwise incompatible combinations."""
-NODEPS = REQS / "nodeps.in"
-"""Path to dependencies which should not have their transitive dependencies compiled."""
 REQUIREMENTS = REQS / "requirements.txt"
 """Requirements."""
 
@@ -112,9 +114,9 @@ def lock(directs: dict[str, Dep] | None = None, high: bool = False) -> str:
 
 
 def get_uv_version() -> str:
-    """Get version of `uv` at `bin/uv`."""
+    """Get version of `uv` at `uv`."""
     result = run(
-        args=split("bin/uv --version"), capture_output=True, check=False, text=True
+        args=split("uv --version"), capture_output=True, check=False, text=True
     )
     if result.returncode:
         raise RuntimeError(result.stderr)
@@ -142,7 +144,7 @@ class Compiler:
         """Command to reproduce compilation requirements."""
         time = datetime.now(UTC)
         return time, [
-            "bin/uv",
+            "uv",
             "pip",
             "compile",
             "--universal",
@@ -271,8 +273,3 @@ def get_submodule_info(kind: SubmoduleInfoKind) -> list[str]:
             text=True,
         ).stdout.splitlines()
     ]
-
-
-def escape(path: str | Path) -> str:
-    """Escape a path, suitable for passing to e.g. {func}`~subprocess.run`."""
-    return quote(Path(path).as_posix())

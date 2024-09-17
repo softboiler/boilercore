@@ -9,6 +9,8 @@ settings*.yaml
 # * -------------------------------------------------------------------------------- * #
 # * Template gitignore
 
+# Ignore local dev environment settings
+*.env
 # local workspace extensions directory
 .vscode/extensions
 # uv binary
