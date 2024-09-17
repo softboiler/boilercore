@@ -12,19 +12,19 @@ from boilercore_tests.modelfun import FIT
 MODELFUN = Path("src/boilercore/stages/modelfun.ipynb").resolve()
 
 
-@pytest.fixture()
+@pytest.fixture
 def ns(request) -> SimpleNamespace:
     """Namespace for the model function notebook."""
     return get_nb_ns(MODELFUN.read_text(encoding="utf-8"))
 
 
-@pytest.fixture()
+@pytest.fixture
 def model(params):
     """Deserialized model."""
     return FIT.get_models(params.paths.models)[1]
 
 
-@pytest.fixture()
+@pytest.fixture
 def plt(plt):
     """Plot."""
     sns.set_theme(
