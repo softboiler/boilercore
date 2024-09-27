@@ -101,6 +101,7 @@ WARNING_FILTERS = [
         for message in [
             r"The palette list has more values \(\d+\) than needed \(\d+\), which may not be intended\.",
             r"To output multiple subplots, the figure containing the passed axes is being cleared\.",
+            r"\nThe palette list has fewer values \(\d+\) than needed \(\d+\) and will cycle, which may produce an uninterpretable plot\.",
         ]
     ],
     # * --------------------------------------------------------------------------------
