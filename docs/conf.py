@@ -4,9 +4,9 @@ from datetime import date
 from hashlib import sha256
 from pathlib import Path
 
-from dev.docs import DOCS, PYPROJECT, chdir_docs
-from dev.docs.intersphinx import get_ispx, get_rtd, get_url
-from dev.docs.types import IspxMappingValue
+from boilercore_dev.docs import DOCS, PYPROJECT, chdir_docs
+from boilercore_dev.docs.intersphinx import get_ispx, get_rtd, get_url
+from boilercore_dev.docs.types import IspxMappingValue
 from ruamel.yaml import YAML
 from sphinx.application import Sphinx
 
@@ -172,7 +172,7 @@ math_eqref_format = "Eq. {number}"
 mermaid_d3_zoom = False
 # ! Autodoc2
 nitpicky = True
-autodoc2_packages = [f"../src/{PACKAGE}", "../packages/_dev/dev"]
+autodoc2_packages = [f"../src/{PACKAGE}", f"../packages/_dev/{PACKAGE}_dev"]
 autodoc2_render_plugin = "myst"
 # ? Autodoc2 does not currently obey `python_display_short_literal_types` or
 # ? `python_use_unqualified_type_names`, but `maximum_signature_line_length` makes it a
@@ -180,7 +180,7 @@ autodoc2_render_plugin = "myst"
 # ? https://github.com/sphinx-extensions2/sphinx-autodoc2/issues/58
 maximum_signature_line_length = 1
 # ? Parse Numpy docstrings
-autodoc2_docstring_parser_regexes = [(".*", "dev.docs.docstrings")]
+autodoc2_docstring_parser_regexes = [(".*", f"{PACKAGE}_dev.docs.docstrings")]
 # ! Intersphinx
 intersphinx_mapping = ISPX_MAPPING
 nitpick_ignore = [

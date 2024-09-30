@@ -3,7 +3,7 @@ requires = ["flit_core==3.9.0"]
 build-backend = "flit_core.buildapi"
 
 [project]
-name = "dev"
+name = "boilercore_dev"
 version = "0.0.0"
 description = "Dev"
 dependencies = [
@@ -28,7 +28,7 @@ dependencies = [
   "pytest>=8.2.2",
 ]
 [project.scripts]
-"dev" = "dev.tools.__main__:main"
+dev = "boilercore_dev.tools.__main__:main"
 
 [tool.fawltydeps]
 deps = ["packages/_dev/pyproject.toml"]
@@ -37,7 +37,7 @@ ignore_undeclared = [
   # ? This project
   "boilercore",
   # ? Workspaces
-  "dev",
+  "boilercore_dev",
   # ? Path-sourced deps
   "cachier",
 ]

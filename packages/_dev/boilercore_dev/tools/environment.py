@@ -15,14 +15,14 @@ from pydantic_settings import (
     SettingsConfigDict,
 )
 
-import dev
-from dev.modules import get_module_name
+import boilercore_dev
+from boilercore_dev.modules import get_module_name
 
 
 class Constants(BaseModel):
     """Constants for {mod}`~dev.tools.environment`."""
 
-    dev_tool_config: tuple[str, ...] = ("tool", get_module_name(dev))
+    dev_tool_config: tuple[str, ...] = ("tool", get_module_name(boilercore_dev))
     """Path to `dev` tool configuration in `pyproject.toml`."""
     pylance_version_source: str = ".pylance-version"
     """Path to Pylance version file."""

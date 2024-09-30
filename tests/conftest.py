@@ -9,9 +9,9 @@ from typing import Any
 
 import pytest
 import seaborn as sns
+from boilercore_dev.tests import EMPTY_NB
+from boilercore_dev.tests.modelfun import FIT
 from cachier import cachier, set_default_params  # pyright: ignore[reportMissingImports]
-from dev.tests import EMPTY_NB
-from dev.tests.modelfun import FIT
 
 import boilercore
 from boilercore.hashes import hash_args

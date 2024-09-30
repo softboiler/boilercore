@@ -7,7 +7,7 @@ import pytest
 import seaborn as sns
 
 from boilercore.notebooks.namespaces import get_nb_ns
-from dev.tests.modelfun import FIT
+from boilercore_dev.tests.modelfun import FIT
 
 MODELFUN = Path("src/boilercore/stages/modelfun.ipynb").resolve()
 

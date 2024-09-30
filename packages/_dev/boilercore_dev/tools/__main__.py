@@ -10,9 +10,9 @@ from tomllib import loads
 from cyclopts import App
 from pydantic import BaseModel
 
-from dev.tools import add_changes, environment
-from dev.tools.environment import escape, run
-from dev.tools.types import ChangeType
+from boilercore_dev.tools import add_changes, environment
+from boilercore_dev.tools.environment import escape, run
+from boilercore_dev.tools.types import ChangeType
 
 
 class Constants(BaseModel):

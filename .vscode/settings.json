@@ -6,11 +6,11 @@
     "src/boilercore/settings_schema.json": "src/boilercore/settings.yaml",
     "src/boilercore/settings_plugin_schema.json": "src/boilercore/settings_plugin.yaml",
     // ? `dev.docs`
-    "packages/_dev/dev/docs/settings_schema.json": "packages/_dev/dev/docs/settings.yaml",
-    "packages/_dev/dev/docs/settings_plugin_schema.json": "packages/_dev/dev/docs/settings_plugin.yaml",
+    "packages/_dev/boilercore_dev/docs/settings_schema.json": "packages/_dev/dev/docs/settings.yaml",
+    "packages/_dev/boilercore_dev/docs/settings_plugin_schema.json": "packages/_dev/dev/docs/settings_plugin.yaml",
     // ? `dev.tests`
-    "packages/_dev/dev/tests/settings_schema.json": "packages/_dev/dev/tests/settings.yaml",
-    "packages/_dev/dev/tests/settings_plugin_schema.json": "packages/_dev/dev/tests/settings_plugin.yaml"
+    "packages/_dev/boilercore_dev/tests/settings_schema.json": "packages/_dev/dev/tests/settings.yaml",
+    "packages/_dev/boilercore_dev/tests/settings_plugin_schema.json": "packages/_dev/dev/tests/settings_plugin.yaml"
   }, // * ----------------------------------------------------------------------------- * #
   //! Terminal
   //? Use PowerShell on all platforms, facilitates running template scripts

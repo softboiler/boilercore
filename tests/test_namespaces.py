@@ -2,7 +2,7 @@
 
 from types import SimpleNamespace
 
-from dev.tests import NB
+from boilercore_dev.tests import NB
 
 
 def test_not_cached_before(cache_file):

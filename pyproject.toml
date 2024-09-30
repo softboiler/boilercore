@@ -18,6 +18,7 @@ classifiers = [
   # "Programming Language :: Python :: 3.14",  # ? Not yet beta (https://peps.python.org/pep-0745)
 ]
 dependencies = [
+  # TODO
   # ? Path-sourced deps
   "cachier",
   # ? Proper dependencies
@@ -59,7 +60,7 @@ constraint-dependencies = [
 ]
 dev-dependencies = [
   # ? Workspaces
-  "dev",
+  "boilercore_dev",
   # ? Dev
   "debugpy>=1.8.2",
   "dvc[gs]>=3.51.2",
@@ -100,11 +101,11 @@ members = ["packages/*"]
 exclude = ["packages/cachier"]
 [tool.uv.sources]
 cachier = { path = "packages/cachier", editable = true }
-dev = { workspace = true }
+boilercore_dev = { workspace = true }
 
 [tool.coverage.run]
 branch = true
-source = ["boilercore", "dev", "tests"]
+source = ["boilercore", "boilercore_dev", "tests"]
 
 [tool.fawltydeps]
 deps = ["pyproject.toml"]
@@ -273,7 +274,7 @@ reportUnusedCallResult = "none"
 cache-dir = ".cache/.ruff_cache"
 extend-exclude = ["typings", "packages/cachier"]
 extend-include = ["*.ipynb"]
-src = ["src", "docs", "scripts", "f"]
+src = ["src", "docs", "scripts"]
 output-format = "grouped"
 fix = true
 preview = true
@@ -354,7 +355,7 @@ convention = "numpy"
   "S101", # Allow assert
   "T201", # Allow print in notebooks
 ]
-"packages/_dev/dev/tools/add_changes.py" = [
+"packages/_dev/boilercore_dev/tools/add_changes.py" = [
   "S603", # Allow shell expressions here
   "S607", # Allow shell expressions here
 ]

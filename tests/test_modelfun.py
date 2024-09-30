@@ -1,7 +1,7 @@
 """Test model function and model fit."""
 
 import pytest
-from dev.tests.modelfun import FIT
+from boilercore_dev.tests.modelfun import FIT
 from numpy import allclose, array, linspace, sqrt
 from sympy import Eq
 
