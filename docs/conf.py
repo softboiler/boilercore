@@ -59,7 +59,6 @@ TIPPY_RTD_URLS = [
 
 def setup(app: Sphinx):
     """Add functions to Sphinx setup."""
-    init_nb_env()
     app.connect("html-page-context", add_version_to_css)
 
 

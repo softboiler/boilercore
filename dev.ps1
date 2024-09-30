@@ -41,7 +41,7 @@ function Install-Uv {
     Param([switch]$Update)
     $Env:PATH = "$HOME/.cargo/bin$([System.IO.Path]::PathSeparator)$Env:PATH"
     if ((Get-Command 'uv' -ErrorAction 'Ignore') -and $Update) {
-        try { uv self update }
+        try { return uv self update }
         catch [System.Management.Automation.NativeCommandExitException] {}
     }
     if ($IsWindows) {
@@ -221,7 +221,6 @@ function Sync-Template {
     if (!(Get-Command 'uv' -ErrorAction 'Ignore')) { Install-Uv -Update }
     $Copier = "copier@$(Get-Content '.copier-version')"
     $Ref = $Stay ? (Get-Content '.copier-answers.yml' | Find-Pattern '^_commit:\s.+-(.+)$') : $Ref
-    if (!$Ref) {$Ref = 'HEAD'}
     if ($Recopy) {
         if ($Prompt) { return uvx $Copier recopy $Defaults --vcs-ref=$Ref }
         return uvx $Copier recopy --overwrite --defaults
