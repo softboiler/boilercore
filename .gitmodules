@@ -2,5 +2,8 @@
 	path = submodules/template
 	url = https://github.com/blakeNaccarato/copier-python.git
 [submodule "cachier"]
-	path = submodules/cachier
+	path = packages/cachier
 	url = https://github.com/blakeNaccarato/cachier.git
+[submodule "typings"]
+	path = typings
+	url = https://github.com/softboiler/python-type-stubs.git

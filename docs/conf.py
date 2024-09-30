@@ -4,17 +4,13 @@ from datetime import date
 from hashlib import sha256
 from pathlib import Path
 
+from dev.docs import DOCS, PYPROJECT, chdir_docs
+from dev.docs.intersphinx import get_ispx, get_rtd, get_url
+from dev.docs.types import IspxMappingValue
 from ruamel.yaml import YAML
 from sphinx.application import Sphinx
 
-from boilercore_docs import DOCS, PYPROJECT, chdir_docs
-from boilercore_docs.intersphinx import get_ispx, get_rtd, get_url
-from boilercore_docs.nbs import init_nb_env
-from boilercore_docs.patch_nbs import patch_nbs
-from boilercore_docs.types import IspxMappingValue
-
-# ! Initialization
-patch_nbs()
+# ! Root
 ROOT = chdir_docs()
 """Root directory of the project."""
 # ! Paths

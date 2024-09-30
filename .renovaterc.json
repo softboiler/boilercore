@@ -1,55 +1,83 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Establish base config, schedule, and manager defaults",
   "addLabels": ["dependencies"],
-  "extends": ["config:base", "group:all", ":enablePreCommit"],
-  "dependencyDashboardApproval": false,
-  "schedule": ["on the 16th day of the month"],
-  "git-submodules": {
-    "enabled": true
-  },
+  "extends": [
+    ":dependencyDashboard",
+    ":semanticPrefixFixDepsChoreOthers",
+    ":ignoreModulesAndTests",
+    "replacements:all",
+    "workarounds:all"
+  ],
+  "dependencyDashboardApproval": true,
+  "lockFileMaintenance": { "enabled": true },
+  "separateMajorMinor": false,
+  "git-submodules": { "enabled": true },
+  "pre-commit": { "enabled": true },
   "enabledManagers": [
     "custom.regex",
     "devcontainer",
     "git-submodules",
     "github-actions",
     "pep621",
-    "pip_requirements",
     "pre-commit"
   ],
   "customManagers": [
     {
-      "description": "Pylance",
+      "description": "uv",
       "customType": "regex",
-      "fileMatch": [
-        "^pyproject\\.toml$",
-        "^\\.devcontainer/devcontainer\\.json$"
-      ],
+      "fileMatch": ["(^|/)\\.uv-version[^/]*$"],
+      "matchStrings": ["(?<currentValue>[^\\n]+)"],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "astral-sh/uv"
+    },
+    {
+      "description": "uv-gha",
+      "customType": "regex",
+      "fileMatch": ["(^|/)\\.github/workflows/[^/]*$"],
       "matchStrings": [
-        "PYRIGHT_PYTHON_PYLANCE_VERSION = \"(?<currentValue>.+)\"",
-        "ms-python\\.vscode-pylance@(?<currentValue>[^\"]+)"
+        "- uses: \"astral-sh/setup-uv@.+\\n\\s+with:\\n\\s+version:\\s\"(?<currentValue>.+)\""
       ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "astral-sh/uv"
+    },
+    {
+      "description": "pylance",
+      "customType": "regex",
+      "fileMatch": ["(^|/)\\.pylance-version[^/]*$"],
+      "matchStrings": ["(?<currentValue>[^\\n]+)"],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "microsoft/pylance-release"
     }
   ],
-  "pip_requirements": {
-    "description": "Additionally monitor these files",
-    "fileMatch": ["(^|/)requirements/.+$"]
-  },
-  "ignorePaths": ["requirements/requirements.txt"],
   "packageRules": [
     {
-      "description": "Sync with template",
-      "groupName": "template",
-      "matchManagers": ["git-submodules"],
-      "matchDepNames": ["submodules/template"]
+      "groupName": "all",
+      "matchPackageNames": ["*"]
     },
     {
-      "description": "Stubs for pandas sometimes lag",
-      "groupName": "pandas",
-      "matchManagers": ["pep621", "pip_requirements"],
-      "matchDepNames": ["pandas", "pandas-stubs"]
+      "groupName": "ruff",
+      "matchPackageNames": ["/^.*ruff.*$/"]
+    },
+    {
+      "groupName": "pylance",
+      "matchPackageNames": ["microsoft/pylance-release"]
+    },
+    {
+      "groupName": "tests",
+      "matchPackageNames": ["/^.*pytest.*$/"]
+    },
+    {
+      "groupName": "docs",
+      "matchPackageNames": [
+        "docutils",
+        "numpydoc",
+        "/^.*sphinx.*$/",
+        "/^.*myst.*$/"
+      ]
+    },
+    {
+      "groupName": "devcontainer",
+      "matchManagers": ["devcontainer"]
     }
   ]
 }

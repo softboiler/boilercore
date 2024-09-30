@@ -2,18 +2,16 @@
   // * ----------------------------------------------------------------------------- * #
   //! Schema
   "yaml.schemas": {
-    "params_schema.json": "params.yaml",
     // ? `boilercore`
     "src/boilercore/settings_schema.json": "src/boilercore/settings.yaml",
     "src/boilercore/settings_plugin_schema.json": "src/boilercore/settings_plugin.yaml",
-    // ? `boilercore_docs`
-    "docs/boilercore_docs/settings_schema.json": "docs/boilercore_docs/settings.yaml",
-    "docs/boilercore_docs/settings_plugin_schema.json": "docs/boilercore_docs/settings_plugin.yaml",
-    // ? `boilercore_tests`
-    "tests/boilercore_tests/settings_schema.json": "tests/boilercore_tests/settings.yaml",
-    "tests/boilercore_tests/settings_plugin_schema.json": "tests/boilercore_tests/settings_plugin.yaml"
-  },
-  // * ----------------------------------------------------------------------------- * #
+    // ? `dev.docs`
+    "packages/_dev/dev/docs/settings_schema.json": "packages/_dev/dev/docs/settings.yaml",
+    "packages/_dev/dev/docs/settings_plugin_schema.json": "packages/_dev/dev/docs/settings_plugin.yaml",
+    // ? `dev.tests`
+    "packages/_dev/dev/tests/settings_schema.json": "packages/_dev/dev/tests/settings.yaml",
+    "packages/_dev/dev/tests/settings_plugin_schema.json": "packages/_dev/dev/tests/settings_plugin.yaml"
+  }, // * ----------------------------------------------------------------------------- * #
   //! Terminal
   //? Use PowerShell on all platforms, facilitates running template scripts
   "terminal.integrated.defaultProfile.windows": "PowerShell",
@@ -32,8 +30,8 @@
   },
   "search.exclude": {
     //? Don't search in submodules or locks by default
-    "submodules": true,
-    "lock*.json": true
+    "typings": true,
+    "uv.lock": true
   },
   //! File nesting
   "explorer.sortOrder": "foldersNestsFiles",
@@ -51,7 +49,8 @@
     ".sourcery.yaml": "yaml",
     "*ipython-input*": "python",
     "*requirements*.in": "pip-requirements",
-    "pyrightconfig.json": "jsonc"
+    "pyrightconfig.json": "jsonc",
+    "uv.lock": "toml"
   },
   //! Git
   "git.allowNoVerifyCommit": true,
@@ -255,6 +254,7 @@
   },
   //* Even Better TOML (TOML)
   "[toml]": {
+    "editor.tabSize": 2,
     "editor.defaultFormatter": "tamasfe.even-better-toml",
     "editor.wordWrap": "off"
   },
