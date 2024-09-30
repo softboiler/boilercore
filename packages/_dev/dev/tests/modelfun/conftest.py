@@ -5,15 +5,15 @@ from types import SimpleNamespace
 
 import pytest
 import seaborn as sns
-from dev.tests.modelfun import FIT
 
 from boilercore.notebooks.namespaces import get_nb_ns
+from dev.tests.modelfun import FIT
 
 MODELFUN = Path("src/boilercore/stages/modelfun.ipynb").resolve()
 
 
 @pytest.fixture
-def ns(request) -> SimpleNamespace:
+def ns() -> SimpleNamespace:
     """Namespace for the model function notebook."""
     return get_nb_ns(MODELFUN.read_text(encoding="utf-8"))
 

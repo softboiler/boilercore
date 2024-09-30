@@ -90,6 +90,7 @@ dev-dependencies = [
   "pytest-custom-exit-code>=0.3.0",
   "pytest-github-actions-annotate-failures>=0.2.0",
   "pytest>=8.2.2",
+  "pytest-plt>=1.1.1",
 ]
 [tool.uv.pip]
 python-version = "3.11"
@@ -163,7 +164,14 @@ showcontent = true
 
 [tool.pyright]
 stubPath = "typings/stubs"
-exclude = ["**/node_modules", "**/__pycache__", "**/.*", ".cache", "typings"]
+exclude = [
+  "**/node_modules",
+  "**/__pycache__",
+  "**/.*",
+  ".cache",
+  "typings",
+  "packages/cachier",
+]
 ignore = ["**/node_modules", "**/__pycache__", "**/.*", ".cache", "typings"]
 typeCheckingMode = "strict"
 # Default "true" in strict
@@ -263,9 +271,9 @@ reportUnusedCallResult = "none"
 
 [tool.ruff]
 cache-dir = ".cache/.ruff_cache"
-extend-exclude = ["packages", "typings"]
-extend-include = ["*.ipynb", "packages/_dev"]
-src = ["src", "docs", "scripts", "tests"]
+extend-exclude = ["typings", "packages/cachier"]
+extend-include = ["*.ipynb"]
+src = ["src", "docs", "scripts", "f"]
 output-format = "grouped"
 fix = true
 preview = true
