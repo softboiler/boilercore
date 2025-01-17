@@ -35,7 +35,8 @@ WARNING_FILTERS = [
     *[
         WarningFilter(category=DeprecationWarning, module=module, message=message)
         for module, message in [
-            (r"IPython\.core\.pylabtools", r"backend2gui is deprecated."),
+            (r"sys", r"Call to deprecated function \(or staticmethod\) _destroy\."),
+            (r"IPython\.core\.pylabtools", r"backend2gui is deprecated\."),
             (r"latexcodec\.codec", r"open_text is deprecated\. Use files\(\) instead"),
             (r"nptyping\.typing_", r"`.+` is a deprecated alias for `.+`\."),
             (r"pybtex\.plugin", r"pkg_resources is deprecated as an API\."),
