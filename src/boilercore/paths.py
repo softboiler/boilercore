@@ -173,7 +173,7 @@ def walk_module_paths(
     package: Path, suffixes: list[str] = DEFAULT_SUFFIXES
 ) -> Iterable[Path]:
     """Walk the paths of a Python package."""
-    yield from (
+    yield from sorted(
         match
         for match in walk_matches(
             package,
@@ -220,7 +220,7 @@ def walk_matches(
         if not root_re.match(Path(root).name):
             continue
         files = [Path(root) / file for file in files]
-        for path in sorted(Path(root).glob(glob)):
+        for path in Path(root).glob(glob):
             if path in files and path_re.match(path.name):
                 yield path
 
