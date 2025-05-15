@@ -32,10 +32,10 @@
     "sync-py-in-codespace": [
       "pwsh",
       "-Command",
-      "if (Test-Path /.codespaces) { ./Invoke-Uv.ps1 -Sync -Update }"
+      "if (Test-Path /.codespaces) { ./Invoke-Uv.ps1 -Sync }"
     ]
   },
-  "postAttachCommand": { "sync-py": ["./Invoke-Uv.ps1 -Sync -Update"] },
+  "postAttachCommand": { "sync-py": ["./Invoke-Uv.ps1 -Sync"] },
   "containerEnv": { "DEVCONTAINER": "1" },
   "customizations": {
     "vscode": {

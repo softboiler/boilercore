@@ -18,11 +18,41 @@ class WarningFilter(NamedTuple):
     append: bool = False
 
 
-def filter_boiler_warnings(other_warnings: Iterable[WarningFilter] | None = None):
-    """Filter certain warnings for `boiler` projects."""
+def filter_boiler_warnings(
+    other_warnings: Iterable[WarningFilter] | None = None,
+    other_warnings_before: Iterable[WarningFilter] | None = None,
+):
+    """Filter certain warnings for `boiler` projects.
+
+    Sometimes warnings once excluded can pop back up again as new versions are installed
+    and upstream warning messages change, particularly for `DeprecationWarning`s. To
+    troubleshoot new or re-emergent warning messages, splice the following code above
+    the point of warning, modify the exclusion, and re-run or reload the notebook kernel
+    and re-run until the proper warning form is found. Then migrate that new/fixed
+    warning filter into your `other_warnings` argument.
+
+    ```Python
+    from warnings import filterwarnings
+    import warnings
+
+    from boilercore.warnings import WarningFilter
+
+    warnings.filters = []
+    filterwarnings(*WarningFilter(action="error"))
+    filterwarnings(
+        *WarningFilter(
+            category=DeprecationWarning,
+            module=r"<example>",
+            message=r"<message>",
+        )
+    )
+    warnings.filters
+    ```
+    """
     for filt in [
         WarningFilter(action="default"),
         *[WarningFilter(action="error", module=r"^boiler.*")],
+        *(other_warnings_before or []),
         *WARNING_FILTERS,
         *(other_warnings or []),
     ]:
@@ -36,7 +66,10 @@ WARNING_FILTERS = [
         WarningFilter(category=DeprecationWarning, module=module, message=message)
         for module, message in [
             (r"sys", r"Call to deprecated function \(or staticmethod\) _destroy\."),
-            (r"IPython\.core\.pylabtools", r"backend2gui is deprecated\."),
+            (
+                r"IPython\.core\.pylabtools",
+                r".+ is deprecated since IPython 8\.24, backends are managed in matplotlib and can be externally registered\.",
+            ),
             (r"latexcodec\.codec", r"open_text is deprecated\. Use files\(\) instead"),
             (r"nptyping\.typing_", r"`.+` is a deprecated alias for `.+`\."),
             (r"pybtex\.plugin", r"pkg_resources is deprecated as an API\."),

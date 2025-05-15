@@ -1,24 +1,23 @@
 <#.SYNOPSIS
 Common utilities.#>
 
-# ? Error-handling
-$ErrorActionPreference = 'Stop'
-$PSNativeCommandUseErrorActionPreference = $True
-$ErrorView = 'NormalView'
+# ? Set aliases
+@{
+    'iuv'      = 'Invoke-Uv'
+    'ij'       = 'Invoke-Just'
+}.GetEnumerator() | ForEach-Object { Set-Alias -Name $_.Key -Value $_.Value }
 
-# ? Fix leaky UTF-8 encoding settings on Windows
-if ($IsWindows) {
-    # ? Now PowerShell pipes will be UTF-8. Note that fixing it from Control Panel and
-    # ? system-wide has buggy downsides.
-    # ? See: https://github.com/PowerShell/PowerShell/issues/7233#issuecomment-640243647
-    [console]::InputEncoding = [console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
+function Enter-Venv {
+    <#.SYNOPSIS
+    Enter a local Python virtual environment.#>
+    if ($IsWindows) { '.venv/scripts/activate.ps1' } else { '.venv/bin/activate.ps1' }
 }
 
 function Initialize-Shell {
     <#.SYNOPSIS
     Initialize shell.#>
-    if (!(Test-Path '.venv')) { Invoke-Uv -Sync -Update -Force }
-    if ($IsWindows) { .venv/scripts/activate.ps1 } else { .venv/bin/activate.ps1 }
+    if (!(Test-Path '.venv')) { Invoke-Uv -Sync -Force }
+    Enter-Venv
 }
 
 function Find-Pattern {
@@ -37,18 +36,19 @@ function Find-Pattern {
 
 function Install-Uv {
     <#.SYNOPSIS
-    Invoke `uv`.#>
-    Param([switch]$Update)
-    $Env:PATH = "$HOME/.cargo/bin$([System.IO.Path]::PathSeparator)$Env:PATH"
-    if ((Get-Command 'uv' -ErrorAction 'Ignore') -and $Update) {
-        try { return uv self update }
-        catch [System.Management.Automation.NativeCommandExitException] {}
-    }
-    if ($IsWindows) {
-        Invoke-RestMethod 'https://astral.sh/uv/install.ps1' | Invoke-Expression
-    }
-    else {
-        curl --proto '=https' --tlsv1.2 -LsSf 'https://astral.sh/uv/install.sh' | sh
+    Install `uv`.#>
+    Param(
+        [switch]$Update,
+        [string]$UvVersion = (Get-Content '.uv-version')
+    )
+    $Env:PATH = "$HOME/.local/bin$([System.IO.Path]::PathSeparator)$Env:PATH"
+    if ($Update) {
+        if (Get-Command 'uv' -ErrorAction 'Ignore') {
+            try { return uv self update $UvVersion }
+            catch [System.Management.Automation.NativeCommandExitException] {}
+        }
+        if ($IsWindows) { Invoke-RestMethod 'https://astral.sh/uv/install.ps1' | Invoke-Expression }
+        else { curl --proto '=https' --tlsv1.2 -LsSf 'https://astral.sh/uv/install.sh' | sh }
     }
 }
 
@@ -68,118 +68,201 @@ function Invoke-Uv {
         [switch]$High,
         [switch]$Build,
         [switch]$Force,
-        [switch]$CI = (New-Switch $Env:SYNC_ENV_DISABLE_CI (New-Switch $Env:CI)),
-        [switch]$Locked = $CI,
+        # Mangled to avoid its alias shadowing common Python flag `-c`
+        [switch]$_CI = (New-Switch $Env:SYNC_ENV_DISABLE_CI (New-Switch $Env:CI)),
+        [switch]$Locked = $_CI,
         [switch]$Devcontainer = (New-Switch $Env:SYNC_ENV_DISABLE_DEVCONTAINER (New-Switch $Env:DEVCONTAINER)),
         [string]$PythonVersion = (Get-Content '.python-version'),
         [string]$PylanceVersion = (Get-Content '.pylance-version'),
-        [Parameter(ValueFromRemainingArguments = $True)][string[]]$Run
+        [Parameter(ValueFromPipeline, ValueFromRemainingArguments)][string[]]$Run
     )
-    if ($CI -or $Sync) {
-        if (!$CI) {
-            Install-Uv -Update:$Update
+    Begin {
+
+        # ? Error-handling
+        $ErrorActionPreference = 'Stop'
+        $PSNativeCommandUseErrorActionPreference = $True
+        $ErrorView = 'NormalView'
+
+        # ? Fix leaky UTF-8 encoding settings on Windows
+        if ($IsWindows) {
+            # ? Now PowerShell pipes will be UTF-8. Note that fixing it from Control Panel and
+            # ? system-wide has buggy downsides.
+            # ? See: https://github.com/PowerShell/PowerShell/issues/7233#issuecomment-640243647
+            $OutputEncoding = [console]::InputEncoding = [console]::OutputEncoding = [System.Text.Encoding]::UTF8
+        }
+
+        # ? Environment file
+        $EnvFile = '.env'
+        if (!(Test-Path $EnvFile)) { New-Item $EnvFile }
+
+        # ? Initialize shell
+        if (!$_CI) {
+            # ? Install or update `uv`
+            if ($Update -or !(Get-Command 'uv' -ErrorAction 'Ignore')) { Install-Uv -Update }
+            else { Install-Uv }
             # ? Sync submodules
             Get-ChildItem '.git/modules' -Filter 'config.lock' -Recurse -Depth 1 |
                 Remove-Item
             git submodule update --init --merge
         }
-        # ? Sync the environment
-        if (!(Test-Path 'requirements')) {
-            New-Item 'requirements' -ItemType 'Directory'
-        }
-        $LockedArg = $Locked ? '--locked' : $null
-        $FrozenArg = $Locked ? $null : '--frozen'
-        if ($Low) {
-            uv sync $LockedArg --resolution lowest-direct --python $PythonVersion
-            uv export $LockedArg $FrozenArg --resolution lowest-direct --no-hashes --python $PythonVersion |
-                Set-Content "$PWD/requirements/requirements_dev_low.txt"
-            $Env:ENV_SYNCED = $null
-        }
-        elseif ($High) {
-            uv sync $LockedArg --upgrade --python $PythonVersion
-            uv export $LockedArg $FrozenArg --no-hashes --python $PythonVersion |
-                Set-Content "$PWD/requirements/requirements_dev_high.txt"
-            $Env:ENV_SYNCED = $null
-        }
-        elseif ($Build) {
-            $LockedArg = $null
-            $FrozenArg = '--frozen'
-            uv sync $LockedArg --no-sources --no-dev --python $PythonVersion
-            uv export $LockedArg $FrozenArg --no-dev --no-hashes --python $PythonVersion |
-                Set-Content "$PWD/requirements/requirements_prod.txt"
-            uv build --python $PythonVersion
-            $Env:ENV_SYNCED = $null
-        }
-        elseif ($CI -or $Force -or !$Env:ENV_SYNCED) {
+        if ($_CI -or $Sync) {
             # ? Sync the environment
-            uv sync $LockedArg --python $PythonVersion
-            uv export $LockedArg $FrozenArg --no-hashes --python $PythonVersion |
-                Set-Content "$PWD/requirements/requirements_dev.txt"
-            if ($CI) {
-                Add-Content $Env:GITHUB_PATH ("$PWD/.venv/bin", "$PWD/.venv/scripts")
+            if (!(Test-Path 'requirements')) {
+                New-Item 'requirements' -ItemType 'Directory'
             }
-            $Env:ENV_SYNCED = $True
+            $LockedArg = $Locked ? '--locked' : $null
+            $FrozenArg = $Locked ? $null : '--frozen'
+            if ($Low) {
+                uv sync $LockedArg --resolution lowest-direct --python $PythonVersion
+                uv export $LockedArg $FrozenArg --no-annotate --resolution lowest-direct --no-hashes --python $PythonVersion |
+                    Set-Content 'requirements/requirements_dev_low.txt'
+                $Env:ENV_SYNCED = $null
+                Enter-Venv
+            }
+            elseif ($High) {
+                uv sync $LockedArg --upgrade --python $PythonVersion
+                uv export $LockedArg $FrozenArg --no-annotate --no-hashes --python $PythonVersion |
+                    Set-Content 'requirements/requirements_dev_high.txt'
+                $Env:ENV_SYNCED = $null
+                Enter-Venv
+            }
+            elseif ($Build) {
+                $LockedArg = $null
+                $FrozenArg = '--frozen'
+                uv sync $LockedArg --no-sources --no-dev --python $PythonVersion
+                uv export $LockedArg $FrozenArg --no-annotate --no-dev --no-hashes --python $PythonVersion |
+                    Set-Content 'requirements/requirements_prod.txt'
+                uv build --python $PythonVersion
+                $Env:ENV_SYNCED = $null
+                Enter-Venv
+            }
+            elseif ($_CI -or $Force -or !$Env:ENV_SYNCED) {
 
-            # ? Sync `.env` and set environment variables from `pyproject.toml`
-            $EnvVars = uv run --no-sync --python $PythonVersion dev 'sync-environment-variables' --pylance-version $PylanceVersion
-            $EnvVars | Set-Content ($Env:GITHUB_ENV ? $Env:GITHUB_ENV : "$PWD/.env")
-            $EnvVars | Select-String -Pattern '^(.+?)=(.+)$' | ForEach-Object {
-                $Key, $Value = $_.Matches.Groups[1].Value, $_.Matches.Groups[2].Value
-                Set-Item "Env:$Key" $Value
-            }
+                # ? Avoid reentry
+                $Env:ENV_SYNCED = $True
 
-            # ? Environment-specific setup
-            if ($CI) {
-                uv run --no-sync --python $PythonVersion dev elevate-pyright-warnings
-            }
-            elseif ($Devcontainer) {
-                $Repo = Get-ChildItem '/workspaces'
-                $Packages = Get-ChildItem "$Repo/packages"
-                $SafeDirs = @($Repo) + $Packages
-                foreach ($Dir in $SafeDirs) {
-                    if (!($SafeDirs -contains $Dir)) {
-                        git config --global --add safe.directory $Dir
+                # ? Sync the environment
+                uv sync $LockedArg --python $PythonVersion
+                uv export $LockedArg $FrozenArg --no-annotate --no-hashes --python $PythonVersion |
+                    Set-Content 'requirements/requirements_dev.txt'
+                Enter-Venv
+
+
+                # ? Set up CI and contributor environments
+                if ($_CI) { Add-Content $Env:GITHUB_PATH ("$PWD/.venv/bin", "$PWD/.venv/scripts") }
+
+                else {
+
+                    # ? Install pre-commit hooks
+                    $Hooks = '.git/hooks'
+                    if ($WorkingTree = git rev-parse '--show-superproject-working-tree') {
+                        $Hooks = "$WorkingTree/$Hooks"
+                    }
+                    if (
+                        !(Test-Path "$Hooks/pre-commit") -or
+                        !(Test-Path "$Hooks/post-checkout")
+                    ) { Invoke-Uv -PythonVersion $PythonVersion 'pre-commit' 'install' '--install-hooks' }
+
+                    # ? Normalize line endings of changed files
+                    try {
+                        Invoke-Uv -PythonVersion $PythonVersion 'pre-commit' 'run' 'mixed-line-ending' '--all-files' |
+                            Out-Null
+                    }
+                    catch [System.Management.Automation.NativeCommandExitException] {}
+
+                    # ? Install Pylance extension
+                    if (!$Devcontainer -and (Get-Command -Name 'code' -ErrorAction 'Ignore')) {
+                        $LocalExtensions = '.vscode/extensions'
+                        $Pylance = 'ms-python.vscode-pylance'
+                        if (!(Test-Path "$LocalExtensions/$Pylance-$PylanceVersion")) {
+                            $Install = @(
+                                "--extensions-dir=$LocalExtensions",
+                                "--install-extension=$Pylance@$PylanceVersion"
+                            )
+                            code @Install
+                            if (Test-Path $LocalExtensions) {
+                                $PylanceExtension = (
+                                    Get-ChildItem -Path $LocalExtensions -Filter "$Pylance-*"
+                                )
+                                # ? Remove other files
+                                Get-ChildItem -Path $LocalExtensions |
+                                    Where-Object { Compare-Object $_ $PylanceExtension } |
+                                    Remove-Item -Recurse
+                                # ? Remove local Pylance bundled stubs
+                                $PylanceExtension | ForEach-Object {
+                                    Get-ChildItem "$_/dist/bundled" -Filter '*stubs'
+                                } | Remove-Item -Recurse
+                            }
+                        }
                     }
                 }
-            }
 
-            # ? Install pre-commit hooks
-            else {
-                $Hooks = '.git/hooks'
-                if (
-                    !(Test-Path "$Hooks/pre-commit") -or
-                    !(Test-Path "$Hooks/post-checkout")
-                ) { uv run --no-sync --python $PythonVersion pre-commit install --install-hooks }
-                if (!$Devcontainer -and (Get-Command -Name 'code' -ErrorAction 'Ignore')) {
-                    $LocalExtensions = '.vscode/extensions'
-                    $Pylance = 'ms-python.vscode-pylance'
-                    if (!(Test-Path "$LocalExtensions/$Pylance-$PylanceVersion")) {
-                        $Install = @(
-                            "--extensions-dir=$LocalExtensions",
-                            "--install-extension=$Pylance@$PylanceVersion"
-                        )
-                        code @Install
-                        if (Test-Path $LocalExtensions) {
-                            $PylanceExtension = (
-                                Get-ChildItem -Path $LocalExtensions -Filter "$Pylance-*"
-                            )
-                            # ? Remove other files
-                            Get-ChildItem -Path $LocalExtensions |
-                                Where-Object { Compare-Object $_ $PylanceExtension } |
-                                Remove-Item -Recurse
-                            # ? Remove local Pylance bundled stubs
-                            $PylanceExtension | ForEach-Object {
-                                Get-ChildItem "$_/dist/bundled" -Filter '*stubs'
-                            } | Remove-Item -Recurse
+                # ? Sync `.env` and set environment variables from `pyproject.toml`
+                $EnvVars = uv run --no-sync --python $PythonVersion dev 'sync-environment-variables' --pylance-version $PylanceVersion
+                $EnvVars | Set-Content ($Env:GITHUB_ENV ? $Env:GITHUB_ENV : "$PWD/.env")
+                $EnvVars | Select-String -Pattern '^(.+?)=(.+)$' | ForEach-Object {
+                    $Key, $Value = $_.Matches.Groups[1].Value, $_.Matches.Groups[2].Value
+                    Set-Item "Env:$Key" $Value
+                }
+
+                # ? Environment-specific setup
+                if ($_CI) { uv run dev 'elevate-pyright-warnings' }
+                elseif ($Devcontainer) {
+                    $Repo = Get-ChildItem '/workspaces'
+                    $Packages = Get-ChildItem "$Repo/packages"
+                    $SafeDirs = @($Repo) + $Packages
+                    foreach ($Dir in $SafeDirs) {
+                        if (!($SafeDirs -contains $Dir)) {
+                            git config --global --add safe.directory $Dir
                         }
                     }
                 }
             }
         }
     }
-    if ($Run) { uv run --no-sync --python $PythonVersion $Run }
+    Process { if ($Run) { uv run --no-sync --python $PythonVersion $Run } }
 }
-Set-Alias -Name 'iuv' -Value 'Invoke-Uv'
+
+function Invoke-Just {
+    <#.SYNOPSIS
+    Invoke `just`.#>
+    [CmdletBinding(PositionalBinding = $False)]
+    Param(
+        [switch]$Sync,
+        [switch]$Update,
+        [switch]$Low,
+        [switch]$High,
+        [switch]$Build,
+        [switch]$Force,
+        [switch]$_CI,
+        [switch]$Locked,
+        [switch]$Devcontainer,
+        [string]$PythonVersion = (Get-Content '.python-version'),
+        [string]$PylanceVersion = (Get-Content '.pylance-version'),
+        [Parameter(ValueFromPipeline, ValueFromRemainingArguments)][string[]]$Run
+    )
+    Begin {
+        $_CI = (New-Switch $Env:SYNC_ENV_DISABLE_CI (New-Switch $Env:CI))
+        $Locked = New-Switch $_CI $Locked
+        $InvokeUvArgs = @{
+            Sync           = $Sync
+            Update         = $Update
+            Low            = $Low
+            High           = $High
+            Build          = $Build
+            Force          = $Force
+            _CI            = $_CI
+            Locked         = $Locked
+            Devcontainer   = (New-Switch $Env:SYNC_ENV_DISABLE_DEVCONTAINER (New-Switch $Env:DEVCONTAINER))
+            PythonVersion  = $PythonVersion
+            PylanceVersion = $PylanceVersion
+        }
+        if (!(Test-Path '.venv')) {
+            Invoke-Uv -Sync -Force
+        }
+    }
+    Process { if ($Run) { Invoke-Uv @InvokeUvArgs -- just $Run } else { Invoke-Uv @InvokeUvArgs -- just } }
+}
 
 function Sync-Template {
     <#.SYNOPSIS
@@ -205,6 +288,15 @@ function Sync-Template {
     return uvx $Copier update --defaults --vcs-ref=$Ref
 }
 
+function Build-Docs {
+    <#.SYNOPSIS
+    Build documentation.#>
+    Initialize-Shell
+    $Ignore = @('temp', 'data', 'apidocs', '*schema.json') |
+        ForEach-Object { @('--ignore', "**/$_") }
+    sphinx-autobuild '--show-traceback' 'docs' '_site' @Ignore
+}
+
 function Initialize-Repo {
     <#.SYNOPSIS
     Initialize repository.#>
@@ -224,7 +316,7 @@ function Initialize-Repo {
     try { git commit --no-verify -m 'Add template and type stub submodules' }
     catch [System.Management.Automation.NativeCommandExitException] {}
 
-    Invoke-Uv -Sync -Update
+    Initialize-Shell
 
     git add .
     try { git commit --no-verify -m 'Lock' }
@@ -232,7 +324,7 @@ function Initialize-Repo {
 
     # ? Modify GitHub repo if there were not already commits in this repo
     if ($Fresh) {
-        if (!(git remote)) {
+        if ( !(git remote) ) {
             git remote add origin 'https://github.com/softboiler/boilercore.git'
             git branch --move --force main
         }
@@ -252,13 +344,6 @@ function Initialize-Machine {
     Finish machine initialization (cross-platform).#>
 
     Param([switch]$Force)
-
-    # ? Hook into user profile if it doesn't exist already
-    if ($Force -or !(Test-Path $PROFILE)) {
-        if (!(Test-Path $PROFILE)) { New-Item $PROFILE }
-        'if (Test-Path ''dev.ps1'') { . ./dev.ps1 && Initialize-Shell }' |
-            Add-Content $PROFILE
-    }
 
     # ? Set Git username if missing
     try { $Name = git config 'user.name' }
@@ -281,7 +366,9 @@ function Initialize-Machine {
         }
     }
     # ? Log in to GitHub API
-    if ($Force -or !(gh auth status)) { gh auth login -Done }
+    try { $FoundGhLogin = gh auth status }
+    catch [System.Management.Automation.NativeCommandExitException] {}
+    if ($Force -or !$FoundGhLogin) { gh auth login }
 }
 
 function Initialize-Windows {
@@ -350,5 +437,5 @@ EnableFSMonitor=Enabled
     $ErrorActionPreference = $origPreference
 
     # ? Finish machine setup
-    Initialize-Machine
-}
+        Initialize-Machine
+    }

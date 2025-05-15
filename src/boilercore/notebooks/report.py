@@ -108,6 +108,9 @@ async def export(nbs: list[str], paths):
 
 async def report(nbs: list[str], paths):
     """Generate DOCX reports."""
+    # * DVC-tracked inputs
+    # ! Scripts
+    # TODO: Remove
     async with TaskGroup() as tg:
         for nb in nbs:
             tg.create_task(
@@ -115,10 +118,12 @@ async def report(nbs: list[str], paths):
                     kwarg: fold(path)
                     for kwarg, path in dict(
                         workdir=paths.md,
-                        template=paths.template,
-                        filt=paths.filt,
+                        template="scripts/template.dotx",
+                        filt="scripts/filt.py",
                         zotero=ZOTERO,
-                        csl=paths.csl,
+                        csl=Path(
+                            "scripts/international-journal-of-heat-and-mass-transfer.csl"
+                        ),
                         docx=paths.docx / Path(nb).with_suffix(".docx").name,
                         md=paths.md / Path(nb).with_suffix(".md").name,
                     ).items()

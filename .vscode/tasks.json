@@ -111,7 +111,7 @@
     {
       "label": "setup: Sync contributor environment",
       "type": "shell",
-      "command": "if (!$Env:DEVCONTAINER) {./Invoke-Uv.ps1 -Sync -Update}",
+      "command": "if (!$Env:DEVCONTAINER) {./Invoke-Uv.ps1 -Sync}",
       "icon": { "id": "file-symlink-directory" },
       "problemMatcher": [],
       "runOptions": {
