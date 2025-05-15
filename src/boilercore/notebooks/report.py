@@ -118,8 +118,8 @@ async def report(nbs: list[str], paths):
                     kwarg: fold(path)
                     for kwarg, path in dict(
                         workdir=paths.md,
-                        template="scripts/template.dotx",
-                        filt="scripts/filt.py",
+                        template=Path("scripts/template.dotx"),
+                        filt=Path("scripts/filt.py"),
                         zotero=ZOTERO,
                         csl=Path(
                             "scripts/international-journal-of-heat-and-mass-transfer.csl"

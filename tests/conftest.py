@@ -16,6 +16,7 @@ from cachier import cachier, set_default_params  # pyright: ignore[reportMissing
 import boilercore
 from boilercore.hashes import hash_args
 from boilercore.models.params import Params
+from boilercore.models.paths import Paths
 from boilercore.notebooks import namespaces
 from boilercore.notebooks.namespaces import (
     NO_PARAMS,
@@ -45,7 +46,12 @@ def project_session_path(tmp_path_factory) -> Path:
 @pytest.fixture
 def params(project_session_path):
     """Parameters."""
-    return Params(source=project_session_path / "params.yaml")
+    return Params(
+        source=project_session_path / "params.yaml",
+        paths=Paths(
+            root=(root := project_session_path / "data"), models=root / "models"
+        ),
+    )
 
 
 @pytest.fixture(scope="session")

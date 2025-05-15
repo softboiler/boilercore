@@ -369,7 +369,7 @@ def get_types(
             yield from get_types(_value_annotation := args[-1])
         elif issubclass(origin, Sequence):
             yield from chain.from_iterable(get_types(arg) for arg in args)
-        elif issubclass(origin, Annotated):
+        elif issubclass(origin, Annotated):  # pyright: ignore[reportArgumentType]
             typ, *metadata = args
             yield from get_types(typ, metadata)
     else:

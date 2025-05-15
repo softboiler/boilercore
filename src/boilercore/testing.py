@@ -15,7 +15,7 @@ class MFParam(NamedTuple):
     """Parameter for model function tests."""
 
     run: str
-    y: ArrayLike
+    y: ArrayLike  # pyright: ignore[reportInvalidTypeForm]
     expected: dict[str, float]
 
 
