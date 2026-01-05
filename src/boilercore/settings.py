@@ -8,7 +8,6 @@ from pydantic_settings import (
 )
 
 import boilercore
-import boilercore.settings_models
 from boilercore import settings_models
 from boilercore.paths import get_module_name
 from boilercore.settings_models import (
